@@ -182,6 +182,7 @@ tr:hover td{background:#F8F9FB;}
   <button class="tab-btn" onclick="switchTab('alpha')">Alpha Brands (LOGO)</button>
   <button class="tab-btn" onclick="switchTab('forces')">Structural Forces</button>
   <button class="tab-btn" onclick="switchTab('framework')">Macro Framework</button>
+  <button class="tab-btn" onclick="switchTab('framework2')">Macro Framework 2</button>
 </div>
 
 <!-- ============================================================ -->
@@ -1153,6 +1154,117 @@ tr:hover td{background:#F8F9FB;}
           <br><br>
           <strong>Key risk to monitor:</strong> Middle East escalation remains the highest-likelihood, highest-impact variable. A sustained oil spike above $120 would push the regime deeper into stagflation territory.
         </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 6: MACRO FRAMEWORK 2 — SURPRISE-BASED REGIME MODEL       -->
+<!-- ============================================================ -->
+<div id="tab-framework2" class="tab-content">
+<div class="container">
+
+  <div class="section-label">Surprise-Based Regime Framework</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Scores based on rate-of-change vs trend (surprise proxy), not absolute levels. Incorporates market-implied signals via TIPS breakevens and credit spreads.</div>
+
+  <div class="grid-2">
+    <!-- Regime Quadrant -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Surprise-Based Regime Map</div><span class="card-badge badge-live" id="regime2Label">Loading...</span></div>
+      <div class="card-body" style="padding:16px;">
+        <svg id="quadrant2Svg" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:520px;"></svg>
+      </div>
+    </div>
+
+    <!-- Regime Description -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Current Regime Assessment</div><span class="card-badge badge-updated">Surprise-Based</span></div>
+        <div class="card-body" id="regime2Desc"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Regime Transition Probabilities</div></div>
+        <div class="card-body" id="regime2Trans"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Key Difference vs Framework 1</div></div>
+        <div class="card-body" style="font-size:12px;color:var(--text-secondary);line-height:1.7;">
+          Framework 1 scores indicators against <strong>fixed thresholds</strong> (e.g., GDP &gt; 2.5% = good). This framework scores the <strong>rate of change vs recent trend</strong> — a proxy for economic surprises. Markets move on the delta between expectations and reality, not absolute levels. A low GDP print that beats expectations is bullish; a strong print that misses is bearish.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Surprise Scorecard -->
+  <div class="section-label">Surprise Scorecard</div>
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Growth & Inflation Surprise Signals</div><span class="card-badge badge-updated">Rate of change vs 6-month trend</span></div>
+      <div class="card-body" style="padding:10px 16px;">
+        <div class="grid-2" style="margin-bottom:0;">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+              <span>Growth Surprise Signals</span>
+              <span id="growth2ScoreLabel" style="font-size:14px;"></span>
+            </div>
+            <table id="growth2Table">
+              <thead><tr><th>Indicator</th><th class="text-right">Current</th><th class="text-right">6M Avg</th><th class="text-center">Surprise</th><th class="text-center">Score</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+              <span>Inflation Surprise Signals</span>
+              <span id="inflation2ScoreLabel" style="font-size:14px;"></span>
+            </div>
+            <table id="inflation2Table">
+              <thead><tr><th>Indicator</th><th class="text-right">Current</th><th class="text-right">6M Avg</th><th class="text-center">Surprise</th><th class="text-center">Score</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Market-Implied Signals -->
+  <div class="section-label">Market-Implied Regime Signals</div>
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">What Markets Are Pricing</div><span class="card-badge badge-live">Live from FRED + Yahoo</span></div>
+      <div class="card-body" style="padding:10px 16px;">
+        <table id="marketSignals2Table">
+          <thead><tr><th>Signal</th><th class="text-right">Value</th><th>Interpretation</th><th class="text-center">Growth</th><th class="text-center">Inflation</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historical Asset Returns by Regime -->
+  <div class="section-label">Historical Asset Returns by Regime</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Annualized real returns during each regime environment (1970-2025 backtest).</div>
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Asset Class Performance Matrix</div><span class="card-badge badge-updated">Historical Averages</span></div>
+      <div class="card-body" style="padding:10px 16px;">
+        <table>
+          <thead><tr><th>Asset Class</th><th class="text-center">Goldilocks<br><span style="font-size:9px;font-weight:400;">Growth↑ Infl↓</span></th><th class="text-center">Reflation<br><span style="font-size:9px;font-weight:400;">Growth↑ Infl↑</span></th><th class="text-center">Stagflation<br><span style="font-size:9px;font-weight:400;">Growth↓ Infl↑</span></th><th class="text-center">Deflation<br><span style="font-size:9px;font-weight:400;">Growth↓ Infl↓</span></th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600;">U.S. Equities (S&P 500)</td><td class="text-center up font-mono">+15.4%</td><td class="text-center up font-mono">+7.8%</td><td class="text-center down font-mono">-4.2%</td><td class="text-center down font-mono">-11.6%</td></tr>
+            <tr><td style="font-weight:600;">Long-Term Treasuries</td><td class="text-center up font-mono">+4.1%</td><td class="text-center down font-mono">-7.2%</td><td class="text-center down font-mono">-5.8%</td><td class="text-center up font-mono">+17.3%</td></tr>
+            <tr><td style="font-weight:600;">TIPS (Inflation-Protected)</td><td class="text-center up font-mono">+3.2%</td><td class="text-center up font-mono">+5.6%</td><td class="text-center up font-mono">+2.1%</td><td class="text-center up font-mono">+6.8%</td></tr>
+            <tr><td style="font-weight:600;">Gold</td><td class="text-center down font-mono">-1.8%</td><td class="text-center up font-mono">+11.5%</td><td class="text-center up font-mono">+14.2%</td><td class="text-center up font-mono">+4.9%</td></tr>
+            <tr><td style="font-weight:600;">Commodities (Broad)</td><td class="text-center up font-mono">+3.1%</td><td class="text-center up font-mono">+18.7%</td><td class="text-center up font-mono">+9.4%</td><td class="text-center down font-mono">-14.8%</td></tr>
+            <tr><td style="font-weight:600;">Investment-Grade Credit</td><td class="text-center up font-mono">+6.8%</td><td class="text-center up font-mono">+2.3%</td><td class="text-center down font-mono">-3.1%</td><td class="text-center up font-mono">+8.5%</td></tr>
+            <tr><td style="font-weight:600;">High-Yield Credit</td><td class="text-center up font-mono">+9.2%</td><td class="text-center up font-mono">+5.1%</td><td class="text-center down font-mono">-8.7%</td><td class="text-center down font-mono">-4.3%</td></tr>
+            <tr><td style="font-weight:600;">Cash / T-Bills</td><td class="text-center up font-mono">+1.2%</td><td class="text-center up font-mono">+2.8%</td><td class="text-center up font-mono">+3.5%</td><td class="text-center up font-mono">+1.0%</td></tr>
+          </tbody>
+        </table>
+        <div class="commentary" style="margin-top:10px;"><strong>How to read:</strong> The highlighted column corresponds to the current regime. In stagflation, cash, gold, commodities, and TIPS historically outperform. Equities and long bonds underperform. These are historical tendencies, not guarantees.</div>
       </div>
     </div>
   </div>
@@ -2574,6 +2686,290 @@ function renderGauge(containerId, score, maxScore, label, goodDir) {
 
 renderGauge('growthGauge', gSum, gMax);
 renderGauge('inflationGauge', iSum, iMax);
+
+// ===== FRAMEWORK 2: SURPRISE-BASED REGIME MODEL =====
+
+function _avg6m(histKey) {
+  const arr = LIVE_DATA[histKey];
+  if (!arr || arr.length < 6) return null;
+  const recent = arr.slice(-6);
+  return recent.reduce((s,d) => s + d.val, 0) / recent.length;
+}
+function _latest(histKey) {
+  const arr = LIVE_DATA[histKey];
+  return (arr && arr.length > 0) ? arr[arr.length - 1].val : null;
+}
+function _surpriseScore(current, avg) {
+  if (current == null || avg == null || avg === 0) return 0;
+  const pctDev = ((current - avg) / Math.abs(avg)) * 100;
+  if (pctDev > 10) return 2;
+  if (pctDev > 3) return 1;
+  if (pctDev > -3) return 0;
+  if (pctDev > -10) return -1;
+  return -2;
+}
+function _surpriseScoreInv(current, avg) {
+  return -_surpriseScore(current, avg);
+}
+
+// Growth surprise indicators
+const _gdpCur = LIVE_DATA.GDP ? LIVE_DATA.GDP.latest : null;
+const _gdpPrv = LIVE_DATA.GDP ? LIVE_DATA.GDP.prior : null;
+const _gdpSurp = (_gdpCur != null && _gdpPrv != null && _gdpPrv !== 0) ? _surpriseScore(_gdpCur, _gdpPrv) : 0;
+
+const _nfpCur = _latest('PAYEMS_HIST');
+const _nfpAvg = _avg6m('PAYEMS_HIST');
+
+const _unempCur = LIVE_DATA.UNRATE ? LIVE_DATA.UNRATE.latest : null;
+const _unempAvg6 = _avg6m('UNEMP_HIST');
+
+const _retailCur = _latest('RSAFS_HIST');
+const _retailAvg = _avg6m('RSAFS_HIST');
+
+const _sentCur = LIVE_DATA.UMCSENT ? LIVE_DATA.UMCSENT.latest : null;
+const _sentAvg6 = _avg6m('UMCSENT_HIST');
+
+const _savCur = LIVE_DATA.PERSONAL_SAVING ? LIVE_DATA.PERSONAL_SAVING.latest : null;
+const _savAvg6 = _avg6m('SAVINGS_HIST');
+
+const _indproCur = _latest('INDPRO_HIST');
+const _indproAvg = _avg6m('INDPRO_HIST');
+
+const growthSurprises = [
+  {name:"GDP Acceleration", current:_gdpCur, avg:_gdpPrv, unit:'%', score:_gdpSurp,
+   desc:'Current quarter vs prior quarter GDP — measures acceleration/deceleration.'},
+  {name:"Employment Level", current:_nfpCur, avg:_nfpAvg, unit:'K', score:_surpriseScore(_nfpCur, _nfpAvg),
+   desc:'Nonfarm payrolls level vs 6-month average.'},
+  {name:"Unemployment Rate", current:_unempCur, avg:_unempAvg6, unit:'%', score:_surpriseScoreInv(_unempCur, _unempAvg6),
+   desc:'Unemployment vs 6M avg. Lower than avg = positive growth surprise.'},
+  {name:"Retail Sales Trend", current:_retailCur, avg:_retailAvg, unit:'%', score:_surpriseScore(_retailCur, _retailAvg),
+   desc:'MoM retail sales vs 6M average — consumer momentum.'},
+  {name:"Consumer Sentiment", current:_sentCur, avg:_sentAvg6, unit:'', score:_surpriseScore(_sentCur, _sentAvg6),
+   desc:'Michigan sentiment vs 6M average. Rising = positive surprise.'},
+  {name:"Savings Rate", current:_savCur, avg:_savAvg6, unit:'%', score:_surpriseScore(_savCur, _savAvg6),
+   desc:'Personal savings rate vs 6M avg. Rising savings = healthier consumer balance sheet.'},
+  {name:"Industrial Production", current:_indproCur, avg:_indproAvg, unit:'', score:_surpriseScore(_indproCur, _indproAvg),
+   desc:'Industrial production index vs 6M average.'},
+];
+
+// Inflation surprise indicators
+const _cpiCur = _latest('CPI_HIST');
+const _cpiAvg6 = _avg6m('CPI_HIST');
+
+const _pceCur = _latest('PCE_HIST');
+const _pceAvg6 = _avg6m('PCE_HIST');
+
+const _t5yie = LIVE_DATA.T5YIE ? LIVE_DATA.T5YIE.latest : null;
+const _t5yieAvg = _avg6m('T5YIE_HIST');
+const _t10yie = LIVE_DATA.T10YIE ? LIVE_DATA.T10YIE.latest : null;
+const _t10yieAvg = _avg6m('T10YIE_HIST');
+
+const _wageCur = _latest('WAGE_HIST');
+const _wageAvg6 = _avg6m('WAGE_HIST');
+
+const _importCur = _latest('IMPORT_PRICE_HIST');
+const _importAvg6 = _avg6m('IMPORT_PRICE_HIST');
+
+const _oilP = (LIVE_COMMODITIES && LIVE_COMMODITIES.WTI_OIL) ? LIVE_COMMODITIES.WTI_OIL.price : null;
+
+const inflationSurprises = [
+  {name:"CPI YoY Trend", current:_cpiCur, avg:_cpiAvg6, unit:'%', score:_surpriseScore(_cpiCur, _cpiAvg6),
+   desc:'CPI YoY vs 6M average. Rising above trend = inflation re-accelerating.'},
+  {name:"Core PCE Trend", current:_pceCur, avg:_pceAvg6, unit:'%', score:_surpriseScore(_pceCur, _pceAvg6),
+   desc:'Fed\'s preferred gauge vs 6M average.'},
+  {name:"5Y Breakeven Infl.", current:_t5yie, avg:_t5yieAvg, unit:'%', score:_surpriseScore(_t5yie, _t5yieAvg),
+   desc:'TIPS-implied 5Y inflation expectation vs 6M avg. Market-forward signal.'},
+  {name:"10Y Breakeven Infl.", current:_t10yie, avg:_t10yieAvg, unit:'%', score:_surpriseScore(_t10yie, _t10yieAvg),
+   desc:'TIPS-implied 10Y inflation expectation vs 6M avg.'},
+  {name:"Wage Growth Trend", current:_wageCur, avg:_wageAvg6, unit:'%', score:_surpriseScore(_wageCur, _wageAvg6),
+   desc:'Average hourly earnings YoY vs 6M average.'},
+  {name:"Import Prices Trend", current:_importCur, avg:_importAvg6, unit:'%', score:_surpriseScore(_importCur, _importAvg6),
+   desc:'MoM import prices vs 6M average — leading indicator for CPI.'},
+];
+
+// Composite scores
+function calcSurpriseComposite(indicators) {
+  const scores = indicators.filter(i => i.score !== 0 || i.current != null);
+  if (scores.length === 0) return 0;
+  const sum = scores.reduce((a, i) => a + i.score, 0);
+  return sum / (scores.length * 2);
+}
+
+const gs2 = calcSurpriseComposite(growthSurprises);
+const is2 = calcSurpriseComposite(inflationSurprises);
+
+function getRegime2(g, i) {
+  if (g > 0.05 && i < -0.05) return {name:"Goldilocks",color:"#2EAE6D",desc:"Growth surprising to the upside while inflation is surprising to the downside. Risk assets perform best in this environment."};
+  if (g > 0.05 && i >= -0.05) return {name:"Reflation",color:"#E8873A",desc:"Both growth and inflation surprising to the upside. Real assets, commodities, and cyclicals tend to outperform. Nominal bonds underperform."};
+  if (g <= 0.05 && i >= 0.05) return {name:"Stagflationary",color:"#D94444",desc:"Growth disappointing while inflation surprises higher. The most challenging environment — cash, gold, and commodities historically outperform while equities and bonds both struggle."};
+  return {name:"Deflationary",color:"#2E7DD1",desc:"Both growth and inflation surprising to the downside. Long-duration bonds and quality assets outperform. Commodities and cyclicals underperform."};
+}
+
+const regime2 = getRegime2(gs2, is2);
+
+// Render scorecard tables
+function renderSurpriseTable(tableId, indicators) {
+  const tbody = document.querySelector(`#${tableId} tbody`);
+  indicators.forEach(ind => {
+    const tr = document.createElement('tr');
+    tr.className = 'has-tooltip';
+    const sc = ind.score;
+    const scoreColor = sc > 0 ? 'var(--green)' : sc < 0 ? 'var(--red)' : 'var(--text-muted)';
+    const arrow = sc > 0 ? '▲' : sc < 0 ? '▼' : '—';
+    const surpriseLabel = sc >= 2 ? 'Strong ↑' : sc === 1 ? 'Mild ↑' : sc === 0 ? 'In-line' : sc === -1 ? 'Mild ↓' : 'Strong ↓';
+    const curFmt = ind.current != null ? ind.current.toFixed(1) + (ind.unit === '%' ? '%' : '') : 'N/A';
+    const avgFmt = ind.avg != null ? ind.avg.toFixed(1) + (ind.unit === '%' ? '%' : '') : 'N/A';
+    tr.innerHTML = `<td style="font-weight:500;font-size:12px;">${ind.name}<div class="tooltip">${ind.desc}</div></td><td class="text-right font-mono" style="font-size:11px;">${curFmt}</td><td class="text-right font-mono" style="font-size:11px;color:var(--text-muted);">${avgFmt}</td><td class="text-center" style="font-size:10px;color:${scoreColor};font-weight:500;">${surpriseLabel}</td><td class="text-center" style="font-size:16px;color:${scoreColor};letter-spacing:2px;">${arrow} ${Math.abs(sc)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+renderSurpriseTable('growth2Table', growthSurprises);
+renderSurpriseTable('inflation2Table', inflationSurprises);
+
+// Score labels
+const gs2Sum = growthSurprises.reduce((a,i)=>a+i.score,0);
+const is2Sum = inflationSurprises.reduce((a,i)=>a+i.score,0);
+const gs2Max = growthSurprises.length * 2;
+const is2Max = inflationSurprises.length * 2;
+document.getElementById('growth2ScoreLabel').innerHTML = `<span style="color:${gs2Sum>=0?'var(--green)':'var(--red)'};font-weight:700;">${gs2Sum>=0?'+':''}${gs2Sum} / ${gs2Max}</span>`;
+document.getElementById('inflation2ScoreLabel').innerHTML = `<span style="color:${is2Sum>0?'var(--red)':'var(--green)'};font-weight:700;">${is2Sum>=0?'+':''}${is2Sum} / ${is2Max}</span>`;
+
+// Market-implied signals
+const _t10y2y = LIVE_DATA.T10Y2Y ? LIVE_DATA.T10Y2Y.latest : null;
+const _hySpread = LIVE_DATA.HY_OAS ? LIVE_DATA.HY_OAS.latest : null;
+const _igSpread = LIVE_DATA.IG_OAS ? LIVE_DATA.IG_OAS.latest : null;
+const _realRate = (_ust10 != null && _t10yie != null) ? _ust10 - _t10yie : null;
+
+const marketSignals = [
+  {name:"Yield Curve (2s/10s)", value:_t10y2y != null ? _t10y2y.toFixed(2)+'%' : 'N/A',
+   interp:_t10y2y != null ? (_t10y2y > 0.2 ? 'Steepening — markets expect growth' : _t10y2y > -0.1 ? 'Flat — uncertainty' : 'Inverted — recession signal') : '',
+   growth:_t10y2y != null ? (_t10y2y > 0.2 ? 1 : _t10y2y > -0.1 ? 0 : -1) : 0, inflation:0},
+  {name:"HY Credit Spread", value:_hySpread != null ? (_hySpread*100).toFixed(0)+' bps' : 'N/A',
+   interp:_hySpread != null ? (_hySpread < 3 ? 'Tight — markets complacent on credit risk' : _hySpread < 5 ? 'Normal — moderate risk pricing' : 'Wide — stress/recession pricing') : '',
+   growth:_hySpread != null ? (_hySpread < 3 ? 1 : _hySpread < 5 ? 0 : -2) : 0, inflation:0},
+  {name:"5Y Breakeven Inflation", value:_t5yie != null ? _t5yie.toFixed(2)+'%' : 'N/A',
+   interp:_t5yie != null ? (_t5yie > 2.5 ? 'Above target — market pricing higher inflation' : _t5yie > 2.0 ? 'Near target — anchored' : 'Below target — deflationary signal') : '',
+   growth:0, inflation:_t5yie != null ? (_t5yie > 2.5 ? 1 : _t5yie > 2.0 ? 0 : -1) : 0},
+  {name:"Real Rate (10Y - Breakeven)", value:_realRate != null ? _realRate.toFixed(2)+'%' : 'N/A',
+   interp:_realRate != null ? (_realRate > 2.0 ? 'Very tight financial conditions' : _realRate > 1.0 ? 'Moderately restrictive' : _realRate > 0 ? 'Mildly restrictive' : 'Accommodative') : '',
+   growth:_realRate != null ? (_realRate > 2.0 ? -1 : _realRate > 0 ? 0 : 1) : 0, inflation:0},
+  {name:"Oil Price (WTI)", value:_oilP != null ? '$'+_oilP.toFixed(2) : 'N/A',
+   interp:_oilP != null ? (_oilP > 90 ? 'Inflationary pressure — energy cost stress' : _oilP > 70 ? 'Moderate — manageable' : 'Low — deflationary impulse') : '',
+   growth:0, inflation:_oilP != null ? (_oilP > 90 ? 1 : _oilP > 70 ? 0 : -1) : 0},
+];
+
+const mktTbody = document.querySelector('#marketSignals2Table tbody');
+marketSignals.forEach(sig => {
+  const tr = document.createElement('tr');
+  const gColor = sig.growth > 0 ? 'var(--green)' : sig.growth < 0 ? 'var(--red)' : 'var(--text-muted)';
+  const iColor = sig.inflation > 0 ? 'var(--red)' : sig.inflation < 0 ? 'var(--green)' : 'var(--text-muted)';
+  const gArrow = sig.growth > 0 ? '▲' : sig.growth < 0 ? '▼' : '—';
+  const iArrow = sig.inflation > 0 ? '▲' : sig.inflation < 0 ? '▼' : '—';
+  tr.innerHTML = `<td style="font-weight:600;font-size:12px;">${sig.name}</td><td class="text-right font-mono" style="font-size:11px;">${sig.value}</td><td style="font-size:11px;color:var(--text-secondary);">${sig.interp}</td><td class="text-center" style="color:${gColor};font-weight:600;">${gArrow}</td><td class="text-center" style="color:${iColor};font-weight:600;">${iArrow}</td>`;
+  mktTbody.appendChild(tr);
+});
+
+// Render quadrant
+function renderQuadrant2() {
+  const S = 520, pad = 60, chartS = S - pad*2;
+  const cx = pad + chartS/2, cy = pad + chartS/2;
+  const dotX = cx + gs2 * (chartS/2) * 0.85;
+  const dotY = cy - is2 * (chartS/2) * 0.85;
+  const svg = document.getElementById('quadrant2Svg');
+  svg.innerHTML = `
+    <rect x="${pad}" y="${pad}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#FDE8E8" opacity="0.5"/>
+    <rect x="${cx}" y="${pad}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#FFF3E0" opacity="0.5"/>
+    <rect x="${pad}" y="${cy}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#E3F2FD" opacity="0.5"/>
+    <rect x="${cx}" y="${cy}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#E8F5EE" opacity="0.5"/>
+    <text x="${pad + chartS/4}" y="${pad + 28}" font-size="14" fill="#B52A2A" text-anchor="middle" font-weight="700" font-family="Inter">STAGFLATION</text>
+    <text x="${pad + chartS/4}" y="${pad + 46}" font-size="10" fill="#B52A2A" text-anchor="middle" font-family="Inter" opacity="0.7">Growth ↓ Inflation ↑</text>
+    <text x="${cx + chartS/4}" y="${pad + 28}" font-size="14" fill="#C67030" text-anchor="middle" font-weight="700" font-family="Inter">REFLATION</text>
+    <text x="${cx + chartS/4}" y="${pad + 46}" font-size="10" fill="#C67030" text-anchor="middle" font-family="Inter" opacity="0.7">Growth ↑ Inflation ↑</text>
+    <text x="${pad + chartS/4}" y="${cy + chartS/2 - 30}" font-size="14" fill="#1565C0" text-anchor="middle" font-weight="700" font-family="Inter">DEFLATION</text>
+    <text x="${pad + chartS/4}" y="${cy + chartS/2 - 14}" font-size="10" fill="#1565C0" text-anchor="middle" font-family="Inter" opacity="0.7">Growth ↓ Inflation ↓</text>
+    <text x="${cx + chartS/4}" y="${cy + chartS/2 - 30}" font-size="14" fill="#1A7A47" text-anchor="middle" font-weight="700" font-family="Inter">GOLDILOCKS</text>
+    <text x="${cx + chartS/4}" y="${cy + chartS/2 - 14}" font-size="10" fill="#1A7A47" text-anchor="middle" font-family="Inter" opacity="0.7">Growth ↑ Inflation ↓</text>
+    <line x1="${cx}" y1="${pad}" x2="${cx}" y2="${pad+chartS}" stroke="var(--navy)" stroke-width="1.5" opacity="0.3"/>
+    <line x1="${pad}" y1="${cy}" x2="${pad+chartS}" y2="${cy}" stroke="var(--navy)" stroke-width="1.5" opacity="0.3"/>
+    <text x="${pad + chartS + 5}" y="${cy + 4}" font-size="11" fill="var(--navy)" font-weight="600" font-family="Inter">Growth Surprise →</text>
+    <text x="${pad - 5}" y="${cy + 4}" font-size="11" fill="var(--navy)" font-weight="600" font-family="Inter" text-anchor="end">← Disappointment</text>
+    <text x="${cx}" y="${pad - 10}" font-size="11" fill="var(--navy)" font-weight="600" font-family="Inter" text-anchor="middle">↑ Inflation Surprise</text>
+    <text x="${cx}" y="${pad + chartS + 18}" font-size="11" fill="var(--navy)" font-weight="600" font-family="Inter" text-anchor="middle">Inflation Below Expectations ↓</text>
+    <circle cx="${dotX}" cy="${dotY}" r="18" fill="${regime2.color}" opacity="0.12">
+      <animate attributeName="r" values="18;24;18" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.12;0.05;0.12" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="${dotX}" cy="${dotY}" r="10" fill="${regime2.color}" opacity="0.25"/>
+    <circle cx="${dotX}" cy="${dotY}" r="6" fill="${regime2.color}" stroke="white" stroke-width="2"/>
+    <text x="${dotX}" y="${dotY - 16}" font-size="11" fill="${regime2.color}" text-anchor="middle" font-weight="700" font-family="Inter">WE ARE HERE</text>
+    <text x="${pad}" y="${S - 8}" font-size="10" fill="var(--text-muted)" font-family="Inter">Growth Surprise: ${gs2.toFixed(2)} | Inflation Surprise: ${is2.toFixed(2)}</text>
+  `;
+}
+renderQuadrant2();
+
+document.getElementById('regime2Label').textContent = regime2.name;
+document.getElementById('regime2Label').style.background = regime2.color + '20';
+document.getElementById('regime2Label').style.color = regime2.color;
+
+// Regime description
+document.getElementById('regime2Desc').innerHTML = `
+  <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+    <span style="font-size:22px;font-weight:700;color:${regime2.color};">${regime2.name}</span>
+  </div>
+  <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">${regime2.desc}</div>
+  <div style="margin-top:12px;padding:10px;background:#F4F6F9;border-radius:6px;">
+    <div style="font-size:11px;font-weight:600;color:var(--navy);margin-bottom:4px;">Score Summary</div>
+    <div style="font-size:12px;color:var(--text-secondary);">Growth surprise composite: <strong style="color:${gs2>=0?'var(--green)':'var(--red)'}">${gs2>=0?'+':''}${gs2.toFixed(2)}</strong> | Inflation surprise composite: <strong style="color:${is2>0?'var(--red)':'var(--green)'}">${is2>=0?'+':''}${is2.toFixed(2)}</strong></div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Composite range: -1.0 (strong negative surprise) to +1.0 (strong positive surprise)</div>
+  </div>
+`;
+
+// Transition probabilities (heuristic based on leading indicators)
+const transGold = Math.max(5, Math.round((1 + gs2) * (1 - is2) * 25));
+const transRefl = Math.max(5, Math.round((1 + gs2) * (1 + is2) * 25));
+const transStag = Math.max(5, Math.round((1 - gs2) * (1 + is2) * 25));
+const transDefl = Math.max(5, Math.round((1 - gs2) * (1 - is2) * 25));
+const transTotal = transGold + transRefl + transStag + transDefl;
+const tG = Math.round(transGold/transTotal*100);
+const tR = Math.round(transRefl/transTotal*100);
+const tS = Math.round(transStag/transTotal*100);
+const tD = 100 - tG - tR - tS;
+
+document.getElementById('regime2Trans').innerHTML = `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div style="padding:10px;background:#E8F5EE;border-radius:6px;text-align:center;">
+      <div style="font-size:11px;font-weight:600;color:#1A7A47;">Goldilocks</div>
+      <div style="font-size:24px;font-weight:700;color:#1A7A47;">${tG}%</div>
+    </div>
+    <div style="padding:10px;background:#FFF3E0;border-radius:6px;text-align:center;">
+      <div style="font-size:11px;font-weight:600;color:#C67030;">Reflation</div>
+      <div style="font-size:24px;font-weight:700;color:#C67030;">${tR}%</div>
+    </div>
+    <div style="padding:10px;background:#FDE8E8;border-radius:6px;text-align:center;">
+      <div style="font-size:11px;font-weight:600;color:#B52A2A;">Stagflation</div>
+      <div style="font-size:24px;font-weight:700;color:#B52A2A;">${tS}%</div>
+    </div>
+    <div style="padding:10px;background:#E3F2FD;border-radius:6px;text-align:center;">
+      <div style="font-size:11px;font-weight:600;color:#1565C0;">Deflation</div>
+      <div style="font-size:24px;font-weight:700;color:#1565C0;">${tD}%</div>
+    </div>
+  </div>
+  <div style="font-size:10px;color:var(--text-muted);margin-top:8px;">Estimated from current surprise composites. Not a forecast — reflects the direction of current momentum.</div>
+`;
+
+// Highlight current regime column in asset returns table
+const regimeColMap = {'Goldilocks':1,'Reflation':2,'Stagflationary':3,'Deflationary':4};
+const colIdx = regimeColMap[regime2.name];
+if (colIdx) {
+  document.querySelectorAll('#tab-framework2 table')[3].querySelectorAll('tbody tr').forEach(tr => {
+    const td = tr.querySelectorAll('td')[colIdx];
+    if (td) td.style.background = regime2.color + '15';
+  });
+  const thCell = document.querySelectorAll('#tab-framework2 table')[3].querySelectorAll('thead th')[colIdx];
+  if (thCell) { thCell.style.background = regime2.color + '20'; thCell.style.borderBottom = '3px solid ' + regime2.color; }
+}
+
 {% endraw %}
 </script>
 

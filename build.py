@@ -51,6 +51,11 @@ def fetch_fred_data():
         "T10Y2Y": "T10Y2Y",
         # Fed funds
         "FEDFUNDS": "FEDFUNDS",
+        # TIPS breakeven inflation
+        "T5YIE": "T5YIE",
+        "T10YIE": "T10YIE",
+        # Real rates
+        "REALGDP": "A191RL1Q225SBEA",
     }
 
     for key, series_id in series_map.items():
@@ -142,6 +147,8 @@ def fetch_fred_data():
         ("TOTALSL_HIST", "TOTALSL"),         # Consumer credit outstanding
         ("WAGE_HIST", "CES0500000003"),      # Average hourly earnings
         ("IMPORT_PRICE_HIST", "IR"),         # Import price index
+        ("T5YIE_HIST", "T5YIE"),             # 5Y breakeven inflation
+        ("T10YIE_HIST", "T10YIE"),           # 10Y breakeven inflation
     ]
     for label, sid in indicator_hist_series:
         try:
