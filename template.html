@@ -190,6 +190,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
   <button class="tab-btn" onclick="switchTab('forces')">Structural Forces</button>
   <button class="tab-btn" onclick="switchTab('framework')">Static Framework</button>
   <button class="tab-btn" onclick="switchTab('framework2')">Surprise Framework</button>
+  <button class="tab-btn" onclick="switchTab('factors')">Factor Attribution</button>
 </div>
 
 <!-- ============================================================ -->
@@ -763,13 +764,13 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
 <div id="tab-forces" class="tab-content">
 <div class="container">
   <div class="section-label">Structural Forces & Disruption</div>
-  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">These secular themes operate independently of the business cycle and can overwhelm cyclical signals for affected sectors. Sources linked in each card.</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;"><span style="background:#EBF2FB;color:var(--accent-blue);font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;">SECULAR</span> themes persist 5-10+ years regardless of the business cycle. <span style="background:#FFF3E0;color:var(--accent-orange);font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;">CYCLICAL</span> themes are tied to the current macro environment and may reverse in 1-3 years.</div>
 
   <!-- AI / Compute -->
   <div class="full-width">
     <div class="card" style="border-left:4px solid var(--accent-blue);">
       <div class="card-header">
-        <div class="card-title" style="display:flex;align-items:center;gap:10px;">AI & Compute Buildout <span style="background:#E8F5EE;color:var(--green);font-size:10px;padding:2px 10px;border-radius:10px;font-weight:600;">ACCELERATING</span></div>
+        <div class="card-title" style="display:flex;align-items:center;gap:10px;">AI & Compute Buildout <span style="background:#E8F5EE;color:var(--green);font-size:10px;padding:2px 10px;border-radius:10px;font-weight:600;">ACCELERATING</span><span style="background:#EBF2FB;color:var(--accent-blue);font-size:9px;padding:2px 8px;border-radius:10px;font-weight:600;">SECULAR · 5-10Y+</span></div>
       </div>
       <div class="card-body">
         <div class="grid-2" style="margin-bottom:0;">
@@ -806,7 +807,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
   <div class="full-width">
     <div class="card" style="border-left:4px solid var(--green);">
       <div class="card-header">
-        <div class="card-title" style="display:flex;align-items:center;gap:10px;">GLP-1 & Healthcare Transformation <span style="background:#E8F5EE;color:var(--green);font-size:10px;padding:2px 10px;border-radius:10px;font-weight:600;">ACCELERATING</span></div>
+        <div class="card-title" style="display:flex;align-items:center;gap:10px;">GLP-1 & Healthcare Transformation <span style="background:#E8F5EE;color:var(--green);font-size:10px;padding:2px 10px;border-radius:10px;font-weight:600;">ACCELERATING</span><span style="background:#EBF2FB;color:var(--accent-blue);font-size:9px;padding:2px 8px;border-radius:10px;font-weight:600;">SECULAR · 10Y+</span></div>
       </div>
       <div class="card-body">
         <div class="grid-2" style="margin-bottom:0;">
@@ -844,7 +845,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
   <div class="full-width">
     <div class="card" style="border-left:4px solid var(--red);">
       <div class="card-header">
-        <div class="card-title" style="display:flex;align-items:center;gap:10px;">Energy Security & Middle East Crisis <span style="background:#FDE8E8;color:var(--red);font-size:10px;padding:2px 10px;border-radius:10px;font-weight:600;">ACUTE RISK</span></div>
+        <div class="card-title" style="display:flex;align-items:center;gap:10px;">Energy Security & Middle East Crisis <span style="background:#FDE8E8;color:var(--red);font-size:10px;padding:2px 10px;border-radius:10px;font-weight:600;">ACUTE RISK</span><span style="background:#FFF3E0;color:var(--accent-orange);font-size:9px;padding:2px 8px;border-radius:10px;font-weight:600;">CYCLICAL · 1-3Y</span></div>
       </div>
       <div class="card-body">
         <div class="grid-2" style="margin-bottom:0;">
@@ -880,7 +881,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
   <div class="grid-2">
     <div class="card" style="border-left:4px solid var(--accent-orange);">
       <div class="card-header">
-        <div class="card-title" style="display:flex;align-items:center;gap:10px;">Deglobalization & Reshoring <span style="background:#FFF3E0;color:var(--accent-orange);font-size:10px;padding:2px 10px;border-radius:10px;font-weight:600;">STRUCTURAL</span></div>
+        <div class="card-title" style="display:flex;align-items:center;gap:10px;">Deglobalization & Reshoring <span style="background:#FFF3E0;color:var(--accent-orange);font-size:10px;padding:2px 10px;border-radius:10px;font-weight:600;">STRUCTURAL</span><span style="background:#EBF2FB;color:var(--accent-blue);font-size:9px;padding:2px 8px;border-radius:10px;font-weight:600;">SECULAR · 10Y+</span></div>
       </div>
       <div class="card-body">
         <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">
@@ -897,7 +898,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
     </div>
     <div class="card" style="border-left:4px solid var(--navy-mid);">
       <div class="card-header">
-        <div class="card-title" style="display:flex;align-items:center;gap:10px;">Consumer Bifurcation <span style="background:#FDE8E8;color:var(--red);font-size:10px;padding:2px 10px;border-radius:10px;font-weight:600;">WORSENING</span></div>
+        <div class="card-title" style="display:flex;align-items:center;gap:10px;">Consumer Bifurcation <span style="background:#FDE8E8;color:var(--red);font-size:10px;padding:2px 10px;border-radius:10px;font-weight:600;">WORSENING</span><span style="background:#FFF3E0;color:var(--accent-orange);font-size:9px;padding:2px 8px;border-radius:10px;font-weight:600;">CYCLICAL · 1-3Y</span></div>
       </div>
       <div class="card-body">
         <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">
@@ -1323,6 +1324,70 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
           </tbody>
         </table>
         <div class="commentary" style="margin-top:10px;"><strong>How to read:</strong> The highlighted column corresponds to the current regime. In stagflation, cash, gold, commodities, and TIPS historically outperform. Equities and long bonds underperform. These are historical tendencies, not guarantees.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 7: FACTOR ATTRIBUTION                                     -->
+<!-- ============================================================ -->
+<div id="tab-factors" class="tab-content">
+<div class="container">
+
+  <div class="section-label">LOGO Factor Attribution</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Decomposes the portfolio into style factors derived from holding fundamentals. Inspired by BlackRock/Barra factor models.</div>
+
+  <!-- Factor Exposure Bars -->
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Weighted Factor Exposure</div><span class="card-badge badge-live">From Holdings Data</span></div>
+      <div class="card-body" style="padding:16px 20px;">
+        <div id="factorBarsChart"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Factor Breakdown Table -->
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Factor Scores by Holding</div><span class="card-badge badge-updated">Click headers to sort</span></div>
+      <div class="card-body" style="padding:10px 16px;">
+        <table id="factorTable">
+          <thead>
+            <tr>
+              <th>Ticker</th><th>Company</th><th class="text-right">Weight</th>
+              <th class="text-right sortable" data-col="3" style="cursor:pointer;">Momentum ⇅</th>
+              <th class="text-right sortable" data-col="4" style="cursor:pointer;">Growth ⇅</th>
+              <th class="text-right sortable" data-col="5" style="cursor:pointer;">Value ⇅</th>
+              <th class="text-right sortable" data-col="6" style="cursor:pointer;">Quality ⇅</th>
+              <th class="text-right sortable" data-col="7" style="cursor:pointer;">Size ⇅</th>
+              <th class="text-right sortable" data-col="8" style="cursor:pointer;">Volatility ⇅</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Factor Concentration -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Factor Concentration Risk</div></div>
+      <div class="card-body" id="factorConcentration" style="padding:16px 20px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Factor Definitions</div></div>
+      <div class="card-body" style="padding:16px 20px;font-size:12px;color:var(--text-secondary);line-height:1.8;">
+        <div><strong style="color:var(--navy);">Momentum</strong> — YTD price return. High = trending up.</div>
+        <div><strong style="color:var(--navy);">Growth</strong> — Earnings + revenue growth. High = fast grower.</div>
+        <div><strong style="color:var(--navy);">Value</strong> — Inverse of forward P/E. High = cheap.</div>
+        <div><strong style="color:var(--navy);">Quality</strong> — Profit margin × operating margin. High = profitable.</div>
+        <div><strong style="color:var(--navy);">Size</strong> — Log market cap. High = mega-cap.</div>
+        <div><strong style="color:var(--navy);">Volatility</strong> — Beta. High = more volatile than market.</div>
       </div>
     </div>
   </div>
@@ -3442,6 +3507,141 @@ if (colIdx) {
   const thCell = document.querySelectorAll('#tab-framework2 table')[3].querySelectorAll('thead th')[colIdx];
   if (thCell) { thCell.style.background = regime2.color + '20'; thCell.style.borderBottom = '3px solid ' + regime2.color; }
 }
+
+// ===== FACTOR ATTRIBUTION ENGINE =====
+(function buildFactorAttribution() {
+  if (!holdings || holdings.length === 0) return;
+
+  // Calculate factor scores for each holding (0-100 scale)
+  function percentile(arr, val) {
+    if (val == null) return 50;
+    const sorted = arr.filter(v => v != null).sort((a,b) => a-b);
+    if (sorted.length === 0) return 50;
+    const idx = sorted.findIndex(v => v >= val);
+    return idx < 0 ? 100 : Math.round((idx / sorted.length) * 100);
+  }
+
+  // Collect raw values for percentile ranking
+  const allBeta = holdings.map(h => h.beta);
+  const allFwdPE = holdings.map(h => {
+    const v = parseFloat(h.fwdpe); return isNaN(v) ? null : v;
+  });
+  const allEG = holdings.map(h => h.earnings_growth);
+  const allRG = holdings.map(h => h.revenue_growth);
+  const allPM = holdings.map(h => h.profit_margin);
+  const allOM = holdings.map(h => h.operating_margin);
+  const allMC = holdings.map(h => h.mktcap).map(m => {
+    if (typeof m === 'string') {
+      if (m.includes('T')) return parseFloat(m.replace(/[$T]/g,'')) * 1e12;
+      if (m.includes('B')) return parseFloat(m.replace(/[$B]/g,'')) * 1e9;
+      if (m.includes('M')) return parseFloat(m.replace(/[$M]/g,'')) * 1e6;
+    }
+    return typeof m === 'number' ? m : null;
+  });
+
+  // Momentum: approximate from price histories (YTD return)
+  const allMom = holdings.map(h => {
+    const hist = h._liveHistories && h._liveHistories['6mo'];
+    if (hist && hist.length >= 2) return ((hist[hist.length-1].close - hist[0].close) / hist[0].close) * 100;
+    return null;
+  });
+
+  const scored = holdings.map((h, i) => {
+    const mom = allMom[i];
+    const eg = allEG[i] != null ? allEG[i] * 100 : null;
+    const rg = allRG[i] != null ? allRG[i] * 100 : null;
+    const growth = (eg != null || rg != null) ? ((eg || 0) + (rg || 0)) / (eg != null && rg != null ? 2 : 1) : null;
+    const fpe = allFwdPE[i];
+    const value = fpe != null && fpe > 0 ? 100 - percentile(allFwdPE.filter(v=>v!=null), fpe) : null;
+    const pm = allPM[i] != null ? allPM[i] * 100 : null;
+    const om = allOM[i] != null ? allOM[i] * 100 : null;
+    const quality = (pm != null || om != null) ? ((pm || 0) + (om || 0)) / (pm != null && om != null ? 2 : 1) : null;
+    const mc = allMC[i];
+    const size = mc != null ? Math.log10(mc) : null;
+    const beta = allBeta[i];
+    return {
+      ticker: h.ticker, name: h.name, weight: h.weight,
+      momentum: mom != null ? Math.round(mom * 10) / 10 : null,
+      growth: growth != null ? Math.round(growth * 10) / 10 : null,
+      value: value != null ? Math.round(value) : null,
+      quality: quality != null ? Math.round(quality * 10) / 10 : null,
+      size: size != null ? Math.round(size * 10) / 10 : null,
+      volatility: beta
+    };
+  });
+
+  // Build factor table
+  const tbody = document.querySelector('#factorTable tbody');
+  scored.forEach(s => {
+    const tr = document.createElement('tr');
+    function fmtCell(val, suffix, colorize) {
+      if (val == null) return '<td class="text-right font-mono" style="color:var(--text-muted);">--</td>';
+      const cls = colorize ? (val > 0 ? 'up' : val < 0 ? 'down' : '') : '';
+      return `<td class="text-right font-mono ${cls}">${val > 0 && colorize ? '+' : ''}${val}${suffix}</td>`;
+    }
+    tr.innerHTML = `<td><span class="ticker-badge">${s.ticker}</span></td><td style="font-size:11px;">${s.name}</td><td class="text-right font-mono" style="font-weight:600;">${s.weight}%</td>${fmtCell(s.momentum,'%',true)}${fmtCell(s.growth,'%',true)}${fmtCell(s.value,'',false)}${fmtCell(s.quality,'%',false)}${fmtCell(s.size,'',false)}${fmtCell(s.volatility,'x',false)}`;
+    tbody.appendChild(tr);
+  });
+
+  // Calculate weighted portfolio factor exposures
+  const totalW = scored.reduce((s,h) => s + h.weight, 0);
+  const factors = ['momentum','growth','value','quality','size','volatility'];
+  const factorLabels = {momentum:'Momentum',growth:'Growth',value:'Value',quality:'Quality',size:'Size',volatility:'Volatility'};
+  const factorColors = {momentum:'var(--accent-blue)',growth:'var(--green)',value:'var(--accent-orange)',quality:'#8B5CF6',size:'var(--navy)',volatility:'var(--red)'};
+
+  const weighted = {};
+  factors.forEach(f => {
+    let wSum = 0, wCount = 0;
+    scored.forEach(s => {
+      if (s[f] != null) { wSum += s[f] * s.weight; wCount += s.weight; }
+    });
+    weighted[f] = wCount > 0 ? wSum / wCount : 0;
+  });
+
+  // Render factor bars
+  const barsEl = document.getElementById('factorBarsChart');
+  const barH = 36, barGap = 12;
+  const svgH = factors.length * (barH + barGap);
+  let barsSvg = '';
+  const maxAbs = Math.max(...factors.map(f => Math.abs(weighted[f])), 1);
+  const barW = 500, barPad = 120, center = barPad + barW / 2;
+
+  factors.forEach((f, i) => {
+    const y = i * (barH + barGap);
+    const val = weighted[f];
+    const w = (Math.abs(val) / maxAbs) * (barW / 2);
+    const x = val >= 0 ? center : center - w;
+    const color = factorColors[f];
+    barsSvg += `<text x="${barPad-8}" y="${y+barH/2+5}" font-size="12" fill="var(--navy)" text-anchor="end" font-weight="600" font-family="Inter">${factorLabels[f]}</text>`;
+    barsSvg += `<line x1="${center}" y1="${y}" x2="${center}" y2="${y+barH}" stroke="var(--border)" stroke-width="1"/>`;
+    barsSvg += `<rect x="${x}" y="${y+4}" width="${w}" height="${barH-8}" rx="4" fill="${color}" opacity="0.75"/>`;
+    barsSvg += `<text x="${val>=0 ? x+w+6 : x-6}" y="${y+barH/2+5}" font-size="11" fill="${color}" font-weight="700" font-family="Inter" ${val<0?'text-anchor="end"':''}>${val>=0?'+':''}${val.toFixed(1)}${f==='volatility'?'x':f==='value'?'':f==='size'?'':'%'}</text>`;
+  });
+  barsEl.innerHTML = `<svg viewBox="0 0 ${barPad+barW+60} ${svgH}" style="width:100%;height:${svgH}px;">${barsSvg}</svg>`;
+
+  // Factor concentration
+  const concEl = document.getElementById('factorConcentration');
+  const sorted = factors.map(f => ({name:factorLabels[f], val:Math.abs(weighted[f]), color:factorColors[f]})).sort((a,b) => b.val - a.val);
+  const topFactor = sorted[0];
+  const bottomFactor = sorted[sorted.length-1];
+
+  let concHtml = `<div style="font-size:13px;color:var(--text-secondary);line-height:1.8;margin-bottom:12px;">
+    The portfolio is most exposed to <strong style="color:${topFactor.color};">${topFactor.name}</strong> and least exposed to <strong style="color:${bottomFactor.color};">${bottomFactor.name}</strong>.
+  </div>`;
+  concHtml += '<div style="display:flex;flex-direction:column;gap:6px;">';
+  sorted.forEach(s => {
+    const pct = (s.val / (topFactor.val || 1)) * 100;
+    concHtml += `<div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:11px;font-weight:600;color:var(--navy);width:80px;">${s.name}</span>
+      <div style="flex:1;height:8px;background:#EEF0F4;border-radius:4px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:${s.color};border-radius:4px;opacity:0.7;"></div></div>
+      <span style="font-size:10px;font-weight:600;color:var(--text-muted);width:40px;text-align:right;">${s.val.toFixed(1)}</span>
+    </div>`;
+  });
+  concHtml += '</div>';
+  concEl.innerHTML = concHtml;
+
+  makeTableSortable('factorTable');
+})();
 
 // ===== CUSTOM WEIGHTED REGIME ENGINE (both frameworks) =====
 
