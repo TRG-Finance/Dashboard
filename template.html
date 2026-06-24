@@ -65,7 +65,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
 
 /* KPI Row */
-.kpi-row{display:grid;grid-template-columns:repeat(8,1fr);gap:14px;margin-bottom:22px;}
+.kpi-row{display:grid;grid-template-columns:repeat(9,1fr);gap:12px;margin-bottom:22px;}
 .kpi-card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);padding:14px 16px;text-align:center;}
 .kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);margin-bottom:4px;}
 .kpi-value{font-size:22px;font-weight:700;color:var(--navy);}
@@ -208,6 +208,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
     <div class="kpi-card" id="kpiVix" style="cursor:pointer" data-kpi="vix"><div class="kpi-label">VIX</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
     <div class="kpi-card" id="kpiOil" style="cursor:pointer" data-kpi="oil"><div class="kpi-label">WTI Crude</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
     <div class="kpi-card" id="kpiGas" style="cursor:pointer" data-kpi="gas"><div class="kpi-label">Nat Gas</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
+    <div class="kpi-card" id="kpiDxy" style="cursor:pointer" data-kpi="dxy"><div class="kpi-label">US Dollar</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
   </div>
 
   <!-- GDP -->
@@ -634,11 +635,11 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
   <div class="section-label">Macroeconomic Indicators</div>
   <div class="full-width">
     <div class="card">
-      <div class="card-header"><div class="card-title">Latest Readings &mdash; Hover for descriptions</div><span class="card-badge badge-updated">Current</span></div>
+      <div class="card-header"><div class="card-title">Latest Readings &mdash; Click headers to sort, click rows for charts</div><span class="card-badge badge-updated">Current</span></div>
       <div class="card-body" style="padding:10px 16px;">
-        <table>
+        <table id="indicatorTable">
           <thead>
-            <tr><th>#</th><th>Indicator</th><th class="text-right">Latest</th><th>Period</th><th class="text-right">Prior</th><th>Trend</th><th>Next Release</th></tr>
+            <tr><th>#</th><th>Indicator</th><th class="text-right">Latest</th><th>Period</th><th class="text-right">Prior</th><th class="sortable" data-col="5" style="cursor:pointer;">Trend ⇅</th><th class="sortable" data-col="6" style="cursor:pointer;">Next Release ⇅</th></tr>
           </thead>
           <tbody>
             <tr><td>1</td><td class="has-tooltip" style="font-weight:600">GDP Growth (Annualized)<div class="tooltip">Quarter-over-quarter real GDP growth at an annualized rate. The broadest measure of economic output. Revised down from initial +2.0% estimate.</div></td><td class="text-right font-mono">+1.6%</td><td>Q1 2026</td><td class="text-right font-mono">+1.4%</td><td class="down" style="font-weight:600">Slowing</td><td>Jun 25</td></tr>
@@ -708,6 +709,20 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
     <div class="stat-pill"><div class="stat-pill-label">Benchmark</div><div class="stat-pill-value" style="font-size:11px">Accuvest Iconic Brands Idx</div></div>
   </div>
 
+  <!-- LOGO Performance -->
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">LOGO Portfolio Performance</div>
+        <div style="display:flex;gap:3px;" id="logoPerformBtns"></div>
+      </div>
+      <div class="card-body" style="padding:12px 16px;">
+        <div id="logoPerformStats" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:12px;"></div>
+        <svg id="logoPerformChart" viewBox="0 0 700 220" style="width:100%;height:220px;"></svg>
+      </div>
+    </div>
+  </div>
+
   <!-- Sector Allocation Chart -->
   <div class="full-width">
     <div class="card">
@@ -730,7 +745,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
       <div class="card-body" style="padding:8px 16px 16px;">
         <table id="holdingsTable">
           <thead>
-            <tr><th>#</th><th>Ticker</th><th>Company</th><th class="text-right sortable" data-col="3" style="cursor:pointer;">Weight ⇅</th><th class="text-right sortable" data-col="4" style="cursor:pointer;">Price ⇅</th><th class="text-right sortable" data-col="5" style="cursor:pointer;">Mkt Cap ⇅</th><th class="text-right sortable" data-col="6" style="cursor:pointer;">P/E ⇅</th><th class="text-right sortable" data-col="7" style="cursor:pointer;">Fwd P/E ⇅</th><th class="text-right sortable" data-col="8" style="cursor:pointer;">EV/EBITDA ⇅</th><th class="text-right sortable" data-col="9" style="cursor:pointer;">Target ⇅</th><th style="width:60px"></th></tr>
+            <tr><th>#</th><th>Ticker</th><th>Company</th><th class="text-right sortable" data-col="3" style="cursor:pointer;">Weight ⇅</th><th class="text-right sortable" data-col="4" style="cursor:pointer;">Price ⇅</th><th class="text-right sortable" data-col="5" style="cursor:pointer;">Mkt Cap ⇅</th><th class="text-right sortable" data-col="6" style="cursor:pointer;">P/E ⇅</th><th class="text-right sortable" data-col="7" style="cursor:pointer;">Fwd P/E ⇅</th><th class="text-right sortable" data-col="8" style="cursor:pointer;">EV/EBITDA ⇅</th><th class="text-right sortable" data-col="9" style="cursor:pointer;">Target ⇅</th><th class="text-right sortable" data-col="10" style="cursor:pointer;">Upside ⇅</th><th class="text-right sortable" data-col="11" style="cursor:pointer;">EPS Gr ⇅</th></tr>
           </thead>
           <tbody>
           </tbody>
@@ -950,7 +965,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
               <span id="growthScoreLabel" style="font-size:14px;"></span>
             </div>
             <table id="growthTable">
-              <thead><tr><th>Indicator</th><th class="text-right">Value</th><th class="text-center">Signal</th><th class="text-center">Score</th></tr></thead>
+              <thead><tr><th>Indicator</th><th class="text-right">Value</th><th class="text-center">Signal</th><th class="text-center sortable" data-col="3" style="cursor:pointer;">Score ⇅</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -961,7 +976,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
               <span id="inflationScoreLabel" style="font-size:14px;"></span>
             </div>
             <table id="inflationTable">
-              <thead><tr><th>Indicator</th><th class="text-right">Value</th><th class="text-center">Signal</th><th class="text-center">Score</th></tr></thead>
+              <thead><tr><th>Indicator</th><th class="text-right">Value</th><th class="text-center">Signal</th><th class="text-center sortable" data-col="3" style="cursor:pointer;">Score ⇅</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -1218,7 +1233,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
               <span id="growth2ScoreLabel" style="font-size:14px;"></span>
             </div>
             <table id="growth2Table">
-              <thead><tr><th>Indicator</th><th class="text-right">Current</th><th class="text-right">6M Avg</th><th class="text-center">Surprise</th><th class="text-center">Score</th></tr></thead>
+              <thead><tr><th>Indicator</th><th class="text-right">Current</th><th class="text-right">6M Avg</th><th class="text-center">Surprise</th><th class="text-center sortable" data-col="4" style="cursor:pointer;">Score ⇅</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -1228,7 +1243,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
               <span id="inflation2ScoreLabel" style="font-size:14px;"></span>
             </div>
             <table id="inflation2Table">
-              <thead><tr><th>Indicator</th><th class="text-right">Current</th><th class="text-right">6M Avg</th><th class="text-center">Surprise</th><th class="text-center">Score</th></tr></thead>
+              <thead><tr><th>Indicator</th><th class="text-right">Current</th><th class="text-right">6M Avg</th><th class="text-center">Surprise</th><th class="text-center sortable" data-col="4" style="cursor:pointer;">Score ⇅</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -1453,6 +1468,7 @@ function hydrate() {
     fillCommodityKpi('kpiVix', LIVE_COMMODITIES.VIX, '');
     fillCommodityKpi('kpiOil', LIVE_COMMODITIES.WTI_OIL, '$');
     fillCommodityKpi('kpiGas', LIVE_COMMODITIES.NAT_GAS, '$');
+    fillCommodityKpi('kpiDxy', LIVE_COMMODITIES.DXY, '');
   }
 
 }
@@ -1596,9 +1612,116 @@ holdings.forEach(h => {
   const tgt = h.target_price_fmt || h.target_price || 'N/A';
   const eveb = h.ev_ebitda_fmt || h.ev_ebitda || 'N/A';
   const fpe = h.fwdpe_fmt || h.fwdpe || 'N/A';
-  tr.innerHTML = `<td style="color:var(--text-muted)">${h.rank}</td><td><span class="ticker-badge">${h.ticker}</span></td><td>${h.name}</td><td class="text-right font-mono" style="font-weight:600">${h.weight}%</td><td class="text-right font-mono">${h.price}</td><td class="text-right font-mono">${h.mktcap}</td><td class="text-right font-mono">${h.pe}</td><td class="text-right font-mono">${fpe}</td><td class="text-right font-mono">${eveb}</td><td class="text-right font-mono">${tgt}</td><td><div class="weight-bar" style="width:${h.weight*10}px"></div></td>`;
+  const upside = h.upside_fmt || 'N/A';
+  const upsideClass = h.upside > 0 ? 'up' : h.upside < 0 ? 'down' : '';
+  const epsGr = h.earnings_growth_fmt || (h.earnings_growth ? (h.earnings_growth*100).toFixed(1)+'%' : 'N/A');
+  const epsGrClass = h.earnings_growth > 0 ? 'up' : h.earnings_growth < 0 ? 'down' : '';
+  tr.innerHTML = `<td style="color:var(--text-muted)">${h.rank}</td><td><span class="ticker-badge">${h.ticker}</span></td><td>${h.name}</td><td class="text-right font-mono" style="font-weight:600">${h.weight}%</td><td class="text-right font-mono">${h.price}</td><td class="text-right font-mono">${h.mktcap}</td><td class="text-right font-mono">${h.pe}</td><td class="text-right font-mono">${fpe}</td><td class="text-right font-mono">${eveb}</td><td class="text-right font-mono">${tgt}</td><td class="text-right font-mono ${upsideClass}" style="font-weight:600">${upside}</td><td class="text-right font-mono ${epsGrClass}">${epsGr}</td>`;
   tbody.appendChild(tr);
 });
+
+// ===== LOGO PORTFOLIO PERFORMANCE =====
+(function buildLogoPerformance() {
+  const periods = [
+    {key:'1wk',label:'1W'},{key:'1mo',label:'1M'},{key:'6mo',label:'6M'},
+    {key:'1y',label:'1Y'},{key:'5y',label:'5Y'},{key:'10y',label:'10Y'}
+  ];
+  const totalWeight = holdings.reduce((s,h) => s + h.weight, 0);
+
+  function calcPortfolioReturn(periodKey) {
+    let weightedReturn = 0, usedWeight = 0;
+    holdings.forEach(h => {
+      const hist = h._liveHistories && h._liveHistories[periodKey];
+      if (hist && hist.length >= 2) {
+        const startP = hist[0].close, endP = hist[hist.length-1].close;
+        const ret = (endP - startP) / startP;
+        const w = h.weight / totalWeight;
+        weightedReturn += ret * w;
+        usedWeight += w;
+      }
+    });
+    if (usedWeight < 0.5) return null;
+    return weightedReturn / usedWeight * totalWeight / 100 * 100;
+  }
+
+  function calcPortfolioSeries(periodKey) {
+    const allHists = [];
+    holdings.forEach(h => {
+      const hist = h._liveHistories && h._liveHistories[periodKey];
+      if (hist && hist.length >= 2) allHists.push({weight: h.weight, hist: hist});
+    });
+    if (allHists.length < 5) return null;
+    const refLen = Math.min(...allHists.map(h => h.hist.length));
+    const series = [];
+    const tw = allHists.reduce((s,h) => s + h.weight, 0);
+    for (let i = 0; i < refLen; i++) {
+      let val = 0;
+      allHists.forEach(h => {
+        const start = h.hist[0].close;
+        const cur = h.hist[Math.min(i, h.hist.length-1)].close;
+        val += ((cur / start - 1) * h.weight / tw);
+      });
+      series.push({date: allHists[0].hist[Math.min(i, allHists[0].hist.length-1)].date, val: val * 100});
+    }
+    return series;
+  }
+
+  // Stats cards
+  const statsEl = document.getElementById('logoPerformStats');
+  let statsHtml = '';
+  periods.forEach(p => {
+    const ret = calcPortfolioReturn(p.key);
+    const retStr = ret != null ? (ret >= 0 ? '+' : '') + ret.toFixed(1) + '%' : 'N/A';
+    const cls = ret > 0 ? 'up' : ret < 0 ? 'down' : '';
+    statsHtml += `<div class="ind-card"><div class="ind-card-title">${p.label} Return</div><div class="ind-card-value ${cls}">${retStr}</div></div>`;
+  });
+  statsEl.innerHTML = statsHtml;
+
+  // Chart
+  function renderLogoChart(periodKey) {
+    const series = calcPortfolioSeries(periodKey);
+    const svg = document.getElementById('logoPerformChart');
+    if (!series || series.length < 3) {
+      svg.innerHTML = '<text x="350" y="110" text-anchor="middle" font-size="12" fill="#8D95A8" font-family="Inter">Performance data available after next build.</text>';
+      return;
+    }
+    const w = 700, h = 200, pad = 50;
+    const chartW = w - pad*2, chartH = h - 40;
+    const vals = series.map(d => d.val);
+    const dates = series.map(d => d.date);
+    const min = Math.min(...vals, 0), max = Math.max(...vals, 0);
+    const range = max - min || 1;
+    const zeroY = 20 + chartH - ((0 - min)/range)*chartH;
+    const pts = vals.map((v,i) => {
+      const x = pad + (i/(vals.length-1))*chartW;
+      const y = 20 + chartH - ((v-min)/range)*chartH;
+      return `${x},${y}`;
+    });
+    const totalRet = vals[vals.length-1];
+    const retStr = (totalRet >= 0 ? '+' : '') + totalRet.toFixed(1) + '%';
+    const color = totalRet >= 0 ? 'var(--green)' : 'var(--red)';
+    svg.innerHTML = `
+      <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.15"/><stop offset="100%" stop-color="${color}" stop-opacity="0.02"/></linearGradient></defs>
+      <line x1="${pad}" y1="${zeroY}" x2="${pad+chartW}" y2="${zeroY}" stroke="var(--text-muted)" stroke-width="0.5" stroke-dasharray="4"/>
+      <text x="${pad-4}" y="${zeroY+4}" font-size="9" fill="var(--text-muted)" text-anchor="end" font-family="Inter">0%</text>
+      <polygon points="${pts.join(' ')} ${pad+chartW},${zeroY} ${pad},${zeroY}" fill="url(#logoGrad)"/>
+      <polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/>
+      <text x="${pad-4}" y="24" font-size="9" fill="var(--text-muted)" text-anchor="end" font-family="Inter">${max.toFixed(1)}%</text>
+      <text x="${pad-4}" y="${h-20}" font-size="9" fill="var(--text-muted)" text-anchor="end" font-family="Inter">${min.toFixed(1)}%</text>
+      <text x="${pad}" y="${h-4}" font-size="8" fill="var(--text-muted)" font-family="Inter">${dates[0]}</text>
+      <text x="${pad+chartW}" y="${h-4}" font-size="8" fill="var(--text-muted)" text-anchor="end" font-family="Inter">${dates[dates.length-1]}</text>
+      <text x="${pad+chartW}" y="16" font-size="12" fill="${color}" text-anchor="end" font-weight="700" font-family="Inter">${retStr}</text>
+    `;
+  }
+
+  // Buttons
+  const btnsEl = document.getElementById('logoPerformBtns');
+  btnsEl.innerHTML = periods.map((p,i) =>
+    `<button class="yld-range-btn${i===3?' active':''}" onclick="document.querySelectorAll('#logoPerformBtns .yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');window._renderLogoChart('${p.key}')">${p.label}</button>`
+  ).join('');
+  window._renderLogoChart = renderLogoChart;
+  renderLogoChart('1y');
+})();
 
 // Build sector allocation pie chart
 function buildSectorPie() {
@@ -2281,6 +2404,7 @@ const kpiMeta = {
   vix:{name:'CBOE Volatility Index (VIX)',histKey:'VIX_HIST',color:'var(--red)',prefix:'',tvUrl:'https://www.tradingview.com/chart/?symbol=CBOE%3AVIX'},
   oil:{name:'WTI Crude Oil',histKey:'OIL_HIST',color:'var(--navy)',prefix:'$',tvUrl:'https://www.tradingview.com/chart/?symbol=NYMEX%3ACL1%21'},
   gas:{name:'Natural Gas',histKey:'GAS_HIST',color:'var(--accent-orange)',prefix:'$',tvUrl:'https://www.tradingview.com/chart/?symbol=NYMEX%3ANG1%21'},
+  dxy:{name:'US Dollar Index (DXY)',histKey:'DXY_HIST',color:'var(--navy)',prefix:'',tvUrl:'https://www.tradingview.com/chart/?symbol=TVC%3ADXY'},
 };
 
 function renderKpiChart(svgId, histData, color, numWeeks) {
@@ -2344,8 +2468,9 @@ function openKpiModal(kpiKey) {
   const btnsEl = document.getElementById('kpiModalBtns');
   if (histData && histData.length > 2) {
     const periods = [{label:'1M',weeks:4},{label:'6M',weeks:26},{label:'1Y',weeks:52},{label:'5Y',weeks:260}];
+    const safeColor = meta.color.replace(/'/g,"\\'");
     btnsEl.innerHTML = periods.map((p,i) =>
-      `<button class="yld-range-btn${i===2?' active':''}" onclick="renderKpiChart('kpiModalChart',window._kpiHist,${JSON.stringify(meta.color)},${p.weeks});this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">${p.label}</button>`
+      `<button class="yld-range-btn${i===2?' active':''}" onclick="renderKpiChart('kpiModalChart',window._kpiHist,'${safeColor}',${p.weeks});this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">${p.label}</button>`
     ).join('');
     window._kpiHist = histData;
     renderKpiChart('kpiModalChart', histData, meta.color, 52);
@@ -2727,6 +2852,10 @@ function makeTableSortable(tableId) {
         if (txtB.includes('T')) valB = parseFloat(txtB.replace(/[$T]/g,'')) * 1000;
         else if (txtB.includes('B')) valB = parseFloat(txtB.replace(/[$B]/g,''));
         else if (txtB.includes('M')) valB = parseFloat(txtB.replace(/[$M]/g,'')) / 1000;
+        if (isNaN(valA) && isNaN(valB)) {
+          // Text sort fallback
+          return txtA.localeCompare(txtB) * dir;
+        }
         if (isNaN(valA)) valA = -Infinity;
         if (isNaN(valB)) valB = -Infinity;
         return (valA - valB) * dir;
@@ -2737,6 +2866,11 @@ function makeTableSortable(tableId) {
 }
 makeTableSortable('sectorTable');
 makeTableSortable('holdingsTable');
+makeTableSortable('indicatorTable');
+makeTableSortable('growthTable');
+makeTableSortable('inflationTable');
+makeTableSortable('growth2Table');
+makeTableSortable('inflation2Table');
 
 // ===== FRAMEWORK 2: SURPRISE-BASED REGIME MODEL =====
 

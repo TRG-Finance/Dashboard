@@ -217,6 +217,7 @@ COMMODITY_TICKERS = {
     "VIX": "^VIX",
     "WTI_OIL": "CL=F",
     "NAT_GAS": "NG=F",
+    "DXY": "DX-Y.NYB",
 }
 
 SECTOR_ETFS = {
@@ -339,6 +340,7 @@ def fetch_yf_data():
         "VIX_HIST": "^VIX",
         "OIL_HIST": "CL=F",
         "GAS_HIST": "NG=F",
+        "DXY_HIST": "DX-Y.NYB",
     }
     kpi_histories = {}
     for label, sym in kpi_symbols.items():
