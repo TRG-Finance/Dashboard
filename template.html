@@ -1178,6 +1178,29 @@ tr:hover td{background:#F8F9FB;}
   </div>
 </div>
 
+<!-- Indicator Detail Modal -->
+<div class="modal-overlay" id="indicatorModal">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-header">
+      <div>
+        <span id="indModalName" style="font-size:18px;font-weight:700;color:var(--navy);"></span>
+        <span id="indModalValue" style="font-size:18px;font-weight:700;margin-left:12px;"></span>
+      </div>
+      <button class="modal-close" onclick="closeIndModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="indModalDesc" style="font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:16px;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:12px;font-weight:600;color:var(--navy);">Historical Chart</div>
+        <div style="display:flex;gap:3px;" id="indModalBtns"></div>
+      </div>
+      <svg id="indModalChart" viewBox="0 0 620 200" style="width:100%;height:200px;"></svg>
+      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;" id="indModalStats"></div>
+      <div style="margin-top:12px;font-size:11px;color:var(--text-muted);">Source: <a id="indModalSource" href="#" target="_blank" style="color:var(--accent-blue);"></a></div>
+    </div>
+  </div>
+</div>
+
 <div class="footer">Accuvest Global Advisors &bull; For internal use only &bull; Data sourced from BEA, Federal Reserve, U.S. Treasury, and public market feeds</div>
 
 <script>
@@ -1601,9 +1624,7 @@ document.getElementById('companyModal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
 
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeModal();
-});
+// Escape key handled in indicator modal section below
 
 // Generate price chart — uses real Yahoo Finance history if available, falls back to simulated
 function generatePriceChart(ticker, period) {
@@ -2029,6 +2050,85 @@ function initIndicatorCharts() {
   renderIndicatorChart('pceChart', 'PCE_HIST', 'var(--accent-orange)', '%', 2.0, 60);
 }
 initIndicatorCharts();
+
+// ===== INDICATOR DETAIL MODAL =====
+const indicatorMeta = {
+  'GDP Growth (Annualized)':{fred:'A191RL1Q225SBEA',hist:'GDP_HIST',color:'var(--accent-blue)',unit:'%',target:null,desc:'Real GDP growth measures the total output of the U.S. economy at an annualized quarterly rate. It is the broadest measure of economic health. Above 2.5% is generally considered above-trend growth; below 1% signals significant slowdown risk. The BEA releases three estimates per quarter (advance, second, third), each incorporating more complete data.',source:'https://fred.stlouisfed.org/series/A191RL1Q225SBEA',sourceName:'FRED / BEA'},
+  'Monthly Jobs Added':{fred:'PAYEMS',hist:null,color:'var(--green)',unit:'K',target:null,desc:'Nonfarm payrolls measure the total number of jobs added or lost in a month, excluding farm workers and some government employees. Above ~150K per month generally keeps pace with population growth. This is the single most market-moving economic release — published on the first Friday of each month by the BLS.',source:'https://fred.stlouisfed.org/series/PAYEMS',sourceName:'FRED / BLS'},
+  'Manufacturing Health (PMI)':{fred:null,hist:null,color:'var(--accent-blue)',unit:'',target:null,desc:'The ISM Manufacturing PMI is a diffusion index based on a survey of purchasing managers at ~400 manufacturers. Above 50 indicates expansion, below 50 contraction. Sub-components include new orders, production, employment, supplier deliveries, and inventories. It is one of the earliest monthly indicators released and closely watched as a leading signal for industrial activity.',source:'https://www.ismworld.org/supply-management-news-and-reports/reports/ism-pmi-reports/',sourceName:'ISM'},
+  'Retail Spending (MoM)':{fred:null,hist:null,color:'var(--green)',unit:'%',target:null,desc:'Advance Monthly Retail Sales measures the total receipts of retail stores on a month-over-month basis. Consumer spending drives ~70% of GDP, making retail sales a key gauge of economic momentum. The report breaks down by category (auto, gas, food services, general merchandise, online), letting analysts identify which consumer segments are driving or dragging spending.',source:'https://www.census.gov/retail/marts/www/marts_current.pdf',sourceName:'Census Bureau'},
+  'New Home Construction':{fred:null,hist:null,color:'var(--accent-orange)',unit:'M',target:null,desc:'Housing starts measure the number of new residential construction projects begun in a given month, reported as a seasonally adjusted annual rate (SAAR). It is a leading indicator of economic activity because construction generates jobs, material purchases, and consumer spending. High mortgage rates typically suppress starts, as builders pull back when buyer demand weakens.',source:'https://fred.stlouisfed.org/series/HOUST',sourceName:'FRED / Census'},
+  'Building Permits':{fred:null,hist:null,color:'var(--accent-blue)',unit:'M',target:null,desc:'Building permits measure the number of permits issued for new housing units (SAAR). Permits lead starts by 1-2 months since construction cannot begin without a permit. A divergence between permits and starts can signal whether builders are accelerating or pulling back on planned projects.',source:'https://fred.stlouisfed.org/series/PERMIT',sourceName:'FRED / Census'},
+  'Trade Deficit':{fred:null,hist:null,color:'var(--navy)',unit:'$B',target:null,desc:'The monthly trade balance measures the difference between U.S. exports and imports. A wider deficit (more negative) subtracts from GDP because imports represent spending that flows overseas. The trade balance is heavily influenced by oil prices, the dollar exchange rate, and relative economic growth between the U.S. and trading partners.',source:'https://fred.stlouisfed.org/series/BOPGSTB',sourceName:'FRED / BEA'},
+  'Consumer Borrowing (MoM)':{fred:null,hist:null,color:'var(--accent-orange)',unit:'$B',target:null,desc:'Consumer credit outstanding measures the monthly change in total consumer debt (excluding mortgages). It has two components: revolving credit (credit cards) and non-revolving credit (auto loans, student loans). Rising credit can signal consumer confidence — or financial stress if savings are depleted and households are relying on debt to maintain spending.',source:'https://www.federalreserve.gov/releases/g19/current/',sourceName:'Federal Reserve G.19'},
+  'Import Prices (MoM)':{fred:null,hist:null,color:'var(--red)',unit:'%',target:null,desc:'The Import Price Index measures the month-over-month change in the price of goods imported into the U.S. It is a leading indicator for consumer inflation because higher import costs (especially oil and commodities) flow through to retail prices with a 2-3 month lag. A spike in import prices often precedes CPI acceleration.',source:'https://www.bls.gov/mxp/',sourceName:'BLS'},
+  'Leading Economic Index':{fred:null,hist:null,color:'var(--accent-blue)',unit:'',target:null,desc:'The Conference Board Leading Economic Index (LEI) is a composite of 10 indicators designed to predict turning points in the business cycle 6-12 months ahead. Components include jobless claims, manufacturing orders, building permits, stock prices, credit conditions, and consumer expectations. Sustained declines historically precede recessions.',source:'https://www.conference-board.org/topics/us-leading-indicators/',sourceName:'Conference Board'},
+  'Wage Growth (YoY)':{fred:null,hist:null,color:'var(--accent-orange)',unit:'%',target:null,desc:'Average hourly earnings (year-over-year) measures the pace of wage growth across all private non-farm employees. The Fed watches this closely for signs of a wage-price spiral — where rising wages push up costs, which push up prices, which demand higher wages. When wages grow slower than inflation, real purchasing power declines, pressuring consumer spending.',source:'https://fred.stlouisfed.org/series/CES0500000003',sourceName:'FRED / BLS'},
+  '10-Year Treasury Yield':{fred:'DGS10',hist:'YIELD_HISTORY',color:'var(--accent-orange)',unit:'%',target:null,desc:'The 10-year Treasury yield is the benchmark long-term interest rate in the U.S. It directly influences mortgage rates, corporate borrowing costs, and equity valuations (higher yields reduce the present value of future earnings). The yield reflects market expectations for growth, inflation, and Fed policy over the next decade.',source:'https://fred.stlouisfed.org/series/DGS10',sourceName:'FRED / Treasury'},
+  'Inflation Expectations (1Y)':{fred:'UMCSENT',hist:'UMCSENT_HIST',color:'var(--red)',unit:'%',target:null,desc:'The University of Michigan 1-year inflation expectation measures what consumers expect inflation to be 12 months from now. The Fed considers this critically important because expectations can become self-fulfilling — if consumers expect higher prices, they may accelerate purchases and demand higher wages, creating the inflation they feared.',source:'https://fred.stlouisfed.org/series/MICH',sourceName:'FRED / Michigan'},
+  'Durable Goods Orders':{fred:null,hist:null,color:'var(--accent-blue)',unit:'%',target:null,desc:'Advance durable goods orders measure new orders placed with domestic manufacturers for goods expected to last 3+ years — appliances, machinery, aircraft, vehicles. It is a key proxy for business investment intentions (capex). Excluding transportation orders removes the volatile aircraft component and gives a cleaner read on underlying business spending trends.',source:'https://www.census.gov/manufacturing/m3/adv/current/index.html',sourceName:'Census Bureau'},
+  'Industrial Production (MoM)':{fred:null,hist:null,color:'var(--green)',unit:'%',target:null,desc:'The Federal Reserve\'s Industrial Production Index measures the real output of manufacturing, mining, and utilities on a month-over-month basis. It provides a direct measure of the supply side of the economy. The related capacity utilization rate (currently ~78%) indicates how much slack exists in the industrial sector — above 80% historically signals inflationary pressure.',source:'https://fred.stlouisfed.org/series/INDPRO',sourceName:'FRED / Federal Reserve'},
+};
+
+function openIndModal(name, value, trend) {
+  const meta = indicatorMeta[name];
+  if (!meta) return;
+  document.getElementById('indModalName').textContent = name;
+  const valEl = document.getElementById('indModalValue');
+  valEl.textContent = value;
+  valEl.className = trend === 'up' || trend === 'Strong' || trend === 'Expanding' || trend === 'Accelerating' ? 'up' : trend === 'down' || trend === 'Falling' || trend === 'Surging' || trend === 'Slowing' ? 'down' : 'neutral';
+  document.getElementById('indModalDesc').textContent = meta.desc;
+  const srcEl = document.getElementById('indModalSource');
+  srcEl.href = meta.source;
+  srcEl.textContent = meta.sourceName;
+
+  // Stats
+  const statsEl = document.getElementById('indModalStats');
+  statsEl.innerHTML = `
+    <div class="ind-card"><div class="ind-card-title">Latest</div><div class="ind-card-value">${value}</div></div>
+    <div class="ind-card"><div class="ind-card-title">Trend</div><div class="ind-card-value" style="font-size:14px;">${trend}</div></div>
+    <div class="ind-card"><div class="ind-card-title">Source</div><div class="ind-card-value" style="font-size:11px;">${meta.sourceName}</div></div>
+  `;
+
+  // Chart buttons + render
+  const btnsEl = document.getElementById('indModalBtns');
+  const chartKey = meta.hist;
+  if (chartKey && LIVE_DATA[chartKey] && LIVE_DATA[chartKey].length > 0) {
+    btnsEl.innerHTML = `
+      <button class="yld-range-btn" onclick="renderIndicatorChart('indModalChart','${chartKey}','${meta.color}','${meta.unit}',${meta.target},12);this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">1Y</button>
+      <button class="yld-range-btn active" onclick="renderIndicatorChart('indModalChart','${chartKey}','${meta.color}','${meta.unit}',${meta.target},60);this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">5Y</button>
+      <button class="yld-range-btn" onclick="renderIndicatorChart('indModalChart','${chartKey}','${meta.color}','${meta.unit}',${meta.target},120);this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">10Y</button>
+      <button class="yld-range-btn" onclick="renderIndicatorChart('indModalChart','${chartKey}','${meta.color}','${meta.unit}',${meta.target},240);this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">20Y</button>
+    `;
+    renderIndicatorChart('indModalChart', chartKey, meta.color, meta.unit, meta.target, 60);
+  } else {
+    btnsEl.innerHTML = '';
+    document.getElementById('indModalChart').innerHTML = '<text x="310" y="100" text-anchor="middle" font-size="12" fill="#8D95A8" font-family="Inter">Chart data not available for this indicator. Visit the source link above for historical data.</text>';
+  }
+
+  document.getElementById('indicatorModal').classList.add('show');
+}
+
+function closeIndModal() {
+  document.getElementById('indicatorModal').classList.remove('show');
+}
+document.getElementById('indicatorModal').addEventListener('click', function(e) { if (e.target === this) closeIndModal(); });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeIndModal(); closeModal(); } });
+
+// Make indicator table rows clickable
+document.querySelectorAll('#tab-indicators table tbody tr').forEach(tr => {
+  const nameTd = tr.querySelector('td.has-tooltip') || tr.querySelectorAll('td')[1];
+  if (!nameTd) return;
+  const name = nameTd.textContent.trim();
+  if (!indicatorMeta[name]) return;
+  tr.style.cursor = 'pointer';
+  tr.classList.add('company-row');
+  const valTd = tr.querySelectorAll('td')[2];
+  const trendTd = tr.querySelectorAll('td')[5];
+  const val = valTd ? valTd.textContent.trim() : '';
+  const trend = trendTd ? trendTd.textContent.trim() : '';
+  tr.addEventListener('click', () => openIndModal(name, val, trend));
+});
 
 // ===== MACRO FRAMEWORK ENGINE =====
 
