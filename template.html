@@ -188,8 +188,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
   <button class="tab-btn" onclick="switchTab('indicators')">Economic Indicators</button>
   <button class="tab-btn" onclick="switchTab('alpha')">Alpha Brands (LOGO)</button>
   <button class="tab-btn" onclick="switchTab('forces')">Structural Forces</button>
-  <button class="tab-btn" onclick="switchTab('framework')">Static Framework</button>
-  <button class="tab-btn" onclick="switchTab('framework2')">Surprise Framework</button>
+  <button class="tab-btn" onclick="switchTab('framework2')">Macro Framework</button>
   <button class="tab-btn" onclick="switchTab('factors')">Factor Attribution</button>
 </div>
 
@@ -1286,7 +1285,18 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
         <div id="fw2GrowthWeights"></div>
         <div style="font-size:11px;font-weight:700;color:var(--navy);margin:10px 0 6px;">Inflation Signals</div>
         <div id="fw2InflationWeights"></div>
+        <div style="margin-top:14px;text-align:center;">
+          <button id="runAnalysisBtn" style="background:var(--accent-blue);color:white;border:none;padding:10px 28px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">Generate Analysis</button>
+        </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Generated Analysis Output -->
+  <div class="full-width" id="analysisOutputSection" style="display:none;">
+    <div class="card" style="border-left:4px solid var(--accent-blue);">
+      <div class="card-header"><div class="card-title">Weighted Regime Analysis</div><span class="card-badge badge-live" id="analysisRegimeBadge">--</span></div>
+      <div class="card-body" id="analysisOutput" style="padding:16px 20px;font-size:13px;color:var(--text-secondary);line-height:1.8;"></div>
     </div>
   </div>
 
@@ -3721,6 +3731,141 @@ function recalcFw2() {
 buildWeightControls('fw2GrowthWeights', growthSurprises, recalcFw2);
 buildWeightControls('fw2InflationWeights', inflationSurprises, recalcFw2);
 recalcFw2();
+
+// ===== ANALYSIS GENERATOR =====
+document.getElementById('runAnalysisBtn').addEventListener('click', function() {
+  const gSliders = document.querySelectorAll('#fw2GrowthWeights input[type="range"]');
+  const iSliders = document.querySelectorAll('#fw2InflationWeights input[type="range"]');
+
+  // Get weighted scores
+  let gWSum=0, gWTot=0, iWSum=0, iWTot=0;
+  const gWeighted = [], iWeighted = [];
+  gSliders.forEach((s,i) => {
+    const w = parseInt(s.value);
+    if (w > 0 && i < growthSurprises.length) {
+      const ind = growthSurprises[i];
+      gWSum += ind.score * w; gWTot += 2 * w;
+      gWeighted.push({name:ind.name, score:ind.score, weight:w, impact:ind.score*w, current:ind.current, unit:ind.unit});
+    }
+  });
+  iSliders.forEach((s,i) => {
+    const w = parseInt(s.value);
+    if (w > 0 && i < inflationSurprises.length) {
+      const ind = inflationSurprises[i];
+      iWSum += ind.score * w; iWTot += 2 * w;
+      iWeighted.push({name:ind.name, score:ind.score, weight:w, impact:ind.score*w, current:ind.current, unit:ind.unit});
+    }
+  });
+
+  const gs = gWTot > 0 ? gWSum / gWTot : 0;
+  const is = iWTot > 0 ? iWSum / iWTot : 0;
+
+  // Determine regime
+  const regime = gs > 0.05 && is < -0.05 ? {name:'Goldilocks',color:'#2EAE6D'} :
+                 gs > 0.05 && is >= -0.05 ? {name:'Reflation',color:'#E8873A'} :
+                 gs <= 0.05 && is >= 0.05 ? {name:'Stagflationary',color:'#D94444'} :
+                 {name:'Deflationary',color:'#2E7DD1'};
+
+  // Sort by impact
+  gWeighted.sort((a,b) => Math.abs(b.impact) - Math.abs(a.impact));
+  iWeighted.sort((a,b) => Math.abs(b.impact) - Math.abs(a.impact));
+
+  const topGrowth = gWeighted.slice(0, 3);
+  const topInflation = iWeighted.slice(0, 3);
+
+  // Regime descriptions
+  const regimeDescs = {
+    Goldilocks: 'Growth is surprising to the upside while inflation surprises to the downside. This is the most favorable environment for risk assets — equities, credit, and growth stocks tend to outperform.',
+    Reflation: 'Both growth and inflation are surprising higher. Real assets (commodities, energy, materials) and cyclicals tend to outperform. Nominal bonds underperform as yields rise.',
+    Stagflationary: 'Growth is disappointing while inflation runs hotter than trend. The most challenging environment — cash, gold, and commodities tend to be the only reliable performers. Equities and bonds both face headwinds.',
+    Deflationary: 'Both growth and inflation are surprising to the downside. Long-duration bonds and quality/defensive equities outperform. Cyclicals and commodities underperform.'
+  };
+
+  // Sector tilts by regime
+  const sectorTilts = {
+    Goldilocks: {favor:['Technology','Consumer Discretionary','Financials','Communication Services'],avoid:['Utilities','Consumer Staples','Energy']},
+    Reflation: {favor:['Energy','Materials','Industrials','Financials'],avoid:['Technology (high multiple)','Utilities','Real Estate']},
+    Stagflationary: {favor:['Energy','Healthcare','Utilities','Consumer Staples'],avoid:['Consumer Discretionary','Real Estate','High-Multiple Tech','Small Caps']},
+    Deflationary: {favor:['Long Bonds','Quality Tech','Healthcare','Utilities'],avoid:['Energy','Materials','Financials','Cyclicals']}
+  };
+
+  const tilts = sectorTilts[regime.name] || sectorTilts.Stagflationary;
+
+  // Build analysis HTML
+  let html = '';
+
+  // Regime summary
+  html += `<div style="margin-bottom:16px;">
+    <span style="font-size:22px;font-weight:700;color:${regime.color};">${regime.name}</span>
+    <span style="font-size:13px;color:var(--text-muted);margin-left:8px;">Growth surprise: ${gs>=0?'+':''}${gs.toFixed(2)} · Inflation surprise: ${is>=0?'+':''}${is.toFixed(2)}</span>
+  </div>
+  <div style="margin-bottom:16px;">${regimeDescs[regime.name]}</div>`;
+
+  // Key drivers
+  html += `<div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px;">Key Growth Drivers (by your weighting)</div>`;
+  html += '<div style="margin-bottom:16px;">';
+  topGrowth.forEach(g => {
+    const dir = g.score > 0 ? 'positive' : g.score < 0 ? 'negative' : 'neutral';
+    const icon = g.score > 0 ? '▲' : g.score < 0 ? '▼' : '—';
+    const color = g.score > 0 ? 'var(--green)' : g.score < 0 ? 'var(--red)' : 'var(--text-muted)';
+    html += `<div style="display:flex;gap:8px;margin-bottom:4px;"><span style="color:${color};font-weight:700;">${icon}</span><span><strong>${g.name}</strong> (weight: ${g.weight}) — scoring ${dir} surprise. ${g.current != null ? 'Current: ' + g.current.toFixed(1) + (g.unit==='%'?'%':'') + '.' : ''}</span></div>`;
+  });
+  html += '</div>';
+
+  html += `<div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px;">Key Inflation Drivers (by your weighting)</div>`;
+  html += '<div style="margin-bottom:16px;">';
+  topInflation.forEach(g => {
+    const dir = g.score > 0 ? 'hotter than trend' : g.score < 0 ? 'cooling vs trend' : 'in-line with trend';
+    const icon = g.score > 0 ? '▲' : g.score < 0 ? '▼' : '—';
+    const color = g.score > 0 ? 'var(--red)' : g.score < 0 ? 'var(--green)' : 'var(--text-muted)';
+    html += `<div style="display:flex;gap:8px;margin-bottom:4px;"><span style="color:${color};font-weight:700;">${icon}</span><span><strong>${g.name}</strong> (weight: ${g.weight}) — ${dir}. ${g.current != null ? 'Current: ' + g.current.toFixed(1) + (g.unit==='%'?'%':'') + '.' : ''}</span></div>`;
+  });
+  html += '</div>';
+
+  // Sector positioning
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:6px;">FAVORED IN ${regime.name.toUpperCase()}</div>
+      ${tilts.favor.map(s => `<div style="font-size:12px;padding:3px 0;border-bottom:1px solid #f0f2f5;">• ${s}</div>`).join('')}
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:6px;">VULNERABLE IN ${regime.name.toUpperCase()}</div>
+      ${tilts.avoid.map(s => `<div style="font-size:12px;padding:3px 0;border-bottom:1px solid #f0f2f5;">• ${s}</div>`).join('')}
+    </div>
+  </div>`;
+
+  // What would shift the regime
+  const shifts = [];
+  if (regime.name === 'Stagflationary') {
+    shifts.push({to:'Goldilocks',color:'#2EAE6D',cond:'Oil prices decline, Core PCE drops below trend, GDP re-accelerates'});
+    shifts.push({to:'Deflation',color:'#2E7DD1',cond:'Growth deteriorates further — payrolls turn negative, credit spreads blow out'});
+  } else if (regime.name === 'Goldilocks') {
+    shifts.push({to:'Reflation',color:'#E8873A',cond:'Inflation re-accelerates while growth stays strong — commodity or wage driven'});
+    shifts.push({to:'Deflation',color:'#2E7DD1',cond:'Growth rolls over — leading indicators weaken, earnings disappoint'});
+  } else if (regime.name === 'Reflation') {
+    shifts.push({to:'Stagflationary',color:'#D94444',cond:'Growth disappoints while inflation stays hot — margin squeeze, consumer pullback'});
+    shifts.push({to:'Goldilocks',color:'#2EAE6D',cond:'Inflation cools while growth holds — supply-side improvement, energy decline'});
+  } else {
+    shifts.push({to:'Goldilocks',color:'#2EAE6D',cond:'Growth stabilizes and inflects upward — fiscal stimulus, credit easing'});
+    shifts.push({to:'Stagflationary',color:'#D94444',cond:'Inflation re-accelerates from supply shocks while growth stays weak'});
+  }
+
+  html += `<div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px;">What Would Shift the Regime</div>`;
+  shifts.forEach(s => {
+    html += `<div style="display:flex;gap:8px;margin-bottom:6px;"><span style="font-size:16px;">→</span><div><strong style="color:${s.color};">To ${s.to}:</strong> ${s.cond}</div></div>`;
+  });
+
+  // Show output
+  document.getElementById('analysisOutput').innerHTML = html;
+  document.getElementById('analysisOutputSection').style.display = 'block';
+  const badge = document.getElementById('analysisRegimeBadge');
+  badge.textContent = regime.name;
+  badge.style.background = regime.color + '20';
+  badge.style.color = regime.color;
+
+  // Scroll to analysis
+  document.getElementById('analysisOutputSection').scrollIntoView({behavior:'smooth', block:'start'});
+});
 
 {% endraw %}
 </script>
