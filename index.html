@@ -1337,10 +1337,12 @@ function hydrate() {
 
 // Merge LIVE_HOLDINGS data into a holdings array — called before table build
 function mergeHoldings(holdingsArr) {
+  console.log('[DEBUG] mergeHoldings called. LIVE_HOLDINGS:', LIVE_HOLDINGS ? LIVE_HOLDINGS.length : 'null', 'holdingsArr:', holdingsArr ? holdingsArr.length : 'null');
   if (!LIVE_HOLDINGS || LIVE_HOLDINGS.length === 0) return;
   LIVE_HOLDINGS.forEach(lh => {
     const match = holdingsArr.find(h => h.ticker === lh.ticker);
-    if (!match) return;
+    if (!match) { console.log('[DEBUG] NO MATCH for', lh.ticker); return; }
+    if (lh.ticker === 'AMZN') console.log('[DEBUG] AMZN merge:', 'gm_fmt:', lh.gross_margin_fmt, 'ev_fmt:', lh.ev_ebitda_fmt, 'tgt_fmt:', lh.target_price_fmt, 'beta:', lh.beta);
     if (lh.price) match.price = '$' + Number(lh.price).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
     if (lh.pe) match.pe = String(lh.pe);
     if (lh.fwdpe) match.fwdpe = String(lh.fwdpe);
@@ -1463,7 +1465,9 @@ const brandTheses = {
 holdings.forEach(h => { if (brandTheses[h.ticker]) h.brandThesis = brandTheses[h.ticker]; });
 
 // Merge live data into holdings BEFORE building the table
+console.log('[DEBUG] About to call mergeHoldings. holdings[0]:', holdings[0].ticker, holdings[0].price);
 mergeHoldings(holdings);
+console.log('[DEBUG] After mergeHoldings. holdings[0]:', holdings[0].ticker, holdings[0].price, 'gm_fmt:', holdings[0].gross_margin_fmt, 'ev_ebitda:', holdings[0].ev_ebitda, 'beta:', holdings[0].beta);
 
 // Build table
 const tbody = document.querySelector('#holdingsTable tbody');
