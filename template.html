@@ -1211,12 +1211,6 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
         <div class="card-header"><div class="card-title">Regime Transition Probabilities</div></div>
         <div class="card-body" id="regime2Trans"></div>
       </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">Key Difference vs Framework 1</div></div>
-        <div class="card-body" style="font-size:12px;color:var(--text-secondary);line-height:1.7;">
-          Framework 1 scores indicators against <strong>fixed thresholds</strong> (e.g., GDP &gt; 2.5% = good). This framework scores the <strong>rate of change vs recent trend</strong> — a proxy for economic surprises. Markets move on the delta between expectations and reality, not absolute levels. A low GDP print that beats expectations is bullish; a strong print that misses is bearish.
-        </div>
-      </div>
     </div>
   </div>
 
@@ -3142,6 +3136,26 @@ const _savAvg6 = _avg6m('SAVINGS_HIST');
 const _indproCur = _latest('INDPRO_HIST');
 const _indproAvg = _avg6m('INDPRO_HIST');
 
+const _icsaCur = LIVE_DATA.ICSA ? LIVE_DATA.ICSA.latest : null;
+const _icsaAvg = _avg6m('ICSA_HIST');
+const _joltsCur = LIVE_DATA.JTSJOL ? LIVE_DATA.JTSJOL.latest : null;
+const _joltsAvg = _avg6m('JTSJOL_HIST');
+
+function _kpiLatest(key) {
+  const arr = (typeof LIVE_KPI_HIST !== 'undefined' && LIVE_KPI_HIST[key]) ? LIVE_KPI_HIST[key] : [];
+  return arr.length > 0 ? arr[arr.length-1].close : null;
+}
+function _kpiAvg6(key) {
+  const arr = (typeof LIVE_KPI_HIST !== 'undefined' && LIVE_KPI_HIST[key]) ? LIVE_KPI_HIST[key] : [];
+  if (arr.length < 26) return null;
+  const recent = arr.slice(-26);
+  return recent.reduce((s,d) => s + d.close, 0) / recent.length;
+}
+const _copperCur = _kpiLatest('COPPER_HIST');
+const _copperAvg = _kpiAvg6('COPPER_HIST');
+const _goldCur = _kpiLatest('GOLD_HIST');
+const _goldAvg = _kpiAvg6('GOLD_HIST');
+
 const growthSurprises = [
   {name:"GDP Acceleration", current:_gdpCur, avg:_gdpPrv, unit:'%', score:_gdpSurp,
    desc:'Current quarter vs prior quarter GDP — measures acceleration/deceleration.'},
@@ -3149,14 +3163,20 @@ const growthSurprises = [
    desc:'Nonfarm payrolls level vs 6-month average.'},
   {name:"Unemployment Rate", current:_unempCur, avg:_unempAvg6, unit:'%', score:_surpriseScoreInv(_unempCur, _unempAvg6),
    desc:'Unemployment vs 6M avg. Lower than avg = positive growth surprise.'},
+  {name:"Initial Jobless Claims", current:_icsaCur, avg:_icsaAvg, unit:'K', score:_surpriseScoreInv(_icsaCur, _icsaAvg),
+   desc:'Weekly initial claims vs 6M avg. Lower = fewer layoffs = positive growth signal. Most timely labor indicator.'},
+  {name:"Job Openings (JOLTS)", current:_joltsCur ? _joltsCur/1000 : null, avg:_joltsAvg ? _joltsAvg/1000 : null, unit:'M', score:_surpriseScore(_joltsCur, _joltsAvg),
+   desc:'Job openings vs 6M avg. Higher = stronger labor demand. Falling openings precede rising unemployment.'},
   {name:"Retail Sales Trend", current:_retailCur, avg:_retailAvg, unit:'%', score:_surpriseScore(_retailCur, _retailAvg),
    desc:'MoM retail sales vs 6M average — consumer momentum.'},
   {name:"Consumer Sentiment", current:_sentCur, avg:_sentAvg6, unit:'', score:_surpriseScore(_sentCur, _sentAvg6),
    desc:'Michigan sentiment vs 6M average. Rising = positive surprise.'},
-  {name:"Savings Rate", current:_savCur, avg:_savAvg6, unit:'%', score:_surpriseScore(_savCur, _savAvg6),
-   desc:'Personal savings rate vs 6M avg. Rising savings = healthier consumer balance sheet.'},
   {name:"Industrial Production", current:_indproCur, avg:_indproAvg, unit:'', score:_surpriseScore(_indproCur, _indproAvg),
    desc:'Industrial production index vs 6M average.'},
+  {name:"Copper (Dr. Copper)", current:_copperCur, avg:_copperAvg, unit:'$', score:_surpriseScore(_copperCur, _copperAvg),
+   desc:'Copper price vs 6M avg. Copper is the classic global growth proxy — used in construction, manufacturing, electronics worldwide.'},
+  {name:"Savings Rate", current:_savCur, avg:_savAvg6, unit:'%', score:_surpriseScore(_savCur, _savAvg6),
+   desc:'Personal savings rate vs 6M avg. Rising = healthier consumer balance sheet.'},
 ];
 
 // Inflation surprise indicators
@@ -3178,20 +3198,28 @@ const _importCur = _latest('IMPORT_PRICE_HIST');
 const _importAvg6 = _avg6m('IMPORT_PRICE_HIST');
 
 const _oilP = (LIVE_COMMODITIES && LIVE_COMMODITIES.WTI_OIL) ? LIVE_COMMODITIES.WTI_OIL.price : null;
+const _ppiCur = _latest('PPIACO_HIST');
+const _ppiAvg = _avg6m('PPIACO_HIST');
 
 const inflationSurprises = [
   {name:"CPI YoY Trend", current:_cpiCur, avg:_cpiAvg6, unit:'%', score:_surpriseScore(_cpiCur, _cpiAvg6),
    desc:'CPI YoY vs 6M average. Rising above trend = inflation re-accelerating.'},
   {name:"Core PCE Trend", current:_pceCur, avg:_pceAvg6, unit:'%', score:_surpriseScore(_pceCur, _pceAvg6),
    desc:'Fed\'s preferred gauge vs 6M average.'},
+  {name:"PPI (Producer Prices)", current:_ppiCur, avg:_ppiAvg, unit:'', score:_surpriseScore(_ppiCur, _ppiAvg),
+   desc:'Producer Price Index vs 6M avg. PPI leads CPI by 2-3 months — rising producer costs flow through to consumer prices.'},
   {name:"5Y Breakeven Infl.", current:_t5yie, avg:_t5yieAvg, unit:'%', score:_surpriseScore(_t5yie, _t5yieAvg),
-   desc:'TIPS-implied 5Y inflation expectation vs 6M avg. Market-forward signal.'},
+   desc:'TIPS-implied 5Y inflation expectation vs 6M avg. What the bond market expects for inflation.'},
   {name:"10Y Breakeven Infl.", current:_t10yie, avg:_t10yieAvg, unit:'%', score:_surpriseScore(_t10yie, _t10yieAvg),
-   desc:'TIPS-implied 10Y inflation expectation vs 6M avg.'},
+   desc:'TIPS-implied 10Y inflation expectation vs 6M avg. Longer-term market inflation pricing.'},
   {name:"Wage Growth Trend", current:_wageCur, avg:_wageAvg6, unit:'%', score:_surpriseScore(_wageCur, _wageAvg6),
-   desc:'Average hourly earnings YoY vs 6M average.'},
+   desc:'Average hourly earnings YoY vs 6M average. Above 4% risks wage-price spiral.'},
   {name:"Import Prices Trend", current:_importCur, avg:_importAvg6, unit:'%', score:_surpriseScore(_importCur, _importAvg6),
-   desc:'MoM import prices vs 6M average — leading indicator for CPI.'},
+   desc:'MoM import prices vs 6M average — leading indicator for CPI via imported goods costs.'},
+  {name:"Gold Price Trend", current:_goldCur, avg:_goldAvg, unit:'$', score:_surpriseScore(_goldCur, _goldAvg),
+   desc:'Gold vs 6M avg. Rising gold = market pricing higher inflation or uncertainty. Classic inflation hedge.'},
+  {name:"Oil (WTI) Trend", current:_oilP, avg:null, unit:'$', score:_oilP != null ? (_oilP > 90 ? 2 : _oilP > 80 ? 1 : _oilP > 65 ? 0 : -1) : 0,
+   desc:'Oil above $90 = inflationary pressure. Energy costs feed directly into CPI and producer costs.'},
 ];
 
 // Composite scores

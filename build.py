@@ -54,8 +54,10 @@ def fetch_fred_data():
         # TIPS breakeven inflation
         "T5YIE": "T5YIE",
         "T10YIE": "T10YIE",
-        # Real rates
-        "REALGDP": "A191RL1Q225SBEA",
+        # Additional macro
+        "ICSA": "ICSA",
+        "JTSJOL": "JTSJOL",
+        "PPIACO": "PPIACO",
     }
 
     for key, series_id in series_map.items():
@@ -207,6 +209,9 @@ def fetch_fred_data():
         ("IMPORT_PRICE_HIST", "IR"),         # Import price index
         ("T5YIE_HIST", "T5YIE"),             # 5Y breakeven inflation
         ("T10YIE_HIST", "T10YIE"),           # 10Y breakeven inflation
+        ("ICSA_HIST", "ICSA"),               # Initial jobless claims
+        ("JTSJOL_HIST", "JTSJOL"),           # Job openings (JOLTS)
+        ("PPIACO_HIST", "PPIACO"),           # PPI All Commodities
     ]
     for label, sid in indicator_hist_series:
         try:
@@ -399,6 +404,8 @@ def fetch_yf_data():
         "OIL_HIST": "CL=F",
         "GAS_HIST": "NG=F",
         "DXY_HIST": "DX-Y.NYB",
+        "COPPER_HIST": "HG=F",
+        "GOLD_HIST": "GC=F",
     }
     kpi_histories = {}
     for label, sym in kpi_symbols.items():
