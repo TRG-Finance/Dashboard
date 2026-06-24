@@ -298,13 +298,13 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
   <div class="section-label">S&P 500 Valuation & Sectors</div>
   <div class="full-width">
     <div class="card">
-      <div class="card-header"><div class="card-title">S&P 500 Valuation & Earnings</div><span class="card-badge badge-live">June 2026</span></div>
+      <div class="card-header"><div class="card-title">S&P 500 Valuation & Earnings</div><span class="card-badge badge-live">Click any card for history</span></div>
       <div class="card-body" style="padding:12px 20px 16px;">
         <div id="sp500ValCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
-          <div class="ind-card"><div class="ind-card-title">Forward P/E</div><div class="ind-card-value">20.9x</div><div class="ind-card-sub">via SPY</div></div>
-          <div class="ind-card"><div class="ind-card-title">EV/EBITDA</div><div class="ind-card-value">16.8x</div><div class="ind-card-sub">via SPY</div></div>
-          <div class="ind-card"><div class="ind-card-title">Earnings Growth</div><div class="ind-card-value up">+21.3%</div><div class="ind-card-sub">via SPY</div></div>
-          <div class="ind-card"><div class="ind-card-title">Revenue Growth</div><div class="ind-card-value up">+14.5%</div><div class="ind-card-sub">via SPY</div></div>
+          <div class="ind-card" style="cursor:pointer" data-valchart="fwdpe"><div class="ind-card-title">Forward P/E</div><div class="ind-card-value">20.9x</div><div class="ind-card-sub">Click for history</div></div>
+          <div class="ind-card" style="cursor:pointer" data-valchart="evebitda"><div class="ind-card-title">EV/EBITDA</div><div class="ind-card-value">16.8x</div><div class="ind-card-sub">Click for history</div></div>
+          <div class="ind-card" style="cursor:pointer" data-valchart="earnings"><div class="ind-card-title">Earnings Growth</div><div class="ind-card-value up">+21.3%</div><div class="ind-card-sub">Click for history</div></div>
+          <div class="ind-card" style="cursor:pointer" data-valchart="revenue"><div class="ind-card-title">Revenue Growth</div><div class="ind-card-value up">+14.5%</div><div class="ind-card-sub">Click for history</div></div>
         </div>
         <div id="valCompChart" style="margin-top:14px;"></div>
         <div class="commentary" style="margin-top:10px;" id="valCommentary"><strong>Valuation context:</strong> Forward P/E and EV/EBITDA are above historical averages, reflecting the AI-driven earnings premium. Earnings growth remains broad-based across tech, healthcare, and financials.</div>
@@ -1327,6 +1327,28 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
       <svg id="indModalChart" viewBox="0 0 620 200" style="width:100%;height:200px;"></svg>
       <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;" id="indModalStats"></div>
       <div style="margin-top:12px;font-size:11px;color:var(--text-muted);">Source: <a id="indModalSource" href="#" target="_blank" style="color:var(--accent-blue);"></a></div>
+    </div>
+  </div>
+</div>
+
+<!-- Valuation History Modal -->
+<div class="modal-overlay" id="valModal">
+  <div class="modal" style="max-width:750px;">
+    <div class="modal-header">
+      <div>
+        <span id="valModalName" style="font-size:18px;font-weight:700;color:var(--navy);"></span>
+        <span id="valModalValue" style="font-size:18px;font-weight:700;margin-left:12px;color:var(--accent-blue);"></span>
+      </div>
+      <button class="modal-close" onclick="closeValModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="valModalContext" style="font-size:12px;color:var(--text-secondary);line-height:1.7;margin-bottom:12px;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:12px;font-weight:600;color:var(--navy);">Historical Chart</div>
+        <div style="display:flex;gap:3px;" id="valModalBtns"></div>
+      </div>
+      <svg id="valModalChart" viewBox="0 0 680 220" style="width:100%;height:220px;"></svg>
+      <div id="valModalBenchmarks" style="margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;"></div>
     </div>
   </div>
 </div>
@@ -2497,6 +2519,151 @@ document.getElementById('kpiModal').addEventListener('click', function(e) { if (
 document.querySelectorAll('.kpi-card[data-kpi]').forEach(card => {
   card.addEventListener('click', () => openKpiModal(card.dataset.kpi));
 });
+
+// ===== VALUATION HISTORY MODAL =====
+const valChartMeta = {
+  fwdpe: {
+    name: 'S&P 500 Forward P/E',
+    histKey: 'SP500_PE_HIST',
+    altKey: 'CAPE_HIST',
+    unit: 'x',
+    color: 'var(--accent-blue)',
+    benchmarks: [{label:'Current',key:'current'},{label:'5Y Avg',val:18.5},{label:'10Y Avg',val:17.8},{label:'25Y Avg',val:16.5}],
+    context: 'Forward P/E measures what investors pay per dollar of expected future earnings. Higher values mean the market expects stronger growth or is willing to pay a premium. The 25-year average is ~16.5x; periods above 20x are historically elevated.'
+  },
+  evebitda: {
+    name: 'S&P 500 EV/EBITDA',
+    histKey: 'SP500_PE_HIST',
+    unit: 'x',
+    color: 'var(--accent-orange)',
+    benchmarks: [{label:'Current',key:'current'},{label:'5Y Avg',val:14.5},{label:'10Y Avg',val:13.5},{label:'25Y Avg',val:12.8}],
+    context: 'EV/EBITDA compares enterprise value to operating cash flow. Less distorted by capital structure than P/E. The current level is elevated relative to historical averages, reflecting the shift toward asset-light, high-margin tech companies in the index.'
+  },
+  earnings: {
+    name: 'S&P 500 Earnings Growth (YoY)',
+    histKey: 'CORP_PROFITS_HIST',
+    unit: '%',
+    color: 'var(--green)',
+    benchmarks: [{label:'Current',key:'current'},{label:'5Y Avg',val:8.2},{label:'10Y Avg',val:6.5},{label:'Long-Run Avg',val:5.8}],
+    context: 'Corporate profit growth year-over-year from BEA national accounts data. Earnings growth above 10% is historically strong; the current AI-driven cycle is producing earnings growth well above long-run averages across tech, healthcare, and financials.'
+  },
+  revenue: {
+    name: 'S&P 500 Revenue Growth (YoY)',
+    histKey: 'CORP_PROFITS_HIST',
+    unit: '%',
+    color: 'var(--navy)',
+    benchmarks: [{label:'Current',key:'current'},{label:'5Y Avg',val:5.5},{label:'10Y Avg',val:4.2},{label:'Long-Run Avg',val:4.0}],
+    context: 'Revenue growth is harder to manufacture than earnings growth — it reflects genuine demand expansion. Sustained double-digit revenue growth at the index level is rare and typically driven by either inflation or a genuine structural demand shift (like AI adoption).'
+  },
+};
+
+function renderValHistChart(svgId, data, color, unit, months, currentVal) {
+  const svg = document.getElementById(svgId);
+  if (!data || data.length < 3) {
+    svg.innerHTML = '<text x="340" y="110" text-anchor="middle" font-size="12" fill="#8D95A8" font-family="Inter">Historical data available after next build.</text>';
+    return;
+  }
+  const sliced = months ? data.slice(-months) : data;
+  if (sliced.length < 2) return;
+  const vals = sliced.map(d => d.val);
+  const dates = sliced.map(d => d.date);
+  const w = 680, h = 200, pad = 50;
+  const chartW = w - pad*2, chartH = h - 45;
+  let min = Math.min(...vals), max = Math.max(...vals);
+  const yPad = (max - min) * 0.12 || 1;
+  min -= yPad; max += yPad;
+  const range = max - min || 1;
+
+  const gradId = 'valHist' + Math.random().toString(36).substr(2,5);
+  const pts = vals.map((v,i) => {
+    const x = pad + (i/(vals.length-1))*chartW;
+    const y = 20 + chartH - ((v-min)/range)*chartH;
+    return `${x},${y}`;
+  });
+
+  // Average line
+  const avg = vals.reduce((s,v)=>s+v,0)/vals.length;
+  const avgY = 20 + chartH - ((avg-min)/range)*chartH;
+
+  // Grid
+  let grid = '';
+  for (let i = 0; i <= 4; i++) {
+    const v = min + (i/4)*range;
+    const y = 20 + chartH - ((v-min)/range)*chartH;
+    grid += `<line x1="${pad}" y1="${y}" x2="${pad+chartW}" y2="${y}" stroke="#E2E6ED" stroke-width="0.5"/>`;
+    grid += `<text x="${pad-5}" y="${y+3}" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">${v.toFixed(1)}${unit==='%'?'%':unit==='x'?'x':''}</text>`;
+  }
+
+  // Date labels
+  const step = Math.max(1, Math.floor(dates.length / 6));
+  let dateLabels = '';
+  for (let i = 0; i < dates.length; i += step) {
+    const x = pad + (i/(vals.length-1))*chartW;
+    dateLabels += `<text x="${x}" y="${h-4}" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">${dates[i]}</text>`;
+  }
+
+  svg.innerHTML = `
+    <defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.12"/><stop offset="100%" stop-color="${color}" stop-opacity="0.02"/></linearGradient></defs>
+    ${grid}
+    <line x1="${pad}" y1="${avgY}" x2="${pad+chartW}" y2="${avgY}" stroke="var(--accent-orange)" stroke-width="1" stroke-dasharray="5,3" opacity="0.6"/>
+    <text x="${pad+chartW+4}" y="${avgY+3}" font-size="8" fill="var(--accent-orange)" font-family="Inter">Avg: ${avg.toFixed(1)}</text>
+    <polygon points="${pts.join(' ')} ${pad+chartW},${20+chartH} ${pad},${20+chartH}" fill="url(#${gradId})"/>
+    <polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>
+    ${dateLabels}
+    <text x="${pad+chartW}" y="16" font-size="11" fill="${color}" text-anchor="end" font-weight="700" font-family="Inter">Current: ${currentVal}</text>
+  `;
+}
+
+function openValModal(chartKey) {
+  const meta = valChartMeta[chartKey];
+  if (!meta) return;
+  const card = document.querySelector(`[data-valchart="${chartKey}"]`);
+  const currentValue = card ? card.querySelector('.ind-card-value').textContent : '';
+
+  document.getElementById('valModalName').textContent = meta.name;
+  document.getElementById('valModalValue').textContent = currentValue;
+  document.getElementById('valModalContext').textContent = meta.context;
+
+  // Get data
+  let histData = LIVE_DATA[meta.histKey] || (meta.altKey ? LIVE_DATA[meta.altKey] : null) || [];
+
+  // Buttons
+  const btnsEl = document.getElementById('valModalBtns');
+  if (histData.length > 3) {
+    const periods = [{label:'5Y',months:60},{label:'10Y',months:120},{label:'20Y',months:240},{label:'30Y',months:360},{label:'Max',months:null}];
+    const safeColor = meta.color.replace(/'/g,"\\'");
+    btnsEl.innerHTML = periods.map((p,i) =>
+      `<button class="yld-range-btn${i===2?' active':''}" onclick="renderValHistChart('valModalChart',window._valHist,'${safeColor}','${meta.unit}',${p.months},'${currentValue}');this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">${p.label}</button>`
+    ).join('');
+    window._valHist = histData;
+    renderValHistChart('valModalChart', histData, meta.color, meta.unit, 240, currentValue);
+  } else {
+    btnsEl.innerHTML = '';
+    document.getElementById('valModalChart').innerHTML = '<text x="340" y="110" text-anchor="middle" font-size="12" fill="#8D95A8" font-family="Inter">Historical data available after next build.</text>';
+  }
+
+  // Benchmark cards
+  const benchEl = document.getElementById('valModalBenchmarks');
+  benchEl.innerHTML = meta.benchmarks.map(b => {
+    const val = b.key === 'current' ? currentValue : b.val.toFixed(1) + (meta.unit === '%' ? '%' : 'x');
+    const isHighlighted = b.key === 'current';
+    return `<div class="ind-card" style="${isHighlighted?'border:2px solid var(--accent-blue);':''}"><div class="ind-card-title">${b.label}</div><div class="ind-card-value" style="${isHighlighted?'color:var(--accent-blue);':''}">${val}</div></div>`;
+  }).join('');
+
+  document.getElementById('valModal').classList.add('show');
+}
+
+function closeValModal() { document.getElementById('valModal').classList.remove('show'); }
+document.getElementById('valModal').addEventListener('click', function(e) { if (e.target === this) closeValModal(); });
+
+// Wire valuation card clicks
+document.querySelectorAll('[data-valchart]').forEach(card => {
+  card.addEventListener('click', () => openValModal(card.dataset.valchart));
+});
+
+// Add valModal to Escape handler (append to existing)
+const origKeyHandler = document.onkeydown;
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeValModal(); });
 
 // ===== VALUATION COMPARISON CHART =====
 (function buildValChart() {

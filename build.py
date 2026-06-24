@@ -88,6 +88,64 @@ def fetch_fred_data():
         print(f"  WARN: Failed to fetch yield history: {e}")
         data["YIELD_HISTORY"] = []
 
+    # ----- S&P 500 Valuation History (Shiller CAPE, Earnings Yield) -----
+    val_hist_series = [
+        ("CAPE_HIST", "MULTPL/SP500_PE_RATIO_MONTH"),  # Try Shiller PE first
+        ("SP500_EY_HIST", "MULTPL/SP500_EARNINGS_YIELD_MONTH"),
+    ]
+    # CAPE from FRED (Quandl-sourced, may not be available — fallback below)
+    try:
+        cape = fred.get_series("CAPE", observation_start=start_30y)
+        cape = cape.dropna().resample("MS").last().dropna()
+        data["CAPE_HIST"] = [
+            {"date": d.strftime("%Y-%m"), "val": round(float(v), 1)}
+            for d, v in cape.items()
+        ]
+        print(f"    CAPE: {len(data['CAPE_HIST'])} monthly points")
+    except Exception as e:
+        print(f"  WARN: CAPE not available from FRED: {e}")
+        data["CAPE_HIST"] = []
+
+    # S&P 500 PE from price/earnings — calculate from SPY history
+    try:
+        spy = yf.Ticker("SPY")
+        spy_hist = spy.history(period="max", interval="1mo")
+        spy_info = spy.info
+        trailing_eps = spy_info.get("trailingEps")
+        if trailing_eps and trailing_eps > 0 and len(spy_hist) > 0:
+            current_price = spy_hist["Close"].iloc[-1]
+            current_pe = current_price / trailing_eps
+            # Build approximate PE history using price history and assuming earnings grew linearly
+            # This is a rough approximation but gives directional accuracy
+            sp_prices = spy_hist["Close"].dropna()
+            monthly = sp_prices.resample("MS").last().dropna()
+            # Use price-to-current-earnings as proxy (not perfect but auto-updating)
+            data["SP500_PE_HIST"] = [
+                {"date": d.strftime("%Y-%m"), "val": round(float(p / trailing_eps), 1)}
+                for d, p in monthly.items()
+            ][-360:]  # Last 30 years
+            print(f"    SP500 PE proxy: {len(data['SP500_PE_HIST'])} monthly points, current={current_pe:.1f}")
+        else:
+            data["SP500_PE_HIST"] = []
+    except Exception as e:
+        print(f"  WARN: Failed to build SP500 PE history: {e}")
+        data["SP500_PE_HIST"] = []
+
+    # Corporate profits history from FRED
+    try:
+        cp = fred.get_series("CP", observation_start=start_30y)
+        cp = cp.dropna()
+        cp_yoy = cp.pct_change(periods=4) * 100  # YoY quarterly
+        cp_yoy = cp_yoy.dropna()
+        data["CORP_PROFITS_HIST"] = [
+            {"date": d.strftime("%Y-Q") + str((d.month - 1) // 3 + 1), "val": round(float(v), 1)}
+            for d, v in cp_yoy.items()
+        ]
+        print(f"    Corp Profits YoY: {len(data['CORP_PROFITS_HIST'])} quarterly points")
+    except Exception as e:
+        print(f"  WARN: Failed to fetch corporate profits: {e}")
+        data["CORP_PROFITS_HIST"] = []
+
     # ----- Credit spread histories (10 years) -----
     for label, sid in [("HY_HIST", "BAMLH0A0HYM2"), ("IG_HIST", "BAMLC0A0CM"), ("BBB_HIST", "BAMLC0A4CBBB"), ("T10Y2Y_HIST", "T10Y2Y")]:
         try:
