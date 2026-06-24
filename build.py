@@ -318,6 +318,32 @@ def fetch_yf_data():
             sector_perf[sector_name] = {"etf": etf, "weekly_chg": 0, "monthly_chg": 0, "ytd_chg": 0}
     data["sector_performance"] = sector_perf
 
+    # ----- KPI Price Histories (for Market Snapshot modals) -----
+    kpi_symbols = {
+        "SP500_HIST": "^GSPC",
+        "NASDAQ_HIST": "^IXIC",
+        "RUSSELL_HIST": "^RUA",
+        "VIX_HIST": "^VIX",
+        "OIL_HIST": "CL=F",
+        "GAS_HIST": "NG=F",
+    }
+    kpi_histories = {}
+    for label, sym in kpi_symbols.items():
+        try:
+            t = yf.Ticker(sym)
+            hist = t.history(period="5y", interval="1d")
+            if len(hist) > 0:
+                weekly = hist["Close"].resample("W").last().dropna()
+                kpi_histories[label] = [
+                    {"date": d.strftime("%Y-%m-%d"), "close": round(float(v), 2)}
+                    for d, v in weekly.items()
+                ]
+                print(f"    {label}: {len(kpi_histories[label])} weekly points")
+        except Exception as e:
+            print(f"  WARN: Failed to fetch {label} ({sym}): {e}")
+            kpi_histories[label] = []
+    data["kpi_histories"] = kpi_histories
+
     # ----- LOGO Holdings (full fundamentals) -----
     holdings = []
     for sym in LOGO_TICKERS:
@@ -496,6 +522,7 @@ def build_dashboard():
         "holdings_json": json.dumps(yf_data["holdings"], default=str),
         "sector_json": json.dumps(yf_data.get("sector_performance", {}), default=str),
         "commodities_json": json.dumps(yf_data.get("commodities", {}), default=str),
+        "kpi_histories_json": json.dumps(yf_data.get("kpi_histories", {}), default=str),
     }
 
     # Load and render template

@@ -190,16 +190,16 @@ tr:hover td{background:#F8F9FB;}
 <div id="tab-macro" class="tab-content active">
 <div class="container">
 
-  <div class="section-label">Market Snapshot <span style="font-size:9px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);margin-left:8px;">Click any card for 10-year chart</span></div>
+  <div class="section-label">Market Snapshot <span style="font-size:9px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);margin-left:8px;">Click any card for chart</span></div>
   <div class="kpi-row">
-    <div class="kpi-card" style="cursor:pointer" onclick="window.open('https://www.tradingview.com/chart/?symbol=SP%3ASPX','_blank')"><div class="kpi-label">S&P 500</div><div class="kpi-value">7,482</div><div class="kpi-change down">-0.24%</div></div>
-    <div class="kpi-card" style="cursor:pointer" onclick="window.open('https://www.tradingview.com/chart/?symbol=NASDAQ%3AIXIC','_blank')"><div class="kpi-label">Nasdaq</div><div class="kpi-value">26,423</div><div class="kpi-change up">+1.54%</div></div>
-    <div class="kpi-card" style="cursor:pointer" onclick="window.open('https://www.tradingview.com/chart/?symbol=RUSSELL%3ARUA','_blank')"><div class="kpi-label">Russell 3000</div><div class="kpi-value">4,260</div><div class="kpi-change up">+1.06%</div></div>
-    <div class="kpi-card" style="cursor:pointer" onclick="window.open('https://fred.stlouisfed.org/series/DGS10','_blank')"><div class="kpi-label">10-Yr Treasury</div><div class="kpi-value">4.51%</div><div class="kpi-change neutral">+3 bps</div></div>
-    <div class="kpi-card" style="cursor:pointer" onclick="window.open('https://fred.stlouisfed.org/series/FEDFUNDS','_blank')"><div class="kpi-label">Fed Funds</div><div class="kpi-value">3.50-3.75%</div><div class="kpi-change neutral">Held 6/17</div></div>
-    <div class="kpi-card" id="kpiVix" style="cursor:pointer" onclick="window.open('https://www.tradingview.com/chart/?symbol=CBOE%3AVIX','_blank')"><div class="kpi-label">VIX</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
-    <div class="kpi-card" id="kpiOil" style="cursor:pointer" onclick="window.open('https://www.tradingview.com/chart/?symbol=NYMEX%3ACL1%21','_blank')"><div class="kpi-label">WTI Crude</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
-    <div class="kpi-card" id="kpiGas" style="cursor:pointer" onclick="window.open('https://www.tradingview.com/chart/?symbol=NYMEX%3ANG1%21','_blank')"><div class="kpi-label">Nat Gas</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
+    <div class="kpi-card" style="cursor:pointer" data-kpi="sp500"><div class="kpi-label">S&P 500</div><div class="kpi-value">7,482</div><div class="kpi-change down">-0.24%</div></div>
+    <div class="kpi-card" style="cursor:pointer" data-kpi="nasdaq"><div class="kpi-label">Nasdaq</div><div class="kpi-value">26,423</div><div class="kpi-change up">+1.54%</div></div>
+    <div class="kpi-card" style="cursor:pointer" data-kpi="russell"><div class="kpi-label">Russell 3000</div><div class="kpi-value">4,260</div><div class="kpi-change up">+1.06%</div></div>
+    <div class="kpi-card" style="cursor:pointer" data-kpi="ust10y"><div class="kpi-label">10-Yr Treasury</div><div class="kpi-value">4.51%</div><div class="kpi-change neutral">+3 bps</div></div>
+    <div class="kpi-card" style="cursor:pointer" data-kpi="fedfunds"><div class="kpi-label">Fed Funds</div><div class="kpi-value">3.50-3.75%</div><div class="kpi-change neutral">Held 6/17</div></div>
+    <div class="kpi-card" id="kpiVix" style="cursor:pointer" data-kpi="vix"><div class="kpi-label">VIX</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
+    <div class="kpi-card" id="kpiOil" style="cursor:pointer" data-kpi="oil"><div class="kpi-label">WTI Crude</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
+    <div class="kpi-card" id="kpiGas" style="cursor:pointer" data-kpi="gas"><div class="kpi-label">Nat Gas</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
   </div>
 
   <!-- GDP -->
@@ -291,15 +291,14 @@ tr:hover td{background:#F8F9FB;}
     <div class="card">
       <div class="card-header"><div class="card-title">S&P 500 Valuation & Earnings</div><span class="card-badge badge-live">June 2026</span></div>
       <div class="card-body" style="padding:12px 20px 16px;">
-        <div id="sp500ValCards" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;">
-          <div class="ind-card"><div class="ind-card-title">Trailing P/E</div><div class="ind-card-value">25.1x</div><div class="ind-card-sub">via SPY</div></div>
+        <div id="sp500ValCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
           <div class="ind-card"><div class="ind-card-title">Forward P/E</div><div class="ind-card-value">20.9x</div><div class="ind-card-sub">via SPY</div></div>
           <div class="ind-card"><div class="ind-card-title">EV/EBITDA</div><div class="ind-card-value">16.8x</div><div class="ind-card-sub">via SPY</div></div>
           <div class="ind-card"><div class="ind-card-title">Earnings Growth</div><div class="ind-card-value up">+21.3%</div><div class="ind-card-sub">via SPY</div></div>
           <div class="ind-card"><div class="ind-card-title">Revenue Growth</div><div class="ind-card-value up">+14.5%</div><div class="ind-card-sub">via SPY</div></div>
-          <div class="ind-card"><div class="ind-card-title">Forward EPS</div><div class="ind-card-value">$340</div><div class="ind-card-sub">via SPY</div></div>
         </div>
-        <div class="commentary" style="margin-top:10px;"><strong>Valuation context:</strong> Both trailing P/E (25.1x) and forward P/E (20.9x) are above 5 and 10-year averages, reflecting the AI-driven earnings premium. EV/EBITDA at 16.8x is elevated but supported by 21%+ earnings growth. Earnings growth is broad-based across tech, healthcare, and financials.</div>
+        <div id="valCompChart" style="margin-top:14px;"></div>
+        <div class="commentary" style="margin-top:10px;" id="valCommentary"><strong>Valuation context:</strong> Forward P/E and EV/EBITDA are above historical averages, reflecting the AI-driven earnings premium. Earnings growth remains broad-based across tech, healthcare, and financials.</div>
       </div>
     </div>
   </div>
@@ -1198,6 +1197,30 @@ tr:hover td{background:#F8F9FB;}
   </div>
 </div>
 
+<!-- KPI Market Snapshot Modal -->
+<div class="modal-overlay" id="kpiModal">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-header">
+      <div>
+        <span id="kpiModalName" style="font-size:18px;font-weight:700;color:var(--navy);"></span>
+        <span id="kpiModalValue" style="font-size:18px;font-weight:700;margin-left:12px;"></span>
+        <span id="kpiModalChg" style="font-size:14px;font-weight:600;margin-left:8px;"></span>
+      </div>
+      <button class="modal-close" onclick="closeKpiModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:12px;font-weight:600;color:var(--navy);">Price History</div>
+        <div style="display:flex;gap:3px;" id="kpiModalBtns"></div>
+      </div>
+      <svg id="kpiModalChart" viewBox="0 0 620 200" style="width:100%;height:200px;"></svg>
+      <div style="margin-top:12px;text-align:center;">
+        <a id="kpiModalTvLink" href="#" target="_blank" style="color:var(--accent-blue);font-size:12px;font-weight:500;text-decoration:none;">View on TradingView / FRED →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="footer">Accuvest Global Advisors &bull; For internal use only &bull; Data sourced from BEA, Federal Reserve, U.S. Treasury, and public market feeds</div>
 
 <script>
@@ -1206,6 +1229,7 @@ const LIVE_DATA = {{ fred_json|safe }};
 const LIVE_HOLDINGS = {{ holdings_json|safe }};
 const LIVE_SECTORS = {{ sector_json|safe }};
 const LIVE_COMMODITIES = {{ commodities_json|safe }};
+const LIVE_KPI_HIST = {{ kpi_histories_json|safe }};
 const LIVE_META = {
   buildDate: "{{ build_date }}",
   buildTime: "{{ build_time }}",
@@ -1218,8 +1242,6 @@ const LIVE_META = {
   sp500_earnings_growth: "{{ sp500_earnings_growth }}",
   sp500_revenue_growth: "{{ sp500_revenue_growth }}",
   sp500_dividend_yield: "{{ sp500_dividend_yield }}",
-  sp500_trailing_eps: {{ sp500_trailing_eps or 'null' }},
-  sp500_forward_eps: {{ sp500_forward_eps or 'null' }},
 };
 
 // ===== HYDRATION — update hardcoded values with live data =====
@@ -1263,15 +1285,13 @@ function hydrate() {
     }
   }
 
-  // S&P 500 Valuation cards (in the valuation section)
+  // S&P 500 Valuation cards (4 cards: Fwd PE, EV/EBITDA, Earnings Growth, Revenue Growth)
   const valCards = document.querySelectorAll('#sp500ValCards .ind-card');
-  if (valCards.length >= 6) {
-    if (LIVE_META.sp500_pe) valCards[0].querySelector('.ind-card-value').textContent = LIVE_META.sp500_pe + 'x';
-    if (LIVE_META.sp500_fwd_pe) valCards[1].querySelector('.ind-card-value').textContent = LIVE_META.sp500_fwd_pe + 'x';
-    if (LIVE_META.sp500_ev_ebitda) valCards[2].querySelector('.ind-card-value').textContent = LIVE_META.sp500_ev_ebitda + 'x';
-    if (LIVE_META.sp500_earnings_growth !== 'N/A') valCards[3].querySelector('.ind-card-value').textContent = LIVE_META.sp500_earnings_growth;
-    if (LIVE_META.sp500_revenue_growth !== 'N/A') valCards[4].querySelector('.ind-card-value').textContent = LIVE_META.sp500_revenue_growth;
-    if (LIVE_META.sp500_forward_eps) valCards[5].querySelector('.ind-card-value').textContent = '$' + LIVE_META.sp500_forward_eps;
+  if (valCards.length >= 4) {
+    if (LIVE_META.sp500_fwd_pe) valCards[0].querySelector('.ind-card-value').textContent = LIVE_META.sp500_fwd_pe + 'x';
+    if (LIVE_META.sp500_ev_ebitda) valCards[1].querySelector('.ind-card-value').textContent = LIVE_META.sp500_ev_ebitda + 'x';
+    if (LIVE_META.sp500_earnings_growth !== 'N/A') valCards[2].querySelector('.ind-card-value').textContent = LIVE_META.sp500_earnings_growth;
+    if (LIVE_META.sp500_revenue_growth !== 'N/A') valCards[3].querySelector('.ind-card-value').textContent = LIVE_META.sp500_revenue_growth;
   }
 
   // Sector table — fill weekly, monthly, YTD from live data
@@ -2112,7 +2132,7 @@ function closeIndModal() {
   document.getElementById('indicatorModal').classList.remove('show');
 }
 document.getElementById('indicatorModal').addEventListener('click', function(e) { if (e.target === this) closeIndModal(); });
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeIndModal(); closeModal(); } });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeIndModal(); closeModal(); closeKpiModal(); } });
 
 // Make indicator table rows clickable
 document.querySelectorAll('#tab-indicators table tbody tr').forEach(tr => {
@@ -2128,6 +2148,136 @@ document.querySelectorAll('#tab-indicators table tbody tr').forEach(tr => {
   const trend = trendTd ? trendTd.textContent.trim() : '';
   tr.addEventListener('click', () => openIndModal(name, val, trend));
 });
+
+// ===== KPI MARKET SNAPSHOT MODAL =====
+const kpiMeta = {
+  sp500:{name:'S&P 500',histKey:'SP500_HIST',color:'var(--accent-blue)',prefix:'',tvUrl:'https://www.tradingview.com/chart/?symbol=SP%3ASPX'},
+  nasdaq:{name:'Nasdaq Composite',histKey:'NASDAQ_HIST',color:'var(--accent-blue)',prefix:'',tvUrl:'https://www.tradingview.com/chart/?symbol=NASDAQ%3AIXIC'},
+  russell:{name:'Russell 3000',histKey:'RUSSELL_HIST',color:'var(--accent-blue)',prefix:'',tvUrl:'https://www.tradingview.com/chart/?symbol=RUSSELL%3ARUA'},
+  ust10y:{name:'10-Year Treasury Yield',histKey:'YIELD_HISTORY',color:'var(--accent-orange)',prefix:'',isFred:true,tvUrl:'https://fred.stlouisfed.org/series/DGS10'},
+  fedfunds:{name:'Federal Funds Rate',histKey:null,color:'var(--navy)',prefix:'',tvUrl:'https://fred.stlouisfed.org/series/FEDFUNDS'},
+  vix:{name:'CBOE Volatility Index (VIX)',histKey:'VIX_HIST',color:'var(--red)',prefix:'',tvUrl:'https://www.tradingview.com/chart/?symbol=CBOE%3AVIX'},
+  oil:{name:'WTI Crude Oil',histKey:'OIL_HIST',color:'var(--navy)',prefix:'$',tvUrl:'https://www.tradingview.com/chart/?symbol=NYMEX%3ACL1%21'},
+  gas:{name:'Natural Gas',histKey:'GAS_HIST',color:'var(--accent-orange)',prefix:'$',tvUrl:'https://www.tradingview.com/chart/?symbol=NYMEX%3ANG1%21'},
+};
+
+function renderKpiChart(svgId, histData, color, numWeeks) {
+  const svg = document.getElementById(svgId);
+  if (!histData || histData.length < 2) {
+    svg.innerHTML = '<text x="310" y="100" text-anchor="middle" font-size="12" fill="#8D95A8" font-family="Inter">Chart data not available.</text>';
+    return;
+  }
+  const data = numWeeks ? histData.slice(-numWeeks) : histData;
+  if (data.length < 2) return;
+  const vals = data.map(d => d.close || d.val);
+  const dates = data.map(d => d.date);
+  const w = 620, h = 180, pad = 50;
+  const chartW = w - pad*2, chartH = h - 40;
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const range = max - min || 1;
+  const pts = vals.map((v,i) => {
+    const x = pad + (i/(vals.length-1))*chartW;
+    const y = 20 + chartH - ((v-min)/range)*chartH;
+    return `${x},${y}`;
+  });
+  const ret = ((vals[vals.length-1] - vals[0])/vals[0]*100);
+  const retStr = (ret >= 0 ? '+' : '') + ret.toFixed(1) + '%';
+  const retColor = ret >= 0 ? 'var(--green)' : 'var(--red)';
+  const gradId = 'kpiGrad' + Math.random().toString(36).substr(2,5);
+  svg.innerHTML = `
+    <defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.15"/><stop offset="100%" stop-color="${color}" stop-opacity="0.02"/></linearGradient></defs>
+    <polygon points="${pts.join(' ')} ${pad+chartW},${20+chartH} ${pad},${20+chartH}" fill="url(#${gradId})"/>
+    <polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>
+    <text x="${pad-4}" y="24" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">${max.toFixed(max>100?0:2)}</text>
+    <text x="${pad-4}" y="${h-20}" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">${min.toFixed(min>100?0:2)}</text>
+    <text x="${pad}" y="${h-4}" font-size="8" fill="#8D95A8" font-family="Inter">${dates[0]}</text>
+    <text x="${pad+chartW}" y="${h-4}" font-size="8" fill="#8D95A8" text-anchor="end" font-family="Inter">${dates[dates.length-1]}</text>
+    <text x="${pad+chartW}" y="16" font-size="11" fill="${retColor}" text-anchor="end" font-weight="700" font-family="Inter">${retStr}</text>
+  `;
+}
+
+function openKpiModal(kpiKey) {
+  const meta = kpiMeta[kpiKey];
+  if (!meta) return;
+  const card = document.querySelector(`[data-kpi="${kpiKey}"]`);
+  const value = card ? card.querySelector('.kpi-value').textContent : '';
+  const chg = card ? card.querySelector('.kpi-change').textContent : '';
+  const chgClass = card ? card.querySelector('.kpi-change').className : '';
+
+  document.getElementById('kpiModalName').textContent = meta.name;
+  document.getElementById('kpiModalValue').textContent = value;
+  const chgEl = document.getElementById('kpiModalChg');
+  chgEl.textContent = chg;
+  chgEl.className = chgClass.includes('up') ? 'up' : chgClass.includes('down') ? 'down' : 'neutral';
+  document.getElementById('kpiModalTvLink').href = meta.tvUrl;
+
+  // Get history data
+  let histData = null;
+  if (meta.histKey && LIVE_KPI_HIST && LIVE_KPI_HIST[meta.histKey]) {
+    histData = LIVE_KPI_HIST[meta.histKey];
+  } else if (meta.isFred && meta.histKey && LIVE_DATA[meta.histKey]) {
+    histData = LIVE_DATA[meta.histKey];
+  }
+
+  const btnsEl = document.getElementById('kpiModalBtns');
+  if (histData && histData.length > 2) {
+    const periods = [{label:'1M',weeks:4},{label:'6M',weeks:26},{label:'1Y',weeks:52},{label:'5Y',weeks:260}];
+    btnsEl.innerHTML = periods.map((p,i) =>
+      `<button class="yld-range-btn${i===2?' active':''}" onclick="renderKpiChart('kpiModalChart',window._kpiHist,${JSON.stringify(meta.color)},${p.weeks});this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">${p.label}</button>`
+    ).join('');
+    window._kpiHist = histData;
+    renderKpiChart('kpiModalChart', histData, meta.color, 52);
+  } else {
+    btnsEl.innerHTML = '';
+    document.getElementById('kpiModalChart').innerHTML = '<text x="310" y="100" text-anchor="middle" font-size="12" fill="#8D95A8" font-family="Inter">Chart data available after next build.</text>';
+  }
+
+  document.getElementById('kpiModal').classList.add('show');
+}
+
+function closeKpiModal() { document.getElementById('kpiModal').classList.remove('show'); }
+document.getElementById('kpiModal').addEventListener('click', function(e) { if (e.target === this) closeKpiModal(); });
+
+// Wire KPI card clicks
+document.querySelectorAll('.kpi-card[data-kpi]').forEach(card => {
+  card.addEventListener('click', () => openKpiModal(card.dataset.kpi));
+});
+
+// ===== VALUATION COMPARISON CHART =====
+(function buildValChart() {
+  const fpe = LIVE_META.sp500_fwd_pe;
+  const eveb = LIVE_META.sp500_ev_ebitda;
+  if (!fpe && !eveb) return;
+  const container = document.getElementById('valCompChart');
+  const metrics = [];
+  if (fpe) metrics.push({name:'Forward P/E', current:fpe, avg5y:18.5, avg10y:17.8, avg25y:16.5});
+  if (eveb) metrics.push({name:'EV/EBITDA', current:eveb, avg5y:14.5, avg10y:13.5, avg25y:12.8});
+  const barH = 22, gap = 6, metricGap = 20;
+  const totalH = metrics.length * (barH * 4 + gap * 3 + metricGap + 20);
+  const maxVal = Math.max(...metrics.flatMap(m => [m.current, m.avg5y, m.avg10y, m.avg25y])) * 1.15;
+  const w = 580, padL = 80, barW = w - padL - 40;
+  let svgContent = '';
+  let y = 10;
+  metrics.forEach(m => {
+    svgContent += `<text x="0" y="${y+8}" font-size="11" fill="var(--navy)" font-weight="700" font-family="Inter">${m.name}</text>`;
+    y += 16;
+    const bars = [
+      {label:'Current', val:m.current, color:'var(--accent-blue)', bold:true},
+      {label:'5Y Avg', val:m.avg5y, color:'var(--accent-blue)', opacity:0.5},
+      {label:'10Y Avg', val:m.avg10y, color:'var(--accent-blue)', opacity:0.35},
+      {label:'25Y Avg', val:m.avg25y, color:'var(--accent-blue)', opacity:0.2},
+    ];
+    bars.forEach(b => {
+      const bw = (b.val/maxVal)*barW;
+      svgContent += `<text x="${padL-4}" y="${y+barH/2+4}" font-size="9" fill="var(--text-muted)" text-anchor="end" font-family="Inter">${b.label}</text>`;
+      svgContent += `<rect x="${padL}" y="${y}" width="${bw}" height="${barH}" rx="3" fill="${b.color}" opacity="${b.opacity||1}"/>`;
+      svgContent += `<text x="${padL+bw+6}" y="${y+barH/2+4}" font-size="10" fill="var(--navy)" font-weight="${b.bold?'700':'500'}" font-family="Inter">${b.val.toFixed(1)}x</text>`;
+      y += barH + gap;
+    });
+    y += metricGap - gap;
+  });
+  container.innerHTML = `<div style="font-size:11px;font-weight:600;color:var(--navy);margin-bottom:6px;">Current vs. Historical Averages</div><svg viewBox="0 0 ${w} ${y}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:${y}px;">${svgContent}</svg>`;
+})();
 
 // ===== MACRO FRAMEWORK ENGINE — AUTO-SCORED FROM LIVE DATA =====
 
