@@ -98,6 +98,13 @@ tr:hover td{background:#F8F9FB;}
 .sector-red{background:#FDE8E8;color:#B52A2A;}
 .sector-neutral{background:#F0F2F5;color:var(--text-secondary);}
 
+/* Sortable headers */
+th.sortable{user-select:none;transition:background 0.15s;}
+th.sortable:hover{background:#EBF2FB;color:var(--accent-blue);}
+th.sort-asc::after{content:' ▲';font-size:8px;}
+th.sort-desc::after{content:' ▼';font-size:8px;}
+th.sort-asc,th.sort-desc{color:var(--accent-blue);}
+
 /* Commentary */
 .commentary{background:#FFF8F0;border-left:3px solid var(--accent-orange);padding:12px 16px;border-radius:0 8px 8px 0;font-size:12px;color:var(--text-secondary);line-height:1.6;margin-top:12px;}
 
@@ -305,24 +312,24 @@ tr:hover td{background:#F8F9FB;}
   </div>
   <div class="full-width">
     <div class="card">
-      <div class="card-header"><div class="card-title">Sector Returns &mdash; Weekly, Monthly, YTD</div><span class="card-badge badge-live">Via Sector ETFs</span></div>
+      <div class="card-header"><div class="card-title">Sector Returns</div><span class="card-badge badge-live">Via Sector ETFs &bull; Click headers to sort</span></div>
       <div class="card-body" style="padding:10px 16px;">
         <table id="sectorTable">
           <thead>
-            <tr><th>Sector</th><th>ETF</th><th class="text-right">Weekly</th><th class="text-right">Monthly</th><th class="text-right">YTD</th></tr>
+            <tr><th>Sector</th><th>ETF</th><th class="text-right sortable" data-col="2" style="cursor:pointer;">Weekly ⇅</th><th class="text-right sortable" data-col="3" style="cursor:pointer;">Monthly ⇅</th><th class="text-right sortable" data-col="4" style="cursor:pointer;">YTD ⇅</th><th class="text-right sortable" data-col="5" style="cursor:pointer;">1Y ⇅</th></tr>
           </thead>
           <tbody>
-            <tr><td style="font-weight:600">Technology</td><td class="font-mono">XLK</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
-            <tr><td style="font-weight:600">Healthcare</td><td class="font-mono">XLV</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
-            <tr><td style="font-weight:600">Financials</td><td class="font-mono">XLF</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
-            <tr><td style="font-weight:600">Energy</td><td class="font-mono">XLE</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
-            <tr><td style="font-weight:600">Industrials</td><td class="font-mono">XLI</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
-            <tr><td style="font-weight:600">Cons. Discretionary</td><td class="font-mono">XLY</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
-            <tr><td style="font-weight:600">Cons. Staples</td><td class="font-mono">XLP</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
-            <tr><td style="font-weight:600">Materials</td><td class="font-mono">XLB</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
-            <tr><td style="font-weight:600">Utilities</td><td class="font-mono">XLU</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
-            <tr><td style="font-weight:600">Real Estate</td><td class="font-mono">XLRE</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
-            <tr><td style="font-weight:600">Comm. Services</td><td class="font-mono">XLC</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Technology</td><td class="font-mono">XLK</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Healthcare</td><td class="font-mono">XLV</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Financials</td><td class="font-mono">XLF</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Energy</td><td class="font-mono">XLE</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Industrials</td><td class="font-mono">XLI</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Cons. Discretionary</td><td class="font-mono">XLY</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Cons. Staples</td><td class="font-mono">XLP</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Materials</td><td class="font-mono">XLB</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Utilities</td><td class="font-mono">XLU</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Real Estate</td><td class="font-mono">XLRE</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Comm. Services</td><td class="font-mono">XLC</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
           </tbody>
         </table>
       </div>
@@ -723,7 +730,7 @@ tr:hover td{background:#F8F9FB;}
       <div class="card-body" style="padding:8px 16px 16px;">
         <table id="holdingsTable">
           <thead>
-            <tr><th>#</th><th>Ticker</th><th>Company</th><th class="text-right">Weight</th><th class="text-right">Price</th><th class="text-right">Mkt Cap</th><th class="text-right">P/E</th><th class="text-right">Fwd P/E</th><th class="text-right">EV/EBITDA</th><th class="text-right">Target</th><th style="width:60px"></th></tr>
+            <tr><th>#</th><th>Ticker</th><th>Company</th><th class="text-right sortable" data-col="3" style="cursor:pointer;">Weight ⇅</th><th class="text-right sortable" data-col="4" style="cursor:pointer;">Price ⇅</th><th class="text-right sortable" data-col="5" style="cursor:pointer;">Mkt Cap ⇅</th><th class="text-right sortable" data-col="6" style="cursor:pointer;">P/E ⇅</th><th class="text-right sortable" data-col="7" style="cursor:pointer;">Fwd P/E ⇅</th><th class="text-right sortable" data-col="8" style="cursor:pointer;">EV/EBITDA ⇅</th><th class="text-right sortable" data-col="9" style="cursor:pointer;">Target ⇅</th><th style="width:60px"></th></tr>
           </thead>
           <tbody>
           </tbody>
@@ -1406,26 +1413,29 @@ function hydrate() {
     if (LIVE_META.sp500_revenue_growth !== 'N/A') valCards[3].querySelector('.ind-card-value').textContent = LIVE_META.sp500_revenue_growth;
   }
 
-  // Sector table — fill weekly, monthly, YTD from live data
+  // Sector table — fill weekly, monthly, YTD, 1Y from live data
   if (LIVE_SECTORS && Object.keys(LIVE_SECTORS).length > 0) {
     const rows = document.querySelectorAll('#sectorTable tbody tr');
-    const nameMap = {'Technology':'Technology','Healthcare':'Healthcare','Financials':'Financials','Energy':'Energy','Industrials':'Industrials','Cons. Discretionary':'Cons. Discretionary','Cons. Staples':'Cons. Staples','Materials':'Materials','Utilities':'Utilities','Real Estate':'Real Estate','Comm. Services':'Comm. Services'};
     rows.forEach(row => {
       const label = row.querySelector('td').textContent.trim();
       const sec = LIVE_SECTORS[label];
       if (!sec) return;
       const cells = row.querySelectorAll('td');
-      function fmtChg(v) {
-        const s = (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
-        return s;
-      }
+      function fmtChg(v) { return (v >= 0 ? '+' : '') + v.toFixed(2) + '%'; }
       function colorClass(v) { return v > 0.05 ? 'up' : v < -0.05 ? 'down' : 'neutral'; }
       cells[2].textContent = fmtChg(sec.weekly_chg);
       cells[2].className = 'text-right font-mono ' + colorClass(sec.weekly_chg);
+      cells[2].dataset.val = sec.weekly_chg;
       cells[3].textContent = fmtChg(sec.monthly_chg);
       cells[3].className = 'text-right font-mono ' + colorClass(sec.monthly_chg);
+      cells[3].dataset.val = sec.monthly_chg;
       cells[4].textContent = fmtChg(sec.ytd_chg);
       cells[4].className = 'text-right font-mono ' + colorClass(sec.ytd_chg);
+      cells[4].dataset.val = sec.ytd_chg;
+      const yr = sec.yearly_chg || 0;
+      cells[5].textContent = fmtChg(yr);
+      cells[5].className = 'text-right font-mono ' + colorClass(yr);
+      cells[5].dataset.val = yr;
     });
   }
 
@@ -2686,6 +2696,47 @@ function renderGauge(containerId, score, maxScore, label, goodDir) {
 
 renderGauge('growthGauge', gSum, gMax);
 renderGauge('inflationGauge', iSum, iMax);
+
+// ===== SORTABLE TABLES =====
+function makeTableSortable(tableId) {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+  const headers = table.querySelectorAll('th.sortable');
+  headers.forEach(th => {
+    th.addEventListener('click', () => {
+      const colIdx = parseInt(th.dataset.col);
+      const tbody = table.querySelector('tbody');
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      const isAsc = th.classList.contains('sort-asc');
+      // Clear all sort indicators on this table
+      headers.forEach(h => { h.classList.remove('sort-asc','sort-desc'); h.textContent = h.textContent.replace(/ [▲▼⇅]/g, '') + ' ⇅'; });
+      // Set new sort direction
+      th.classList.add(isAsc ? 'sort-desc' : 'sort-asc');
+      th.textContent = th.textContent.replace(/ ⇅/g, '');
+      const dir = isAsc ? -1 : 1;
+      rows.sort((a, b) => {
+        const cellA = a.querySelectorAll('td')[colIdx];
+        const cellB = b.querySelectorAll('td')[colIdx];
+        let valA = cellA.dataset.val !== undefined ? parseFloat(cellA.dataset.val) : parseFloat(cellA.textContent.replace(/[$%,+TBMKx]/g, ''));
+        let valB = cellB.dataset.val !== undefined ? parseFloat(cellB.dataset.val) : parseFloat(cellB.textContent.replace(/[$%,+TBMKx]/g, ''));
+        // Handle mkt cap suffixes
+        const txtA = cellA.textContent.trim(), txtB = cellB.textContent.trim();
+        if (txtA.includes('T')) valA = parseFloat(txtA.replace(/[$T]/g,'')) * 1000;
+        else if (txtA.includes('B')) valA = parseFloat(txtA.replace(/[$B]/g,''));
+        else if (txtA.includes('M')) valA = parseFloat(txtA.replace(/[$M]/g,'')) / 1000;
+        if (txtB.includes('T')) valB = parseFloat(txtB.replace(/[$T]/g,'')) * 1000;
+        else if (txtB.includes('B')) valB = parseFloat(txtB.replace(/[$B]/g,''));
+        else if (txtB.includes('M')) valB = parseFloat(txtB.replace(/[$M]/g,'')) / 1000;
+        if (isNaN(valA)) valA = -Infinity;
+        if (isNaN(valB)) valB = -Infinity;
+        return (valA - valB) * dir;
+      });
+      rows.forEach(r => tbody.appendChild(r));
+    });
+  });
+}
+makeTableSortable('sectorTable');
+makeTableSortable('holdingsTable');
 
 // ===== FRAMEWORK 2: SURPRISE-BASED REGIME MODEL =====
 

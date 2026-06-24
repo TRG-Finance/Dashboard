@@ -287,14 +287,15 @@ def fetch_yf_data():
             print(f"  WARN: Failed to fetch {label} ({sym}): {e}")
             data["commodities"][label] = {"price": None, "change_pct": 0}
 
-    # ----- Sector ETF Performance (weekly, monthly, YTD) -----
+    # ----- Sector ETF Performance (weekly, monthly, YTD, 1Y) -----
     sector_perf = {}
     for sector_name, etf in SECTOR_ETFS.items():
         try:
             t = yf.Ticker(etf)
             hist = t.history(period="1y")
             if len(hist) < 5:
-                sector_perf[sector_name] = {"etf": etf, "weekly_chg": 0, "monthly_chg": 0, "ytd_chg": 0}
+                sector_perf[sector_name] = {"etf": etf, "weekly_chg": 0, "monthly_chg": 0, "ytd_chg": 0, "yearly_chg": 0}
+
                 continue
 
             last = hist["Close"].iloc[-1]
@@ -313,13 +314,18 @@ def fetch_yf_data():
             ytd_start = ytd_data["Close"].iloc[0] if len(ytd_data) > 0 else hist["Close"].iloc[0]
             ytd_chg = round((last - ytd_start) / ytd_start * 100, 2)
 
+            # 1Y (first data point)
+            yr_start = hist["Close"].iloc[0]
+            yr_chg = round((last - yr_start) / yr_start * 100, 2)
+
             sector_perf[sector_name] = {
                 "etf": etf,
                 "weekly_chg": wk_chg,
                 "monthly_chg": mo_chg,
                 "ytd_chg": ytd_chg,
+                "yearly_chg": yr_chg,
             }
-            print(f"    {sector_name}: W={wk_chg:+.2f}% M={mo_chg:+.2f}% YTD={ytd_chg:+.2f}%")
+            print(f"    {sector_name}: W={wk_chg:+.2f}% M={mo_chg:+.2f}% YTD={ytd_chg:+.2f}% 1Y={yr_chg:+.2f}%")
         except Exception as e:
             print(f"  WARN: Failed to fetch sector {etf}: {e}")
             sector_perf[sector_name] = {"etf": etf, "weekly_chg": 0, "monthly_chg": 0, "ytd_chg": 0}
