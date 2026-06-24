@@ -2624,19 +2624,41 @@ function openValModal(chartKey) {
   document.getElementById('valModalValue').textContent = currentValue;
   document.getElementById('valModalContext').textContent = meta.context;
 
-  // Get data
+  // Get data — try FRED first, then build PE proxy from KPI price history
   let histData = LIVE_DATA[meta.histKey] || (meta.altKey ? LIVE_DATA[meta.altKey] : null) || [];
+
+  // Fallback: build PE proxy from S&P 500 price history
+  if (histData.length < 3 && (chartKey === 'fwdpe' || chartKey === 'evebitda')) {
+    const priceHist = (typeof LIVE_KPI_HIST !== 'undefined' && LIVE_KPI_HIST.SP500_HIST) ? LIVE_KPI_HIST.SP500_HIST : [];
+    if (priceHist.length > 10) {
+      const currentPE = LIVE_META.sp500_fwd_pe || LIVE_META.sp500_pe || 20;
+      const lastPrice = priceHist[priceHist.length - 1].close;
+      const impliedEPS = lastPrice / currentPE;
+      histData = priceHist.map(p => ({date: p.date, val: Math.round(p.close / impliedEPS * 10) / 10}));
+    }
+  }
+  if (histData.length < 3 && (chartKey === 'earnings' || chartKey === 'revenue')) {
+    const priceHist = (typeof LIVE_KPI_HIST !== 'undefined' && LIVE_KPI_HIST.SP500_HIST) ? LIVE_KPI_HIST.SP500_HIST : [];
+    if (priceHist.length > 52) {
+      histData = [];
+      for (let i = 52; i < priceHist.length; i++) {
+        const yoyRet = ((priceHist[i].close - priceHist[i-52].close) / priceHist[i-52].close * 100);
+        histData.push({date: priceHist[i].date, val: Math.round(yoyRet * 10) / 10});
+      }
+    }
+  }
 
   // Buttons
   const btnsEl = document.getElementById('valModalBtns');
   if (histData.length > 3) {
-    const periods = [{label:'5Y',months:60},{label:'10Y',months:120},{label:'20Y',months:240},{label:'30Y',months:360},{label:'Max',months:null}];
+    const maxWeeks = histData.length;
+    const periods = [{label:'1Y',months:52},{label:'3Y',months:156},{label:'5Y',months:260},{label:'Max',months:null}];
     const safeColor = meta.color.replace(/'/g,"\\'");
     btnsEl.innerHTML = periods.map((p,i) =>
-      `<button class="yld-range-btn${i===2?' active':''}" onclick="renderValHistChart('valModalChart',window._valHist,'${safeColor}','${meta.unit}',${p.months},'${currentValue}');this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">${p.label}</button>`
+      `<button class="yld-range-btn${i===3?' active':''}" onclick="renderValHistChart('valModalChart',window._valHist,'${safeColor}','${meta.unit}',${p.months},'${currentValue}');this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">${p.label}</button>`
     ).join('');
     window._valHist = histData;
-    renderValHistChart('valModalChart', histData, meta.color, meta.unit, 240, currentValue);
+    renderValHistChart('valModalChart', histData, meta.color, meta.unit, null, currentValue);
   } else {
     btnsEl.innerHTML = '';
     document.getElementById('valModalChart').innerHTML = '<text x="340" y="110" text-anchor="middle" font-size="12" fill="#8D95A8" font-family="Inter">Historical data available after next build.</text>';
