@@ -1689,7 +1689,9 @@ holdings.forEach(h => {
     const chartW = w - pad*2, chartH = h - 40;
     const vals = series.map(d => d.val);
     const dates = series.map(d => d.date);
-    const min = Math.min(...vals, 0), max = Math.max(...vals, 0);
+    let min = Math.min(...vals, 0), max = Math.max(...vals, 0);
+    const yPad = (max - min) * 0.12 || 1;
+    min -= yPad; max += yPad;
     const range = max - min || 1;
     const zeroY = 20 + chartH - ((0 - min)/range)*chartH;
     const pts = vals.map((v,i) => {
@@ -1937,8 +1939,10 @@ function generatePriceChart(ticker, period) {
     retEl.style.fontWeight = '700';
   }
 
-  const min = Math.min(...points) * 0.97;
-  const max = Math.max(...points) * 1.03;
+  const rawMin = Math.min(...points), rawMax = Math.max(...points);
+  const pricePad = (rawMax - rawMin) * 0.1 || 1;
+  const min = rawMin - pricePad;
+  const max = rawMax + pricePad;
   const w = 560, h = 140, pad = 50, right = 10;
   const chartW = w - pad - right;
 
@@ -2419,7 +2423,9 @@ function renderKpiChart(svgId, histData, color, numWeeks) {
   const dates = data.map(d => d.date);
   const w = 620, h = 180, pad = 50;
   const chartW = w - pad*2, chartH = h - 40;
-  const min = Math.min(...vals), max = Math.max(...vals);
+  let min = Math.min(...vals), max = Math.max(...vals);
+  const yPad = (max - min) * 0.1 || 0.5;
+  min -= yPad; max += yPad;
   const range = max - min || 1;
   const pts = vals.map((v,i) => {
     const x = pad + (i/(vals.length-1))*chartW;
@@ -2430,12 +2436,14 @@ function renderKpiChart(svgId, histData, color, numWeeks) {
   const retStr = (ret >= 0 ? '+' : '') + ret.toFixed(1) + '%';
   const retColor = ret >= 0 ? 'var(--green)' : 'var(--red)';
   const gradId = 'kpiGrad' + Math.random().toString(36).substr(2,5);
+  const rawMin = Math.min(...data.map(d => d.close || d.val));
+  const rawMax = Math.max(...data.map(d => d.close || d.val));
   svg.innerHTML = `
     <defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.15"/><stop offset="100%" stop-color="${color}" stop-opacity="0.02"/></linearGradient></defs>
     <polygon points="${pts.join(' ')} ${pad+chartW},${20+chartH} ${pad},${20+chartH}" fill="url(#${gradId})"/>
     <polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>
-    <text x="${pad-4}" y="24" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">${max.toFixed(max>100?0:2)}</text>
-    <text x="${pad-4}" y="${h-20}" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">${min.toFixed(min>100?0:2)}</text>
+    <text x="${pad-4}" y="24" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">${rawMax.toFixed(rawMax>100?0:2)}</text>
+    <text x="${pad-4}" y="${h-20}" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">${rawMin.toFixed(rawMin>100?0:2)}</text>
     <text x="${pad}" y="${h-4}" font-size="8" fill="#8D95A8" font-family="Inter">${dates[0]}</text>
     <text x="${pad+chartW}" y="${h-4}" font-size="8" fill="#8D95A8" text-anchor="end" font-family="Inter">${dates[dates.length-1]}</text>
     <text x="${pad+chartW}" y="16" font-size="11" fill="${retColor}" text-anchor="end" font-weight="700" font-family="Inter">${retStr}</text>
