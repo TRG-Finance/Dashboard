@@ -65,7 +65,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
 
 /* KPI Row */
-.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px;}
+.kpi-row{display:grid;grid-template-columns:repeat(8,1fr);gap:14px;margin-bottom:22px;}
 .kpi-card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);padding:14px 16px;text-align:center;}
 .kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);margin-bottom:4px;}
 .kpi-value{font-size:22px;font-weight:700;color:var(--navy);}
@@ -196,6 +196,9 @@ tr:hover td{background:#F8F9FB;}
     <div class="kpi-card"><div class="kpi-label">Russell 3000</div><div class="kpi-value">4,260</div><div class="kpi-change up">+1.06%</div></div>
     <div class="kpi-card"><div class="kpi-label">10-Yr Treasury</div><div class="kpi-value">4.51%</div><div class="kpi-change neutral">+3 bps</div></div>
     <div class="kpi-card"><div class="kpi-label">Fed Funds</div><div class="kpi-value">3.50-3.75%</div><div class="kpi-change neutral">Held 6/17</div></div>
+    <div class="kpi-card" id="kpiVix"><div class="kpi-label">VIX</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
+    <div class="kpi-card" id="kpiOil"><div class="kpi-label">WTI Crude</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
+    <div class="kpi-card" id="kpiGas"><div class="kpi-label">Nat Gas</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
   </div>
 
   <!-- GDP -->
@@ -301,23 +304,26 @@ tr:hover td{background:#F8F9FB;}
   </div>
   <div class="full-width">
     <div class="card">
-      <div class="card-header"><div class="card-title">Weekly Sector Returns</div><span class="card-badge badge-live">Week of 6/22</span></div>
-      <div class="card-body">
-        <div class="sector-grid" id="sectorHeatmap">
-          <div class="sector-cell sector-green"><div class="sector-name">Financials</div><div class="sector-val">+0.76%</div></div>
-          <div class="sector-cell sector-green"><div class="sector-name">Real Estate</div><div class="sector-val">+0.76%</div></div>
-          <div class="sector-cell sector-green"><div class="sector-name">Utilities</div><div class="sector-val">+0.65%</div></div>
-          <div class="sector-cell sector-green"><div class="sector-name">Healthcare</div><div class="sector-val">+0.47%</div></div>
-          <div class="sector-cell sector-green"><div class="sector-name">Technology</div><div class="sector-val">+0.22%</div></div>
-          <div class="sector-cell sector-neutral"><div class="sector-name">Cons. Defensive</div><div class="sector-val">+0.06%</div></div>
-          <div class="sector-cell sector-neutral"><div class="sector-name">Energy</div><div class="sector-val">+0.03%</div></div>
-          <div class="sector-cell sector-red"><div class="sector-name">Cons. Cyclical</div><div class="sector-val">-0.92%</div></div>
-          <div class="sector-cell sector-red"><div class="sector-name">Materials</div><div class="sector-val">-1.16%</div></div>
-          <div class="sector-cell sector-red"><div class="sector-name">Industrials</div><div class="sector-val">-2.05%</div></div>
-          <div class="sector-cell sector-red"><div class="sector-name">Comm. Services</div><div class="sector-val">-3.37%</div></div>
-          <div class="sector-cell" style="background:var(--navy);color:white;"><div class="sector-name" style="opacity:0.7">S&P 500</div><div class="sector-val">+0.93%</div></div>
-        </div>
-        <div class="commentary"><strong>Rotation:</strong> Defensives and rate-sensitive sectors led post hawkish FOMC dot plot. Comm. Services lagged sharply (-3.37%) on weak ad-revenue guidance.</div>
+      <div class="card-header"><div class="card-title">Sector Returns &mdash; Weekly, Monthly, YTD</div><span class="card-badge badge-live">Via Sector ETFs</span></div>
+      <div class="card-body" style="padding:10px 16px;">
+        <table id="sectorTable">
+          <thead>
+            <tr><th>Sector</th><th>ETF</th><th class="text-right">Weekly</th><th class="text-right">Monthly</th><th class="text-right">YTD</th></tr>
+          </thead>
+          <tbody>
+            <tr><td style="font-weight:600">Technology</td><td class="font-mono">XLK</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Healthcare</td><td class="font-mono">XLV</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Financials</td><td class="font-mono">XLF</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Energy</td><td class="font-mono">XLE</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Industrials</td><td class="font-mono">XLI</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Cons. Discretionary</td><td class="font-mono">XLY</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Cons. Staples</td><td class="font-mono">XLP</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Materials</td><td class="font-mono">XLB</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Utilities</td><td class="font-mono">XLU</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Real Estate</td><td class="font-mono">XLRE</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+            <tr><td style="font-weight:600">Comm. Services</td><td class="font-mono">XLC</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td><td class="text-right font-mono">--</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -1021,16 +1027,29 @@ tr:hover td{background:#F8F9FB;}
     <div class="stat-pill"><div class="stat-pill-label">Benchmark</div><div class="stat-pill-value" style="font-size:11px">Accuvest Iconic Brands Idx</div></div>
   </div>
 
+  <!-- Sector Allocation Chart -->
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Portfolio Sector Allocation</div><span class="card-badge badge-updated">By Weight</span></div>
+      <div class="card-body" style="padding:12px 16px;">
+        <div id="sectorAllocChart" style="display:flex;gap:20px;align-items:center;">
+          <svg id="sectorPie" viewBox="0 0 200 200" style="width:200px;height:200px;flex-shrink:0;"></svg>
+          <div id="sectorAllocLegend" style="flex:1;font-size:12px;line-height:1.8;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="full-width">
     <div class="card">
       <div class="card-header">
         <div class="card-title">Holdings &mdash; Click any row for research report</div>
-        <span class="card-badge badge-updated">Current Portfolio</span>
+        <span class="card-badge badge-updated">All data from Yahoo Finance</span>
       </div>
       <div class="card-body" style="padding:8px 16px 16px;">
         <table id="holdingsTable">
           <thead>
-            <tr><th>#</th><th>Ticker</th><th>Company</th><th class="text-right">Weight</th><th class="text-right">Price</th><th class="text-right">Mkt Cap</th><th class="text-right">P/E</th><th style="width:80px"></th></tr>
+            <tr><th>#</th><th>Ticker</th><th>Company</th><th class="text-right">Weight</th><th class="text-right">Price</th><th class="text-right">Mkt Cap</th><th class="text-right">P/E</th><th class="text-right">Fwd P/E</th><th class="text-right">EV/EBITDA</th><th class="text-right">Target</th><th style="width:60px"></th></tr>
           </thead>
           <tbody>
           </tbody>
@@ -1486,6 +1505,7 @@ tr:hover td{background:#F8F9FB;}
 const LIVE_DATA = {{ fred_json|safe }};
 const LIVE_HOLDINGS = {{ holdings_json|safe }};
 const LIVE_SECTORS = {{ sector_json|safe }};
+const LIVE_COMMODITIES = {{ commodities_json|safe }};
 const LIVE_META = {
   buildDate: "{{ build_date }}",
   buildTime: "{{ build_time }}",
@@ -1554,18 +1574,43 @@ function hydrate() {
     if (LIVE_META.sp500_forward_eps) valCards[5].querySelector('.ind-card-value').textContent = '$' + LIVE_META.sp500_forward_eps;
   }
 
-  // Sector heatmap — update from live sector ETF data
+  // Sector table — fill weekly, monthly, YTD from live data
   if (LIVE_SECTORS && Object.keys(LIVE_SECTORS).length > 0) {
-    const sectorCells = document.querySelectorAll('#sectorHeatmap .sector-cell');
-    const sectorOrder = ['Financials','Real Estate','Utilities','Healthcare','Technology','Cons. Staples','Energy','Cons. Discretionary','Materials','Industrials','Comm. Services'];
-    sectorCells.forEach((cell, i) => {
-      const name = sectorOrder[i];
-      if (name && LIVE_SECTORS[name]) {
-        const chg = LIVE_SECTORS[name].weekly_chg;
-        cell.querySelector('.sector-val').textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
-        cell.className = 'sector-cell ' + (chg > 0.1 ? 'sector-green' : chg < -0.1 ? 'sector-red' : 'sector-neutral');
+    const rows = document.querySelectorAll('#sectorTable tbody tr');
+    const nameMap = {'Technology':'Technology','Healthcare':'Healthcare','Financials':'Financials','Energy':'Energy','Industrials':'Industrials','Cons. Discretionary':'Cons. Discretionary','Cons. Staples':'Cons. Staples','Materials':'Materials','Utilities':'Utilities','Real Estate':'Real Estate','Comm. Services':'Comm. Services'};
+    rows.forEach(row => {
+      const label = row.querySelector('td').textContent.trim();
+      const sec = LIVE_SECTORS[label];
+      if (!sec) return;
+      const cells = row.querySelectorAll('td');
+      function fmtChg(v) {
+        const s = (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+        return s;
       }
+      function colorClass(v) { return v > 0.05 ? 'up' : v < -0.05 ? 'down' : 'neutral'; }
+      cells[2].textContent = fmtChg(sec.weekly_chg);
+      cells[2].className = 'text-right font-mono ' + colorClass(sec.weekly_chg);
+      cells[3].textContent = fmtChg(sec.monthly_chg);
+      cells[3].className = 'text-right font-mono ' + colorClass(sec.monthly_chg);
+      cells[4].textContent = fmtChg(sec.ytd_chg);
+      cells[4].className = 'text-right font-mono ' + colorClass(sec.ytd_chg);
     });
+  }
+
+  // Commodities KPIs
+  function fillCommodityKpi(id, data, prefix) {
+    const card = document.getElementById(id);
+    if (card && data && data.price) {
+      card.querySelector('.kpi-value').textContent = prefix + data.price.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+      const chgEl = card.querySelector('.kpi-change');
+      chgEl.textContent = (data.change_pct >= 0 ? '+' : '') + data.change_pct.toFixed(2) + '%';
+      chgEl.className = 'kpi-change ' + (data.change_pct >= 0 ? 'up' : 'down');
+    }
+  }
+  if (LIVE_COMMODITIES) {
+    fillCommodityKpi('kpiVix', LIVE_COMMODITIES.VIX, '');
+    fillCommodityKpi('kpiOil', LIVE_COMMODITIES.WTI_OIL, '$');
+    fillCommodityKpi('kpiGas', LIVE_COMMODITIES.NAT_GAS, '$');
   }
 
   // Update LOGO holdings with live price/PE/fundamentals
@@ -1654,9 +1699,51 @@ holdings.forEach(h => {
   const tr = document.createElement('tr');
   tr.className = 'company-row';
   tr.onclick = () => openModal(h);
-  tr.innerHTML = `<td style="color:var(--text-muted)">${h.rank}</td><td><span class="ticker-badge">${h.ticker}</span></td><td>${h.name}</td><td class="text-right font-mono" style="font-weight:600">${h.weight}%</td><td class="text-right font-mono">${h.price}</td><td class="text-right font-mono">${h.mktcap}</td><td class="text-right font-mono">${h.pe}</td><td><div class="weight-bar" style="width:${h.weight*10}px"></div></td>`;
+  const tgt = h.target_price_fmt || h.target_price || 'N/A';
+  const eveb = h.ev_ebitda_fmt || h.ev_ebitda || 'N/A';
+  const fpe = h.fwdpe_fmt || h.fwdpe || 'N/A';
+  tr.innerHTML = `<td style="color:var(--text-muted)">${h.rank}</td><td><span class="ticker-badge">${h.ticker}</span></td><td>${h.name}</td><td class="text-right font-mono" style="font-weight:600">${h.weight}%</td><td class="text-right font-mono">${h.price}</td><td class="text-right font-mono">${h.mktcap}</td><td class="text-right font-mono">${h.pe}</td><td class="text-right font-mono">${fpe}</td><td class="text-right font-mono">${eveb}</td><td class="text-right font-mono">${tgt}</td><td><div class="weight-bar" style="width:${h.weight*10}px"></div></td>`;
   tbody.appendChild(tr);
 });
+
+// Build sector allocation pie chart
+function buildSectorPie() {
+  const sectorWeights = {};
+  holdings.forEach(h => {
+    const sec = h.sector || 'Other';
+    sectorWeights[sec] = (sectorWeights[sec] || 0) + h.weight;
+  });
+  const sorted = Object.entries(sectorWeights).sort((a,b) => b[1] - a[1]);
+  const colors = ['#2E7DD1','#E8873A','#2EAE6D','#D94444','#8B5CF6','#F59E0B','#06B6D4','#EC4899','#6366F1','#84CC16','#8D95A8'];
+  const total = sorted.reduce((a,s) => a + s[1], 0);
+
+  let svg = '';
+  let angle = 0;
+  sorted.forEach(([sec, wt], i) => {
+    const pct = wt / total;
+    const startAngle = angle;
+    const endAngle = angle + pct * 360;
+    const largeArc = pct > 0.5 ? 1 : 0;
+    const sr = startAngle * Math.PI / 180;
+    const er = endAngle * Math.PI / 180;
+    const x1 = 100 + 85 * Math.sin(sr);
+    const y1 = 100 - 85 * Math.cos(sr);
+    const x2 = 100 + 85 * Math.sin(er);
+    const y2 = 100 - 85 * Math.cos(er);
+    const color = colors[i % colors.length];
+    svg += `<path d="M100,100 L${x1},${y1} A85,85 0 ${largeArc},1 ${x2},${y2} Z" fill="${color}" stroke="white" stroke-width="1.5"/>`;
+    angle = endAngle;
+  });
+  document.getElementById('sectorPie').innerHTML = svg;
+
+  let legend = '';
+  sorted.forEach(([sec, wt], i) => {
+    const color = colors[i % colors.length];
+    legend += `<div style="display:flex;align-items:center;gap:8px;"><div style="width:12px;height:12px;border-radius:3px;background:${color};flex-shrink:0;"></div><span style="flex:1;">${sec}</span><span class="font-mono" style="font-weight:600;">${wt.toFixed(1)}%</span></div>`;
+  });
+  document.getElementById('sectorAllocLegend').innerHTML = legend;
+}
+buildSectorPie();
 
 // Modal
 function openModal(h) {
@@ -1664,52 +1751,106 @@ function openModal(h) {
   document.getElementById('modalName').textContent = h.name;
   const body = document.getElementById('modalBody');
 
-  // Generate a simple price chart SVG
   const chartSvg = generatePriceChart(h.ticker);
 
+  // Safe getters for live vs static data
+  const gm = h.gross_margin_fmt || (h.gross_margin ? (h.gross_margin*100).toFixed(1)+'%' : 'N/A');
+  const em = h.ebitda_margin_fmt || (h.ebitda_margin ? (h.ebitda_margin*100).toFixed(1)+'%' : 'N/A');
+  const om = h.operating_margin_fmt || (h.operating_margin ? (h.operating_margin*100).toFixed(1)+'%' : 'N/A');
+  const nm = h.profit_margin_fmt || (h.profit_margin ? (h.profit_margin*100).toFixed(1)+'%' : 'N/A');
+  const eg = h.earnings_growth_fmt || (h.earnings_growth ? (h.earnings_growth*100).toFixed(1)+'%' : 'N/A');
+  const rg = h.revenue_growth_fmt || (h.revGrowth || 'N/A');
+  const rev = h.total_revenue_fmt || h.revenue || 'N/A';
+  const ebitda = h.ebitda_fmt || 'N/A';
+  const eveb = h.ev_ebitda_fmt || h.ev_ebitda || 'N/A';
+  const tgt = h.target_price_fmt || (h.target_price ? '$'+h.target_price : 'N/A');
+  const tgtLow = h.target_low ? '$'+h.target_low : '--';
+  const tgtHigh = h.target_high ? '$'+h.target_high : '--';
+  const upside = h.upside_fmt || 'N/A';
+  const nAnalysts = h.num_analysts || '--';
+  const recKey = h.recommendation || '--';
+  const recScore = h.recommendation_score || '--';
+  const beta = h.beta || 'N/A';
+  const hi52 = h.high_52wk ? '$'+h.high_52wk : '--';
+  const lo52 = h.low_52wk ? '$'+h.low_52wk : '--';
+  const ind = h.industry || h.sector || '';
+  const desc = h.description || h.desc || '';
+
   body.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
-      <div class="ind-card"><div class="ind-card-title">Price</div><div class="ind-card-value">${h.price}</div></div>
-      <div class="ind-card"><div class="ind-card-title">Market Cap</div><div class="ind-card-value">${h.mktcap}</div></div>
-      <div class="ind-card"><div class="ind-card-title">P/E (TTM)</div><div class="ind-card-value">${h.pe}</div></div>
-      <div class="ind-card"><div class="ind-card-title">Fwd P/E</div><div class="ind-card-value">${h.fwdpe}</div></div>
+    <!-- Top KPIs -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;">
+      <div class="ind-card"><div class="ind-card-title">Price</div><div class="ind-card-value">${h.price_fmt || h.price}</div></div>
+      <div class="ind-card"><div class="ind-card-title">Market Cap</div><div class="ind-card-value">${h.mktcap_fmt || h.mktcap}</div></div>
+      <div class="ind-card"><div class="ind-card-title">P/E (TTM)</div><div class="ind-card-value">${h.pe_fmt || h.pe}</div></div>
+      <div class="ind-card"><div class="ind-card-title">Fwd P/E</div><div class="ind-card-value">${h.fwdpe_fmt || h.fwdpe}</div></div>
+      <div class="ind-card"><div class="ind-card-title">EV/EBITDA</div><div class="ind-card-value">${eveb}</div></div>
     </div>
 
-    <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:6px;">1-Year Price Trend (Simulated)</div>
+    <!-- Price Chart -->
+    <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:6px;">1-Year Price History</div>
     ${chartSvg}
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px;">
+      <!-- Left: Margins & Growth -->
       <div>
-        <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px;">Company Overview</div>
-        <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">${h.desc}</div>
-        <div style="margin-top:12px;">
-          <div style="font-size:12px;"><strong>Sector:</strong> ${h.sector}</div>
-          <div style="font-size:12px;margin-top:4px;"><strong>LOGO Weight:</strong> ${h.weight}%</div>
-        </div>
-      </div>
-      <div>
-        <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px;">Key Financials</div>
+        <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px;">Margins & Profitability</div>
         <table style="font-size:12px;">
-          <tr><td style="font-weight:600;padding:4px 10px 4px 0;">Revenue</td><td>${h.revenue}</td></tr>
-          <tr><td style="font-weight:600;padding:4px 10px 4px 0;">Revenue Growth</td><td class="${h.revGrowth.startsWith('+') ? 'up' : ''}">${h.revGrowth}</td></tr>
-          <tr><td style="font-weight:600;padding:4px 10px 4px 0;">Margins</td><td>${h.margin}</td></tr>
+          <thead><tr><th>Metric</th><th class="text-right">Value</th></tr></thead>
+          <tbody>
+            <tr><td>Gross Margin</td><td class="text-right font-mono" style="font-weight:600;">${gm}</td></tr>
+            <tr><td>EBITDA Margin</td><td class="text-right font-mono" style="font-weight:600;">${em}</td></tr>
+            <tr><td>Operating (EBIT) Margin</td><td class="text-right font-mono" style="font-weight:600;">${om}</td></tr>
+            <tr><td>Net Profit Margin</td><td class="text-right font-mono" style="font-weight:600;">${nm}</td></tr>
+          </tbody>
+        </table>
+
+        <div style="font-size:13px;font-weight:600;color:var(--navy);margin:14px 0 8px;">Growth</div>
+        <table style="font-size:12px;">
+          <tbody>
+            <tr><td>Revenue Growth (YoY)</td><td class="text-right font-mono" style="font-weight:600;">${rg}</td></tr>
+            <tr><td>Earnings Growth (YoY)</td><td class="text-right font-mono" style="font-weight:600;">${eg}</td></tr>
+            <tr><td>Revenue (TTM)</td><td class="text-right font-mono">${rev}</td></tr>
+            <tr><td>EBITDA (TTM)</td><td class="text-right font-mono">${ebitda}</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Right: Analyst Consensus & Key Stats -->
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px;">Analyst Consensus</div>
+        <table style="font-size:12px;">
+          <tbody>
+            <tr><td>Recommendation</td><td class="text-right" style="font-weight:600;text-transform:capitalize;">${recKey}</td></tr>
+            <tr><td>Score (1=Buy, 5=Sell)</td><td class="text-right font-mono" style="font-weight:600;">${recScore}</td></tr>
+            <tr><td>Price Target (Mean)</td><td class="text-right font-mono" style="font-weight:600;">${tgt}</td></tr>
+            <tr><td>Target Range</td><td class="text-right font-mono">${tgtLow} &ndash; ${tgtHigh}</td></tr>
+            <tr><td>Upside to Target</td><td class="text-right font-mono ${h.upside > 0 ? 'up' : 'down'}" style="font-weight:600;">${upside}</td></tr>
+            <tr><td># of Analysts</td><td class="text-right font-mono">${nAnalysts}</td></tr>
+          </tbody>
+        </table>
+
+        <div style="font-size:13px;font-weight:600;color:var(--navy);margin:14px 0 8px;">Key Stats</div>
+        <table style="font-size:12px;">
+          <tbody>
+            <tr><td>Sector</td><td class="text-right">${h.sector}</td></tr>
+            <tr><td>Industry</td><td class="text-right">${ind}</td></tr>
+            <tr><td>Beta</td><td class="text-right font-mono">${beta}</td></tr>
+            <tr><td>52-Week Range</td><td class="text-right font-mono">${lo52} &ndash; ${hi52}</td></tr>
+            <tr><td>LOGO Weight</td><td class="text-right font-mono" style="font-weight:600;">${h.weight}%</td></tr>
+          </tbody>
         </table>
       </div>
     </div>
 
-    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
-      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px;">Competitive Moat</div>
-      <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">${h.moat}</div>
+    <!-- Company Description -->
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px;">About</div>
+      <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;max-height:120px;overflow-y:auto;">${desc}</div>
     </div>
 
-    <div style="margin-top:14px;">
-      <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:6px;">Key Risks</div>
-      <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">${h.risks}</div>
-    </div>
-
-    <div class="commentary" style="margin-top:14px;">
-      <strong>Outlook:</strong> ${h.outlook}
-    </div>
+    ${h.moat ? `<div style="margin-top:14px;"><div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px;">Competitive Moat</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">${h.moat}</div></div>` : ''}
+    ${h.risks ? `<div style="margin-top:14px;"><div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:6px;">Key Risks</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">${h.risks}</div></div>` : ''}
+    ${h.outlook ? `<div class="commentary" style="margin-top:14px;"><strong>Outlook:</strong> ${h.outlook}</div>` : ''}
   `;
   document.getElementById('companyModal').classList.add('show');
 }

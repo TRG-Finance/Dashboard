@@ -146,6 +146,11 @@ LOGO_TICKERS = [
 
 INDEX_TICKERS = ["^GSPC", "^IXIC", "^RUA"]
 
+COMMODITY_TICKERS = {
+    "VIX": "^VIX",
+    "WTI_OIL": "CL=F",
+    "NAT_GAS": "NG=F",
+}
 
 SECTOR_ETFS = {
     "Technology": "XLK", "Healthcare": "XLV", "Financials": "XLF",
@@ -200,22 +205,57 @@ def fetch_yf_data():
         data["sp500_pe"] = None
         data["sp500_fwd_pe"] = None
 
-    # ----- Sector ETF Weekly Performance -----
+    # ----- Commodities / VIX -----
+    data["commodities"] = {}
+    for label, sym in COMMODITY_TICKERS.items():
+        try:
+            t = yf.Ticker(sym)
+            info = t.fast_info
+            price = round(info.last_price, 2) if hasattr(info, 'last_price') else None
+            prev = round(info.previous_close, 2) if hasattr(info, 'previous_close') else price
+            chg = round((price - prev) / prev * 100, 2) if price and prev else 0
+            data["commodities"][label] = {"price": price, "change_pct": chg}
+            print(f"    {label}: ${price} ({chg:+.2f}%)")
+        except Exception as e:
+            print(f"  WARN: Failed to fetch {label} ({sym}): {e}")
+            data["commodities"][label] = {"price": None, "change_pct": 0}
+
+    # ----- Sector ETF Performance (weekly, monthly, YTD) -----
     sector_perf = {}
     for sector_name, etf in SECTOR_ETFS.items():
         try:
             t = yf.Ticker(etf)
-            hist = t.history(period="5d")
-            if len(hist) >= 2:
-                first = hist["Close"].iloc[0]
-                last = hist["Close"].iloc[-1]
-                wk_chg = round((last - first) / first * 100, 2)
-            else:
-                wk_chg = 0
-            sector_perf[sector_name] = {"etf": etf, "weekly_chg": wk_chg}
+            hist = t.history(period="1y")
+            if len(hist) < 5:
+                sector_perf[sector_name] = {"etf": etf, "weekly_chg": 0, "monthly_chg": 0, "ytd_chg": 0}
+                continue
+
+            last = hist["Close"].iloc[-1]
+
+            # Weekly (5 trading days)
+            wk_start = hist["Close"].iloc[-5] if len(hist) >= 5 else hist["Close"].iloc[0]
+            wk_chg = round((last - wk_start) / wk_start * 100, 2)
+
+            # Monthly (~21 trading days)
+            mo_start = hist["Close"].iloc[-21] if len(hist) >= 21 else hist["Close"].iloc[0]
+            mo_chg = round((last - mo_start) / mo_start * 100, 2)
+
+            # YTD (from first trading day of year)
+            import pandas as pd
+            ytd_data = hist[hist.index >= pd.Timestamp(f"{datetime.date.today().year}-01-01", tz=hist.index.tz)]
+            ytd_start = ytd_data["Close"].iloc[0] if len(ytd_data) > 0 else hist["Close"].iloc[0]
+            ytd_chg = round((last - ytd_start) / ytd_start * 100, 2)
+
+            sector_perf[sector_name] = {
+                "etf": etf,
+                "weekly_chg": wk_chg,
+                "monthly_chg": mo_chg,
+                "ytd_chg": ytd_chg,
+            }
+            print(f"    {sector_name}: W={wk_chg:+.2f}% M={mo_chg:+.2f}% YTD={ytd_chg:+.2f}%")
         except Exception as e:
             print(f"  WARN: Failed to fetch sector {etf}: {e}")
-            sector_perf[sector_name] = {"etf": etf, "weekly_chg": 0}
+            sector_perf[sector_name] = {"etf": etf, "weekly_chg": 0, "monthly_chg": 0, "ytd_chg": 0}
     data["sector_performance"] = sector_perf
 
     # ----- LOGO Holdings (full fundamentals) -----
@@ -234,7 +274,22 @@ def fetch_yf_data():
                 "ev_ebitda": safe_round(info.get("enterpriseToEbitda")),
                 "earnings_growth": safe_round(info.get("earningsGrowth"), 3),
                 "revenue_growth": safe_round(info.get("revenueGrowth"), 3),
+                # All 4 margin types
+                "gross_margin": safe_round(info.get("grossMargins"), 3),
+                "ebitda_margin": safe_round(info.get("ebitdaMargins"), 3),
+                "operating_margin": safe_round(info.get("operatingMargins"), 3),
                 "profit_margin": safe_round(info.get("profitMargins"), 3),
+                # Analyst consensus
+                "target_price": safe_round(info.get("targetMeanPrice"), 2),
+                "target_low": safe_round(info.get("targetLowPrice"), 2),
+                "target_high": safe_round(info.get("targetHighPrice"), 2),
+                "num_analysts": info.get("numberOfAnalystOpinions", 0),
+                "recommendation": info.get("recommendationKey", ""),
+                "recommendation_score": safe_round(info.get("recommendationMean"), 1),
+                # Revenue & EBITDA
+                "total_revenue": info.get("totalRevenue", 0),
+                "ebitda": info.get("ebitda", 0),
+                # Identity
                 "sector": info.get("sector", ""),
                 "industry": info.get("industry", ""),
                 "beta": safe_round(info.get("beta"), 2),
@@ -255,14 +310,19 @@ def fetch_yf_data():
                 h["price_history"] = []
 
             holdings.append(h)
-            print(f"    {sym}: ${h['price']} PE={h['pe']} FwdPE={h['fwdpe']} EV/EBITDA={h['ev_ebitda']}")
+            print(f"    {sym}: ${h['price']} PE={h['pe']} FwdPE={h['fwdpe']} GM={h['gross_margin']} Target=${h['target_price']}")
         except Exception as e:
             print(f"  WARN: Failed to fetch {sym}: {e}")
             holdings.append({
                 "ticker": sym, "name": sym, "price": 0, "mktcap": 0,
                 "pe": None, "fwdpe": None, "ev_ebitda": None,
                 "earnings_growth": None, "revenue_growth": None,
-                "profit_margin": None, "sector": "", "industry": "",
+                "gross_margin": None, "ebitda_margin": None,
+                "operating_margin": None, "profit_margin": None,
+                "target_price": None, "target_low": None, "target_high": None,
+                "num_analysts": 0, "recommendation": "", "recommendation_score": None,
+                "total_revenue": 0, "ebitda": 0,
+                "sector": "", "industry": "",
                 "beta": None, "dividend_yield": None,
                 "high_52wk": None, "low_52wk": None,
                 "avg_volume": 0, "description": "", "price_history": [],
@@ -299,18 +359,33 @@ def build_dashboard():
     yf_data = fetch_yf_data()
 
     # Format holdings for display
+    def fmt_pct(v, mult=100):
+        return f"{v*mult:.1f}%" if v else "N/A"
+    def fmt_pct_signed(v, mult=100):
+        return f"{v*mult:+.1f}%" if v else "N/A"
+
     for h in yf_data["holdings"]:
         h["mktcap_fmt"] = format_mktcap(h["mktcap"])
         h["price_fmt"] = f"${h['price']:,.2f}" if h.get("price") else "N/A"
         h["pe_fmt"] = str(h["pe"]) if h.get("pe") else "N/A"
         h["fwdpe_fmt"] = str(h["fwdpe"]) if h.get("fwdpe") else "N/A"
         h["ev_ebitda_fmt"] = str(h["ev_ebitda"]) if h.get("ev_ebitda") else "N/A"
-        eg = h.get("earnings_growth")
-        h["earnings_growth_fmt"] = f"{eg*100:+.1f}%" if eg else "N/A"
-        rg = h.get("revenue_growth")
-        h["revenue_growth_fmt"] = f"{rg*100:+.1f}%" if rg else "N/A"
-        pm = h.get("profit_margin")
-        h["profit_margin_fmt"] = f"{pm*100:.1f}%" if pm else "N/A"
+        h["earnings_growth_fmt"] = fmt_pct_signed(h.get("earnings_growth"))
+        h["revenue_growth_fmt"] = fmt_pct_signed(h.get("revenue_growth"))
+        h["gross_margin_fmt"] = fmt_pct(h.get("gross_margin"))
+        h["ebitda_margin_fmt"] = fmt_pct(h.get("ebitda_margin"))
+        h["operating_margin_fmt"] = fmt_pct(h.get("operating_margin"))
+        h["profit_margin_fmt"] = fmt_pct(h.get("profit_margin"))
+        h["target_price_fmt"] = f"${h['target_price']:,.2f}" if h.get("target_price") else "N/A"
+        h["total_revenue_fmt"] = format_mktcap(h.get("total_revenue"))
+        h["ebitda_fmt"] = format_mktcap(h.get("ebitda"))
+        # Upside to target
+        if h.get("target_price") and h.get("price") and h["price"] > 0:
+            h["upside"] = round((h["target_price"] - h["price"]) / h["price"] * 100, 1)
+            h["upside_fmt"] = f"{h['upside']:+.1f}%"
+        else:
+            h["upside"] = 0
+            h["upside_fmt"] = "N/A"
 
     # Format S&P earnings growth
     sp_eg = yf_data.get("sp500_earnings_growth")
@@ -342,10 +417,12 @@ def build_dashboard():
         "sp500_trailing_eps": yf_data.get("sp500_trailing_eps"),
         "sp500_forward_eps": yf_data.get("sp500_forward_eps"),
         "sector_performance": yf_data.get("sector_performance", {}),
+        "commodities": yf_data.get("commodities", {}),
         "holdings": yf_data["holdings"],
         "fred_json": json.dumps(fred_data, default=str),
         "holdings_json": json.dumps(yf_data["holdings"], default=str),
         "sector_json": json.dumps(yf_data.get("sector_performance", {}), default=str),
+        "commodities_json": json.dumps(yf_data.get("commodities", {}), default=str),
     }
 
     # Load and render template
