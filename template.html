@@ -188,8 +188,8 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
   <button class="tab-btn" onclick="switchTab('indicators')">Economic Indicators</button>
   <button class="tab-btn" onclick="switchTab('alpha')">Alpha Brands (LOGO)</button>
   <button class="tab-btn" onclick="switchTab('forces')">Structural Forces</button>
-  <button class="tab-btn" onclick="switchTab('framework')">Macro Framework</button>
-  <button class="tab-btn" onclick="switchTab('framework2')">Macro Framework 2</button>
+  <button class="tab-btn" onclick="switchTab('framework')">Static Framework</button>
+  <button class="tab-btn" onclick="switchTab('framework2')">Surprise Framework</button>
 </div>
 
 <!-- ============================================================ -->
@@ -1001,6 +1001,27 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
     </div>
   </div>
 
+  <!-- Custom Weighted Regime -->
+  <div class="section-label">Custom Weighted Regime</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Adjust indicator weights (0-5) to see how the regime shifts. Default is equal-weighted (all 1).</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Your Weighted Regime Map</div><span class="card-badge badge-updated" id="regime1WtLabel">--</span></div>
+      <div class="card-body" style="padding:16px;">
+        <svg id="quadrant1WtSvg" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:520px;"></svg>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Indicator Weights</div><span class="card-badge badge-live">Drag to adjust</span></div>
+      <div class="card-body" style="padding:10px 16px;max-height:520px;overflow-y:auto;">
+        <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:6px;">Growth Signals</div>
+        <div id="fw1GrowthWeights"></div>
+        <div style="font-size:11px;font-weight:700;color:var(--navy);margin:10px 0 6px;">Inflation Signals</div>
+        <div id="fw1InflationWeights"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== RISK RADAR (was Layer 3) ===== -->
   <div class="section-label">Risk Radar</div>
   <div class="full-width">
@@ -1247,6 +1268,27 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
   </div>
 
   <!-- Market-Implied Signals -->
+  <!-- Custom Weighted Regime -->
+  <div class="section-label">Custom Weighted Regime</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Adjust indicator weights (0-5) to see how the regime shifts. Default is equal-weighted (all 1).</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Your Weighted Regime Map</div><span class="card-badge badge-updated" id="regime2WtLabel">--</span></div>
+      <div class="card-body" style="padding:16px;">
+        <svg id="quadrant2WtSvg" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:520px;"></svg>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Indicator Weights</div><span class="card-badge badge-live">Drag to adjust</span></div>
+      <div class="card-body" style="padding:10px 16px;max-height:520px;overflow-y:auto;">
+        <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:6px;">Growth Signals</div>
+        <div id="fw2GrowthWeights"></div>
+        <div style="font-size:11px;font-weight:700;color:var(--navy);margin:10px 0 6px;">Inflation Signals</div>
+        <div id="fw2InflationWeights"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="section-label">Market-Implied Regime Signals</div>
   <div class="full-width">
     <div class="card">
@@ -3208,10 +3250,6 @@ const inflationSurprises = [
    desc:'Fed\'s preferred gauge vs 6M average.'},
   {name:"PPI (Producer Prices)", current:_ppiCur, avg:_ppiAvg, unit:'', score:_surpriseScore(_ppiCur, _ppiAvg),
    desc:'Producer Price Index vs 6M avg. PPI leads CPI by 2-3 months — rising producer costs flow through to consumer prices.'},
-  {name:"5Y Breakeven Infl.", current:_t5yie, avg:_t5yieAvg, unit:'%', score:_surpriseScore(_t5yie, _t5yieAvg),
-   desc:'TIPS-implied 5Y inflation expectation vs 6M avg. What the bond market expects for inflation.'},
-  {name:"10Y Breakeven Infl.", current:_t10yie, avg:_t10yieAvg, unit:'%', score:_surpriseScore(_t10yie, _t10yieAvg),
-   desc:'TIPS-implied 10Y inflation expectation vs 6M avg. Longer-term market inflation pricing.'},
   {name:"Wage Growth Trend", current:_wageCur, avg:_wageAvg6, unit:'%', score:_surpriseScore(_wageCur, _wageAvg6),
    desc:'Average hourly earnings YoY vs 6M average. Above 4% risks wage-price spiral.'},
   {name:"Import Prices Trend", current:_importCur, avg:_importAvg6, unit:'%', score:_surpriseScore(_importCur, _importAvg6),
@@ -3404,6 +3442,85 @@ if (colIdx) {
   const thCell = document.querySelectorAll('#tab-framework2 table')[3].querySelectorAll('thead th')[colIdx];
   if (thCell) { thCell.style.background = regime2.color + '20'; thCell.style.borderBottom = '3px solid ' + regime2.color; }
 }
+
+// ===== CUSTOM WEIGHTED REGIME ENGINE (both frameworks) =====
+
+function renderWeightedQuadrant(svgId, gs, is, labelId) {
+  const regime = gs > 0.05 && is < -0.05 ? {name:"Goldilocks",color:"#2EAE6D"} :
+                 gs > 0.05 && is >= -0.05 ? {name:"Reflation",color:"#E8873A"} :
+                 gs <= 0.05 && is >= 0.05 ? {name:"Stagflationary",color:"#D94444"} :
+                 {name:"Deflationary",color:"#2E7DD1"};
+  const S=520,pad=60,chartS=S-pad*2,cx=pad+chartS/2,cy=pad+chartS/2;
+  const dotX=cx+gs*(chartS/2)*0.85, dotY=cy-is*(chartS/2)*0.85;
+  const svg = document.getElementById(svgId);
+  svg.innerHTML = `
+    <rect x="${pad}" y="${pad}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#FDE8E8" opacity="0.5"/>
+    <rect x="${cx}" y="${pad}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#FFF3E0" opacity="0.5"/>
+    <rect x="${pad}" y="${cy}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#E3F2FD" opacity="0.5"/>
+    <rect x="${cx}" y="${cy}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#E8F5EE" opacity="0.5"/>
+    <text x="${pad+chartS/4}" y="${pad+28}" font-size="13" fill="#B52A2A" text-anchor="middle" font-weight="700" font-family="Inter">STAGFLATION</text>
+    <text x="${cx+chartS/4}" y="${pad+28}" font-size="13" fill="#C67030" text-anchor="middle" font-weight="700" font-family="Inter">REFLATION</text>
+    <text x="${pad+chartS/4}" y="${cy+chartS/2-20}" font-size="13" fill="#1565C0" text-anchor="middle" font-weight="700" font-family="Inter">DEFLATION</text>
+    <text x="${cx+chartS/4}" y="${cy+chartS/2-20}" font-size="13" fill="#1A7A47" text-anchor="middle" font-weight="700" font-family="Inter">GOLDILOCKS</text>
+    <line x1="${cx}" y1="${pad}" x2="${cx}" y2="${pad+chartS}" stroke="var(--navy)" stroke-width="1.5" opacity="0.3"/>
+    <line x1="${pad}" y1="${cy}" x2="${pad+chartS}" y2="${cy}" stroke="var(--navy)" stroke-width="1.5" opacity="0.3"/>
+    <circle cx="${dotX}" cy="${dotY}" r="18" fill="${regime.color}" opacity="0.12"><animate attributeName="r" values="18;24;18" dur="2s" repeatCount="indefinite"/></circle>
+    <circle cx="${dotX}" cy="${dotY}" r="10" fill="${regime.color}" opacity="0.25"/>
+    <circle cx="${dotX}" cy="${dotY}" r="6" fill="${regime.color}" stroke="white" stroke-width="2"/>
+    <text x="${dotX}" y="${dotY-16}" font-size="11" fill="${regime.color}" text-anchor="middle" font-weight="700" font-family="Inter">${regime.name.toUpperCase()}</text>
+    <text x="${pad}" y="${S-8}" font-size="10" fill="var(--text-muted)" font-family="Inter">Growth: ${gs.toFixed(2)} | Inflation: ${is.toFixed(2)}</text>
+  `;
+  const lbl = document.getElementById(labelId);
+  if (lbl) { lbl.textContent = regime.name; lbl.style.background = regime.color+'20'; lbl.style.color = regime.color; }
+}
+
+function buildWeightControls(containerId, indicators, onChange) {
+  const el = document.getElementById(containerId);
+  let html = '';
+  indicators.forEach((ind, i) => {
+    html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+      <input type="range" min="0" max="5" value="1" data-idx="${i}" style="width:60px;height:4px;cursor:pointer;" oninput="this.nextElementSibling.textContent=this.value;window._wtOnChange_${containerId}()">
+      <span style="font-size:10px;font-weight:700;color:var(--navy);width:12px;text-align:center;">1</span>
+      <span style="font-size:11px;color:var(--text-secondary);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ind.name}</span>
+      <span style="font-size:10px;font-weight:600;color:${ind.score>0?'var(--green)':ind.score<0?'var(--red)':'var(--text-muted)'};">${ind.score>=0?'+':''}${ind.score}</span>
+    </div>`;
+  });
+  el.innerHTML = html;
+  window['_wtOnChange_'+containerId] = onChange;
+}
+
+function calcWeightedComposite(containerId, indicators) {
+  const sliders = document.querySelectorAll(`#${containerId} input[type="range"]`);
+  let weightedSum = 0, totalWeight = 0;
+  sliders.forEach((s, i) => {
+    const w = parseInt(s.value);
+    if (w > 0 && i < indicators.length) {
+      weightedSum += indicators[i].score * w;
+      totalWeight += 2 * w;
+    }
+  });
+  return totalWeight > 0 ? weightedSum / totalWeight : 0;
+}
+
+// Framework 1 weights
+function recalcFw1() {
+  const gw = calcWeightedComposite('fw1GrowthWeights', growthIndicators);
+  const iw = calcWeightedComposite('fw1InflationWeights', inflationIndicators);
+  renderWeightedQuadrant('quadrant1WtSvg', gw, iw, 'regime1WtLabel');
+}
+buildWeightControls('fw1GrowthWeights', growthIndicators, recalcFw1);
+buildWeightControls('fw1InflationWeights', inflationIndicators, recalcFw1);
+recalcFw1();
+
+// Framework 2 weights
+function recalcFw2() {
+  const gw = calcWeightedComposite('fw2GrowthWeights', growthSurprises);
+  const iw = calcWeightedComposite('fw2InflationWeights', inflationSurprises);
+  renderWeightedQuadrant('quadrant2WtSvg', gw, iw, 'regime2WtLabel');
+}
+buildWeightControls('fw2GrowthWeights', growthSurprises, recalcFw2);
+buildWeightControls('fw2InflationWeights', inflationSurprises, recalcFw2);
+recalcFw2();
 
 {% endraw %}
 </script>
