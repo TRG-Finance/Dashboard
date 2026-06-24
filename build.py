@@ -147,11 +147,26 @@ LOGO_TICKERS = [
 INDEX_TICKERS = ["^GSPC", "^IXIC", "^RUA"]
 
 
+SECTOR_ETFS = {
+    "Technology": "XLK", "Healthcare": "XLV", "Financials": "XLF",
+    "Energy": "XLE", "Materials": "XLB", "Industrials": "XLI",
+    "Comm. Services": "XLC", "Cons. Staples": "XLP", "Utilities": "XLU",
+    "Real Estate": "XLRE", "Cons. Discretionary": "XLY",
+}
+
+
+def safe_round(val, decimals=1):
+    try:
+        return round(float(val), decimals)
+    except (TypeError, ValueError):
+        return None
+
+
 def fetch_yf_data():
-    """Fetch stock/index prices and fundamentals from Yahoo Finance."""
+    """Fetch stock/index prices, valuations, sector performance from Yahoo Finance."""
     data = {}
 
-    # Indices
+    # ----- Indices -----
     for sym in INDEX_TICKERS:
         try:
             t = yf.Ticker(sym)
@@ -164,39 +179,96 @@ def fetch_yf_data():
             print(f"  WARN: Failed to fetch index {sym}: {e}")
             data[sym] = {"price": None, "change_pct": 0}
 
-    # LOGO holdings
+    # ----- S&P 500 Valuation (via SPY) -----
+    try:
+        spy = yf.Ticker("SPY")
+        spy_info = spy.info
+        data["sp500_pe"] = safe_round(spy_info.get("trailingPE"), 1)
+        data["sp500_fwd_pe"] = safe_round(spy_info.get("forwardPE"), 1)
+        data["sp500_trailing_eps"] = safe_round(spy_info.get("trailingEps"), 2)
+        data["sp500_forward_eps"] = safe_round(spy_info.get("forwardEps"), 2)
+        data["sp500_ev_ebitda"] = safe_round(spy_info.get("enterpriseToEbitda"), 1)
+        data["sp500_earnings_growth"] = safe_round(spy_info.get("earningsGrowth"), 3)
+        data["sp500_revenue_growth"] = safe_round(spy_info.get("revenueGrowth"), 3)
+        data["sp500_dividend_yield"] = safe_round(spy_info.get("dividendYield"), 4)
+        data["sp500_beta"] = safe_round(spy_info.get("beta"), 2)
+        data["sp500_52wk_high"] = safe_round(spy_info.get("fiftyTwoWeekHigh"), 2)
+        data["sp500_52wk_low"] = safe_round(spy_info.get("fiftyTwoWeekLow"), 2)
+        print(f"    SPY: PE={data['sp500_pe']}, FwdPE={data['sp500_fwd_pe']}, EV/EBITDA={data['sp500_ev_ebitda']}, EarningsGrowth={data['sp500_earnings_growth']}")
+    except Exception as e:
+        print(f"  WARN: Failed to fetch SPY valuation: {e}")
+        data["sp500_pe"] = None
+        data["sp500_fwd_pe"] = None
+
+    # ----- Sector ETF Weekly Performance -----
+    sector_perf = {}
+    for sector_name, etf in SECTOR_ETFS.items():
+        try:
+            t = yf.Ticker(etf)
+            hist = t.history(period="5d")
+            if len(hist) >= 2:
+                first = hist["Close"].iloc[0]
+                last = hist["Close"].iloc[-1]
+                wk_chg = round((last - first) / first * 100, 2)
+            else:
+                wk_chg = 0
+            sector_perf[sector_name] = {"etf": etf, "weekly_chg": wk_chg}
+        except Exception as e:
+            print(f"  WARN: Failed to fetch sector {etf}: {e}")
+            sector_perf[sector_name] = {"etf": etf, "weekly_chg": 0}
+    data["sector_performance"] = sector_perf
+
+    # ----- LOGO Holdings (full fundamentals) -----
     holdings = []
     for sym in LOGO_TICKERS:
         try:
             t = yf.Ticker(sym)
             info = t.info
-            holdings.append({
+            h = {
                 "ticker": sym,
                 "name": info.get("shortName", sym),
-                "price": round(info.get("currentPrice", info.get("regularMarketPrice", 0)), 2),
+                "price": safe_round(info.get("currentPrice", info.get("regularMarketPrice", 0)), 2),
                 "mktcap": info.get("marketCap", 0),
-                "pe": round(info.get("trailingPE", 0), 1) if info.get("trailingPE") else "N/A",
-                "fwdpe": round(info.get("forwardPE", 0), 1) if info.get("forwardPE") else "N/A",
+                "pe": safe_round(info.get("trailingPE")),
+                "fwdpe": safe_round(info.get("forwardPE")),
+                "ev_ebitda": safe_round(info.get("enterpriseToEbitda")),
+                "earnings_growth": safe_round(info.get("earningsGrowth"), 3),
+                "revenue_growth": safe_round(info.get("revenueGrowth"), 3),
+                "profit_margin": safe_round(info.get("profitMargins"), 3),
                 "sector": info.get("sector", ""),
-            })
+                "industry": info.get("industry", ""),
+                "beta": safe_round(info.get("beta"), 2),
+                "dividend_yield": safe_round(info.get("dividendYield"), 4),
+                "high_52wk": safe_round(info.get("fiftyTwoWeekHigh"), 2),
+                "low_52wk": safe_round(info.get("fiftyTwoWeekLow"), 2),
+                "avg_volume": info.get("averageVolume", 0),
+                "description": info.get("longBusinessSummary", ""),
+            }
+            # Fetch 1-year price history for chart
+            try:
+                hist = t.history(period="1y", interval="1wk")
+                h["price_history"] = [
+                    {"date": d.strftime("%Y-%m-%d"), "close": round(float(c), 2)}
+                    for d, c in hist["Close"].items()
+                ]
+            except:
+                h["price_history"] = []
+
+            holdings.append(h)
+            print(f"    {sym}: ${h['price']} PE={h['pe']} FwdPE={h['fwdpe']} EV/EBITDA={h['ev_ebitda']}")
         except Exception as e:
             print(f"  WARN: Failed to fetch {sym}: {e}")
             holdings.append({
-                "ticker": sym, "name": sym, "price": 0,
-                "mktcap": 0, "pe": "N/A", "fwdpe": "N/A", "sector": "",
+                "ticker": sym, "name": sym, "price": 0, "mktcap": 0,
+                "pe": None, "fwdpe": None, "ev_ebitda": None,
+                "earnings_growth": None, "revenue_growth": None,
+                "profit_margin": None, "sector": "", "industry": "",
+                "beta": None, "dividend_yield": None,
+                "high_52wk": None, "low_52wk": None,
+                "avg_volume": 0, "description": "", "price_history": [],
             })
 
     data["holdings"] = holdings
-
-    # S&P 500 PE (use SPY as proxy)
-    try:
-        spy = yf.Ticker("SPY")
-        spy_info = spy.info
-        data["sp500_pe"] = round(spy_info.get("trailingPE", 25), 1)
-        data["sp500_fwd_pe"] = round(spy_info.get("forwardPE", 21), 1)
-    except:
-        data["sp500_pe"] = None
-        data["sp500_fwd_pe"] = None
 
     return data
 
@@ -226,10 +298,27 @@ def build_dashboard():
     print("  Fetching Yahoo Finance data...")
     yf_data = fetch_yf_data()
 
-    # Format holdings for template
+    # Format holdings for display
     for h in yf_data["holdings"]:
         h["mktcap_fmt"] = format_mktcap(h["mktcap"])
-        h["price_fmt"] = f"${h['price']:,.2f}" if h["price"] else "N/A"
+        h["price_fmt"] = f"${h['price']:,.2f}" if h.get("price") else "N/A"
+        h["pe_fmt"] = str(h["pe"]) if h.get("pe") else "N/A"
+        h["fwdpe_fmt"] = str(h["fwdpe"]) if h.get("fwdpe") else "N/A"
+        h["ev_ebitda_fmt"] = str(h["ev_ebitda"]) if h.get("ev_ebitda") else "N/A"
+        eg = h.get("earnings_growth")
+        h["earnings_growth_fmt"] = f"{eg*100:+.1f}%" if eg else "N/A"
+        rg = h.get("revenue_growth")
+        h["revenue_growth_fmt"] = f"{rg*100:+.1f}%" if rg else "N/A"
+        pm = h.get("profit_margin")
+        h["profit_margin_fmt"] = f"{pm*100:.1f}%" if pm else "N/A"
+
+    # Format S&P earnings growth
+    sp_eg = yf_data.get("sp500_earnings_growth")
+    sp_eg_fmt = f"{sp_eg*100:+.1f}%" if sp_eg else "N/A"
+    sp_rg = yf_data.get("sp500_revenue_growth")
+    sp_rg_fmt = f"{sp_rg*100:+.1f}%" if sp_rg else "N/A"
+    sp_dy = yf_data.get("sp500_dividend_yield")
+    sp_dy_fmt = f"{sp_dy*100:.2f}%" if sp_dy else "N/A"
 
     # Build context
     now = datetime.datetime.now()
@@ -244,9 +333,19 @@ def build_dashboard():
         "nasdaq_chg": yf_data.get("^IXIC", {}).get("change_pct", 0),
         "russell_price": yf_data.get("^RUA", {}).get("price"),
         "russell_chg": yf_data.get("^RUA", {}).get("change_pct", 0),
+        "sp500_pe": yf_data.get("sp500_pe"),
+        "sp500_fwd_pe": yf_data.get("sp500_fwd_pe"),
+        "sp500_ev_ebitda": yf_data.get("sp500_ev_ebitda"),
+        "sp500_earnings_growth": sp_eg_fmt,
+        "sp500_revenue_growth": sp_rg_fmt,
+        "sp500_dividend_yield": sp_dy_fmt,
+        "sp500_trailing_eps": yf_data.get("sp500_trailing_eps"),
+        "sp500_forward_eps": yf_data.get("sp500_forward_eps"),
+        "sector_performance": yf_data.get("sector_performance", {}),
         "holdings": yf_data["holdings"],
         "fred_json": json.dumps(fred_data, default=str),
         "holdings_json": json.dumps(yf_data["holdings"], default=str),
+        "sector_json": json.dumps(yf_data.get("sector_performance", {}), default=str),
     }
 
     # Load and render template
