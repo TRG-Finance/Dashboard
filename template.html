@@ -1154,9 +1154,6 @@ tr:hover td{background:#F8F9FB;}
           <br><br>
           <strong>Key risk to monitor:</strong> Middle East escalation remains the highest-likelihood, highest-impact variable. A sustained oil spike above $120 would push the regime deeper into stagflation territory.
         </div>
-        <div style="margin-top:12px;padding:10px 14px;background:#F4F6F9;border-radius:6px;font-size:10px;color:var(--text-muted);line-height:1.6;">
-          <strong>Disclaimer:</strong> This framework reflects quantitative signals from FRED, Yahoo Finance, and publicly sourced research. Sector signals indicate historical tendencies in similar macro regimes, not predictions or investment recommendations. Structural force analysis is informed by cited third-party research (IMF, World Bank, JPMorgan, BEA, BLS). All data should be independently verified before making investment decisions.
-        </div>
       </div>
     </div>
   </div>
@@ -1316,31 +1313,39 @@ function hydrate() {
     fillCommodityKpi('kpiGas', LIVE_COMMODITIES.NAT_GAS, '$');
   }
 
-  // Update LOGO holdings with live price/PE/fundamentals
-  if (LIVE_HOLDINGS && LIVE_HOLDINGS.length > 0) {
-    LIVE_HOLDINGS.forEach(lh => {
-      const match = holdings.find(h => h.ticker === lh.ticker);
-      if (match) {
-        if (lh.price) match.price = '$' + Number(lh.price).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-        if (lh.pe) match.pe = String(lh.pe);
-        if (lh.fwdpe) match.fwdpe = String(lh.fwdpe);
-        if (lh.mktcap) {
-          const mc = lh.mktcap;
-          match.mktcap = mc >= 1e12 ? '$'+(mc/1e12).toFixed(2)+'T' : mc >= 1e9 ? '$'+Math.round(mc/1e9)+'B' : '$'+Math.round(mc/1e6)+'M';
-        }
-        if (lh.ev_ebitda) match.ev_ebitda = String(lh.ev_ebitda);
-        if (lh.earnings_growth) match.revGrowth = (lh.revenue_growth ? (lh.revenue_growth*100).toFixed(1)+'% YoY' : match.revGrowth);
-        if (lh.profit_margin) match.margin = 'Profit margin ' + (lh.profit_margin*100).toFixed(1) + '%';
-        if (lh.description) match.desc = lh.description;
-        if (lh.sector) match.sector = lh.sector;
-        if (lh.industry) match.industry = lh.industry || match.sector;
-        if (lh.price_history && lh.price_history.length > 0) match._liveHistory = lh.price_history;
-      }
-    });
-  }
 }
 
-// Run hydration after DOM loads
+// Merge LIVE_HOLDINGS data into a holdings array — called before table build
+function mergeHoldings(holdingsArr) {
+  if (!LIVE_HOLDINGS || LIVE_HOLDINGS.length === 0) return;
+  LIVE_HOLDINGS.forEach(lh => {
+    const match = holdingsArr.find(h => h.ticker === lh.ticker);
+    if (!match) return;
+    if (lh.price) match.price = '$' + Number(lh.price).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+    if (lh.pe) match.pe = String(lh.pe);
+    if (lh.fwdpe) match.fwdpe = String(lh.fwdpe);
+    if (lh.mktcap) {
+      const mc = lh.mktcap;
+      match.mktcap = mc >= 1e12 ? '$'+(mc/1e12).toFixed(2)+'T' : mc >= 1e9 ? '$'+Math.round(mc/1e9)+'B' : '$'+Math.round(mc/1e6)+'M';
+    }
+    if (lh.ev_ebitda) match.ev_ebitda = String(lh.ev_ebitda);
+    if (lh.earnings_growth) match.revGrowth = (lh.revenue_growth ? (lh.revenue_growth*100).toFixed(1)+'% YoY' : match.revGrowth);
+    if (lh.profit_margin) match.margin = 'Profit margin ' + (lh.profit_margin*100).toFixed(1) + '%';
+    if (lh.description) match.desc = lh.description;
+    if (lh.sector) match.sector = lh.sector;
+    if (lh.industry) match.industry = lh.industry || match.sector;
+    if (lh.price_history && lh.price_history.length > 0) match._liveHistory = lh.price_history;
+    if (lh.price_histories) match._liveHistories = lh.price_histories;
+    const copyKeys = ['ev_ebitda_fmt','gross_margin_fmt','ebitda_margin_fmt','operating_margin_fmt','profit_margin_fmt',
+      'earnings_growth_fmt','revenue_growth_fmt','total_revenue_fmt','ebitda_fmt','target_price_fmt','upside_fmt',
+      'target_price','target_low','target_high','num_analysts','recommendation','recommendation_score',
+      'gross_margin','ebitda_margin','operating_margin','earnings_growth','revenue_growth',
+      'total_revenue','ebitda','beta','dividend_yield','high_52wk','low_52wk','avg_volume'];
+    copyKeys.forEach(k => { if (lh[k] != null) match[k] = lh[k]; });
+  });
+}
+
+// Run hydration after DOM loads (KPIs, sectors, commodities)
 document.addEventListener('DOMContentLoaded', hydrate);
 
 {% raw %}
@@ -1436,6 +1441,9 @@ const brandTheses = {
   WYNN:"Wynn is the iconic brand of luxury resort experiences. Its logo represents the pinnacle of hospitality — from Las Vegas to Macau, Wynn's brand commands the highest room rates and guest loyalty in the industry."
 };
 holdings.forEach(h => { if (brandTheses[h.ticker]) h.brandThesis = brandTheses[h.ticker]; });
+
+// Merge live data into holdings BEFORE building the table
+mergeHoldings(holdings);
 
 // Build table
 const tbody = document.querySelector('#holdingsTable tbody');
@@ -1705,17 +1713,7 @@ function setModalChart(ticker, period) {
   container.innerHTML = generatePriceChart(ticker, period);
 }
 
-// Also hydrate multi-period histories from live data
-function hydrateHistories() {
-  if (!LIVE_HOLDINGS || LIVE_HOLDINGS.length === 0) return;
-  LIVE_HOLDINGS.forEach(lh => {
-    const match = holdings.find(h => h.ticker === lh.ticker);
-    if (match && lh.price_histories) {
-      match._liveHistories = lh.price_histories;
-    }
-  });
-}
-hydrateHistories();
+// Note: multi-period histories are merged by mergeHoldings() above
 
 // ===== YIELD CHART WITH TOGGLE =====
 const yieldData = {
@@ -2054,20 +2052,20 @@ initIndicatorCharts();
 // ===== INDICATOR DETAIL MODAL =====
 const indicatorMeta = {
   'GDP Growth (Annualized)':{fred:'A191RL1Q225SBEA',hist:'GDP_HIST',color:'var(--accent-blue)',unit:'%',target:null,desc:'Real GDP growth measures the total output of the U.S. economy at an annualized quarterly rate. It is the broadest measure of economic health. Above 2.5% is generally considered above-trend growth; below 1% signals significant slowdown risk. The BEA releases three estimates per quarter (advance, second, third), each incorporating more complete data.',source:'https://fred.stlouisfed.org/series/A191RL1Q225SBEA',sourceName:'FRED / BEA'},
-  'Monthly Jobs Added':{fred:'PAYEMS',hist:null,color:'var(--green)',unit:'K',target:null,desc:'Nonfarm payrolls measure the total number of jobs added or lost in a month, excluding farm workers and some government employees. Above ~150K per month generally keeps pace with population growth. This is the single most market-moving economic release — published on the first Friday of each month by the BLS.',source:'https://fred.stlouisfed.org/series/PAYEMS',sourceName:'FRED / BLS'},
-  'Manufacturing Health (PMI)':{fred:null,hist:null,color:'var(--accent-blue)',unit:'',target:null,desc:'The ISM Manufacturing PMI is a diffusion index based on a survey of purchasing managers at ~400 manufacturers. Above 50 indicates expansion, below 50 contraction. Sub-components include new orders, production, employment, supplier deliveries, and inventories. It is one of the earliest monthly indicators released and closely watched as a leading signal for industrial activity.',source:'https://www.ismworld.org/supply-management-news-and-reports/reports/ism-pmi-reports/',sourceName:'ISM'},
-  'Retail Spending (MoM)':{fred:null,hist:null,color:'var(--green)',unit:'%',target:null,desc:'Advance Monthly Retail Sales measures the total receipts of retail stores on a month-over-month basis. Consumer spending drives ~70% of GDP, making retail sales a key gauge of economic momentum. The report breaks down by category (auto, gas, food services, general merchandise, online), letting analysts identify which consumer segments are driving or dragging spending.',source:'https://www.census.gov/retail/marts/www/marts_current.pdf',sourceName:'Census Bureau'},
-  'New Home Construction':{fred:null,hist:null,color:'var(--accent-orange)',unit:'M',target:null,desc:'Housing starts measure the number of new residential construction projects begun in a given month, reported as a seasonally adjusted annual rate (SAAR). It is a leading indicator of economic activity because construction generates jobs, material purchases, and consumer spending. High mortgage rates typically suppress starts, as builders pull back when buyer demand weakens.',source:'https://fred.stlouisfed.org/series/HOUST',sourceName:'FRED / Census'},
-  'Building Permits':{fred:null,hist:null,color:'var(--accent-blue)',unit:'M',target:null,desc:'Building permits measure the number of permits issued for new housing units (SAAR). Permits lead starts by 1-2 months since construction cannot begin without a permit. A divergence between permits and starts can signal whether builders are accelerating or pulling back on planned projects.',source:'https://fred.stlouisfed.org/series/PERMIT',sourceName:'FRED / Census'},
-  'Trade Deficit':{fred:null,hist:null,color:'var(--navy)',unit:'$B',target:null,desc:'The monthly trade balance measures the difference between U.S. exports and imports. A wider deficit (more negative) subtracts from GDP because imports represent spending that flows overseas. The trade balance is heavily influenced by oil prices, the dollar exchange rate, and relative economic growth between the U.S. and trading partners.',source:'https://fred.stlouisfed.org/series/BOPGSTB',sourceName:'FRED / BEA'},
-  'Consumer Borrowing (MoM)':{fred:null,hist:null,color:'var(--accent-orange)',unit:'$B',target:null,desc:'Consumer credit outstanding measures the monthly change in total consumer debt (excluding mortgages). It has two components: revolving credit (credit cards) and non-revolving credit (auto loans, student loans). Rising credit can signal consumer confidence — or financial stress if savings are depleted and households are relying on debt to maintain spending.',source:'https://www.federalreserve.gov/releases/g19/current/',sourceName:'Federal Reserve G.19'},
-  'Import Prices (MoM)':{fred:null,hist:null,color:'var(--red)',unit:'%',target:null,desc:'The Import Price Index measures the month-over-month change in the price of goods imported into the U.S. It is a leading indicator for consumer inflation because higher import costs (especially oil and commodities) flow through to retail prices with a 2-3 month lag. A spike in import prices often precedes CPI acceleration.',source:'https://www.bls.gov/mxp/',sourceName:'BLS'},
+  'Monthly Jobs Added':{fred:'PAYEMS',hist:'PAYEMS_HIST',color:'var(--green)',unit:'K',target:null,desc:'Nonfarm payrolls measure the total number of jobs added or lost in a month, excluding farm workers and some government employees. Above ~150K per month generally keeps pace with population growth. This is the single most market-moving economic release — published on the first Friday of each month by the BLS.',source:'https://fred.stlouisfed.org/series/PAYEMS',sourceName:'FRED / BLS'},
+  'Manufacturing Health (PMI)':{fred:null,hist:null,color:'var(--accent-blue)',unit:'',target:50,desc:'The ISM Manufacturing PMI is a diffusion index based on a survey of purchasing managers at ~400 manufacturers. Above 50 indicates expansion, below 50 contraction. Sub-components include new orders, production, employment, supplier deliveries, and inventories. It is one of the earliest monthly indicators released and closely watched as a leading signal for industrial activity.',source:'https://www.ismworld.org/supply-management-news-and-reports/reports/ism-pmi-reports/',sourceName:'ISM'},
+  'Retail Spending (MoM)':{fred:'RSAFS',hist:'RSAFS_HIST',color:'var(--green)',unit:'%',target:null,desc:'Advance Monthly Retail Sales measures the total receipts of retail stores on a month-over-month basis. Consumer spending drives ~70% of GDP, making retail sales a key gauge of economic momentum. The report breaks down by category (auto, gas, food services, general merchandise, online), letting analysts identify which consumer segments are driving or dragging spending.',source:'https://fred.stlouisfed.org/series/RSAFS',sourceName:'FRED / Census Bureau'},
+  'New Home Construction':{fred:'HOUST',hist:'HOUST_HIST',color:'var(--accent-orange)',unit:'K',target:null,desc:'Housing starts measure the number of new residential construction projects begun in a given month, reported as a seasonally adjusted annual rate (SAAR). It is a leading indicator of economic activity because construction generates jobs, material purchases, and consumer spending. High mortgage rates typically suppress starts, as builders pull back when buyer demand weakens.',source:'https://fred.stlouisfed.org/series/HOUST',sourceName:'FRED / Census'},
+  'Building Permits':{fred:'PERMIT',hist:'PERMIT_HIST',color:'var(--accent-blue)',unit:'K',target:null,desc:'Building permits measure the number of permits issued for new housing units (SAAR). Permits lead starts by 1-2 months since construction cannot begin without a permit. A divergence between permits and starts can signal whether builders are accelerating or pulling back on planned projects.',source:'https://fred.stlouisfed.org/series/PERMIT',sourceName:'FRED / Census'},
+  'Trade Deficit':{fred:'BOPGSTB',hist:'BOPGSTB_HIST',color:'var(--navy)',unit:'$B',target:null,desc:'The monthly trade balance measures the difference between U.S. exports and imports. A wider deficit (more negative) subtracts from GDP because imports represent spending that flows overseas. The trade balance is heavily influenced by oil prices, the dollar exchange rate, and relative economic growth between the U.S. and trading partners.',source:'https://fred.stlouisfed.org/series/BOPGSTB',sourceName:'FRED / BEA'},
+  'Consumer Borrowing (MoM)':{fred:'TOTALSL',hist:'TOTALSL_HIST',color:'var(--accent-orange)',unit:'$B',target:null,desc:'Consumer credit outstanding measures the monthly change in total consumer debt (excluding mortgages). It has two components: revolving credit (credit cards) and non-revolving credit (auto loans, student loans). Rising credit can signal consumer confidence — or financial stress if savings are depleted and households are relying on debt to maintain spending.',source:'https://fred.stlouisfed.org/series/TOTALSL',sourceName:'FRED / Federal Reserve'},
+  'Import Prices (MoM)':{fred:'IR',hist:'IMPORT_PRICE_HIST',color:'var(--red)',unit:'%',target:null,desc:'The Import Price Index measures the month-over-month change in the price of goods imported into the U.S. It is a leading indicator for consumer inflation because higher import costs (especially oil and commodities) flow through to retail prices with a 2-3 month lag. A spike in import prices often precedes CPI acceleration.',source:'https://fred.stlouisfed.org/series/IR',sourceName:'FRED / BLS'},
   'Leading Economic Index':{fred:null,hist:null,color:'var(--accent-blue)',unit:'',target:null,desc:'The Conference Board Leading Economic Index (LEI) is a composite of 10 indicators designed to predict turning points in the business cycle 6-12 months ahead. Components include jobless claims, manufacturing orders, building permits, stock prices, credit conditions, and consumer expectations. Sustained declines historically precede recessions.',source:'https://www.conference-board.org/topics/us-leading-indicators/',sourceName:'Conference Board'},
-  'Wage Growth (YoY)':{fred:null,hist:null,color:'var(--accent-orange)',unit:'%',target:null,desc:'Average hourly earnings (year-over-year) measures the pace of wage growth across all private non-farm employees. The Fed watches this closely for signs of a wage-price spiral — where rising wages push up costs, which push up prices, which demand higher wages. When wages grow slower than inflation, real purchasing power declines, pressuring consumer spending.',source:'https://fred.stlouisfed.org/series/CES0500000003',sourceName:'FRED / BLS'},
+  'Wage Growth (YoY)':{fred:'CES0500000003',hist:'WAGE_HIST',color:'var(--accent-orange)',unit:'%',target:null,desc:'Average hourly earnings (year-over-year) measures the pace of wage growth across all private non-farm employees. The Fed watches this closely for signs of a wage-price spiral — where rising wages push up costs, which push up prices, which demand higher wages. When wages grow slower than inflation, real purchasing power declines, pressuring consumer spending.',source:'https://fred.stlouisfed.org/series/CES0500000003',sourceName:'FRED / BLS'},
   '10-Year Treasury Yield':{fred:'DGS10',hist:'YIELD_HISTORY',color:'var(--accent-orange)',unit:'%',target:null,desc:'The 10-year Treasury yield is the benchmark long-term interest rate in the U.S. It directly influences mortgage rates, corporate borrowing costs, and equity valuations (higher yields reduce the present value of future earnings). The yield reflects market expectations for growth, inflation, and Fed policy over the next decade.',source:'https://fred.stlouisfed.org/series/DGS10',sourceName:'FRED / Treasury'},
   'Inflation Expectations (1Y)':{fred:'UMCSENT',hist:'UMCSENT_HIST',color:'var(--red)',unit:'%',target:null,desc:'The University of Michigan 1-year inflation expectation measures what consumers expect inflation to be 12 months from now. The Fed considers this critically important because expectations can become self-fulfilling — if consumers expect higher prices, they may accelerate purchases and demand higher wages, creating the inflation they feared.',source:'https://fred.stlouisfed.org/series/MICH',sourceName:'FRED / Michigan'},
-  'Durable Goods Orders':{fred:null,hist:null,color:'var(--accent-blue)',unit:'%',target:null,desc:'Advance durable goods orders measure new orders placed with domestic manufacturers for goods expected to last 3+ years — appliances, machinery, aircraft, vehicles. It is a key proxy for business investment intentions (capex). Excluding transportation orders removes the volatile aircraft component and gives a cleaner read on underlying business spending trends.',source:'https://www.census.gov/manufacturing/m3/adv/current/index.html',sourceName:'Census Bureau'},
-  'Industrial Production (MoM)':{fred:null,hist:null,color:'var(--green)',unit:'%',target:null,desc:'The Federal Reserve\'s Industrial Production Index measures the real output of manufacturing, mining, and utilities on a month-over-month basis. It provides a direct measure of the supply side of the economy. The related capacity utilization rate (currently ~78%) indicates how much slack exists in the industrial sector — above 80% historically signals inflationary pressure.',source:'https://fred.stlouisfed.org/series/INDPRO',sourceName:'FRED / Federal Reserve'},
+  'Durable Goods Orders':{fred:'DGORDER',hist:'DGORDER_HIST',color:'var(--accent-blue)',unit:'$M',target:null,desc:'Advance durable goods orders measure new orders placed with domestic manufacturers for goods expected to last 3+ years — appliances, machinery, aircraft, vehicles. It is a key proxy for business investment intentions (capex). Excluding transportation orders removes the volatile aircraft component and gives a cleaner read on underlying business spending trends.',source:'https://fred.stlouisfed.org/series/DGORDER',sourceName:'FRED / Census Bureau'},
+  'Industrial Production (MoM)':{fred:'INDPRO',hist:'INDPRO_HIST',color:'var(--green)',unit:'',target:null,desc:'The Federal Reserve\'s Industrial Production Index measures the real output of manufacturing, mining, and utilities on a month-over-month basis. It provides a direct measure of the supply side of the economy. The related capacity utilization rate (currently ~78%) indicates how much slack exists in the industrial sector — above 80% historically signals inflationary pressure.',source:'https://fred.stlouisfed.org/series/INDPRO',sourceName:'FRED / Federal Reserve'},
 };
 
 function openIndModal(name, value, trend) {
@@ -2095,12 +2093,13 @@ function openIndModal(name, value, trend) {
   const chartKey = meta.hist;
   if (chartKey && LIVE_DATA[chartKey] && LIVE_DATA[chartKey].length > 0) {
     btnsEl.innerHTML = `
-      <button class="yld-range-btn" onclick="renderIndicatorChart('indModalChart','${chartKey}','${meta.color}','${meta.unit}',${meta.target},12);this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">1Y</button>
-      <button class="yld-range-btn active" onclick="renderIndicatorChart('indModalChart','${chartKey}','${meta.color}','${meta.unit}',${meta.target},60);this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">5Y</button>
+      <button class="yld-range-btn" onclick="renderIndicatorChart('indModalChart','${chartKey}','${meta.color}','${meta.unit}',${meta.target},6);this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">6M</button>
+      <button class="yld-range-btn active" onclick="renderIndicatorChart('indModalChart','${chartKey}','${meta.color}','${meta.unit}',${meta.target},12);this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">1Y</button>
+      <button class="yld-range-btn" onclick="renderIndicatorChart('indModalChart','${chartKey}','${meta.color}','${meta.unit}',${meta.target},60);this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">5Y</button>
       <button class="yld-range-btn" onclick="renderIndicatorChart('indModalChart','${chartKey}','${meta.color}','${meta.unit}',${meta.target},120);this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">10Y</button>
       <button class="yld-range-btn" onclick="renderIndicatorChart('indModalChart','${chartKey}','${meta.color}','${meta.unit}',${meta.target},240);this.parentNode.querySelectorAll('.yld-range-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">20Y</button>
     `;
-    renderIndicatorChart('indModalChart', chartKey, meta.color, meta.unit, meta.target, 60);
+    renderIndicatorChart('indModalChart', chartKey, meta.color, meta.unit, meta.target, 12);
   } else {
     btnsEl.innerHTML = '';
     document.getElementById('indModalChart').innerHTML = '<text x="310" y="100" text-anchor="middle" font-size="12" fill="#8D95A8" font-family="Inter">Chart data not available for this indicator. Visit the source link above for historical data.</text>';
@@ -2130,34 +2129,80 @@ document.querySelectorAll('#tab-indicators table tbody tr').forEach(tr => {
   tr.addEventListener('click', () => openIndModal(name, val, trend));
 });
 
-// ===== MACRO FRAMEWORK ENGINE =====
+// ===== MACRO FRAMEWORK ENGINE — AUTO-SCORED FROM LIVE DATA =====
 
-// Growth indicators: positive score = growth accelerating, negative = decelerating
+function _lastHist(key) {
+  const arr = LIVE_DATA[key];
+  return (arr && arr.length > 0) ? arr[arr.length - 1].val : null;
+}
+function _prevHist(key) {
+  const arr = LIVE_DATA[key];
+  return (arr && arr.length > 1) ? arr[arr.length - 2].val : null;
+}
+function _fmtPct(v) { return v != null ? (v >= 0 ? '+' : '') + v.toFixed(1) + '%' : 'N/A'; }
+function _fmtNum(v, unit, dec) { return v != null ? v.toFixed(dec !== undefined ? dec : 1) + (unit || '') : 'N/A'; }
+
+function _scoreUp(raw, t1, t2, t3, t4) {
+  if (raw == null) return 0;
+  if (raw >= t1) return 2; if (raw >= t2) return 1; if (raw >= t3) return 0; if (raw >= t4) return -1; return -2;
+}
+function _scoreDown(raw, t1, t2, t3, t4) {
+  if (raw == null) return 0;
+  if (raw <= t1) return 2; if (raw <= t2) return 1; if (raw <= t3) return 0; if (raw <= t4) return -1; return -2;
+}
+
+// Pull live values
+const _gdp = LIVE_DATA.GDP ? LIVE_DATA.GDP.latest : null;
+const _gdpPrior = LIVE_DATA.GDP ? LIVE_DATA.GDP.prior : null;
+const _payems = LIVE_DATA.PAYEMS ? LIVE_DATA.PAYEMS.latest : null;
+const _payemsPrior = LIVE_DATA.PAYEMS ? LIVE_DATA.PAYEMS.prior : null;
+const _jobsAdded = (_payems && _payemsPrior) ? Math.round(_payems - _payemsPrior) : null;
+const _unemp = LIVE_DATA.UNRATE ? LIVE_DATA.UNRATE.latest : null;
+const _unempPrior = LIVE_DATA.UNRATE ? LIVE_DATA.UNRATE.prior : null;
+const _sentiment = LIVE_DATA.UMCSENT ? LIVE_DATA.UMCSENT.latest : null;
+const _sentPrior = LIVE_DATA.UMCSENT ? LIVE_DATA.UMCSENT.prior : null;
+const _savings = LIVE_DATA.PERSONAL_SAVING ? LIVE_DATA.PERSONAL_SAVING.latest : null;
+const _savPrior = LIVE_DATA.PERSONAL_SAVING ? LIVE_DATA.PERSONAL_SAVING.prior : null;
+const _houst = _lastHist('HOUST_HIST');
+const _houstPrior = _prevHist('HOUST_HIST');
+const _retail = _lastHist('RSAFS_HIST');
+const _retailPrior = _prevHist('RSAFS_HIST');
+const _cpiYoY = _lastHist('CPI_HIST');
+const _cpiPrior = _prevHist('CPI_HIST');
+const _pceYoY = _lastHist('PCE_HIST');
+const _pcePrior = _prevHist('PCE_HIST');
+const _wageYoY = _lastHist('WAGE_HIST');
+const _wagePrior = _prevHist('WAGE_HIST');
+const _importP = _lastHist('IMPORT_PRICE_HIST');
+const _importPrior = _prevHist('IMPORT_PRICE_HIST');
+const _ff = LIVE_DATA.FEDFUNDS ? LIVE_DATA.FEDFUNDS.latest : null;
+const _ust10 = LIVE_DATA.UST_10Y ? LIVE_DATA.UST_10Y.latest : null;
+const _ust10Prior = LIVE_DATA.UST_10Y ? LIVE_DATA.UST_10Y.prior : null;
+const _hyOas = LIVE_DATA.HY_OAS ? LIVE_DATA.HY_OAS.latest : null;
+const _hyPrior = LIVE_DATA.HY_OAS ? LIVE_DATA.HY_OAS.prior : null;
+const _oilPrice = (LIVE_COMMODITIES && LIVE_COMMODITIES.WTI_OIL) ? LIVE_COMMODITIES.WTI_OIL.price : null;
+
+// Growth indicators: positive score = growth accelerating
 const growthIndicators = [
-  {name:"Real GDP Growth",value:"+1.6%",raw:1.6,threshold:2.5,prior:1.4,desc:"Annualized Q1 2026. Below trend (2.5%) and slowing from Q3'25 peak of 4.3%.",score:-1},
-  {name:"Nonfarm Payrolls",value:"+172K",raw:172,threshold:150,prior:179,desc:"May 2026. Above the ~150K breakeven for population growth. Beat estimates by 2x.",score:1},
-  {name:"ISM Manufacturing",value:"54.0",raw:54,threshold:50,prior:52.7,desc:"Above 50 = expansion. 5th straight month expanding, accelerating from 52.7.",score:2},
-  {name:"Retail Sales (MoM)",value:"+0.9%",raw:0.9,threshold:0.3,prior:0.4,desc:"Strong consumer spending beat. Gas station sales (+3.4%) inflated the number.",score:1},
-  {name:"Unemployment Rate",value:"4.3%",raw:4.3,threshold:4.5,prior:4.2,desc:"Still below long-run natural rate (~4.5%) but trending up from 3.4% cycle low.",score:0},
-  {name:"Housing Starts",value:"1.177M",raw:1.177,threshold:1.4,prior:1.392,desc:"Fell 15.4% MoM to lowest since May 2020. Mortgage rates crushing builder activity.",score:-2},
-  {name:"Leading Econ. Index",value:"99.3",raw:99.3,threshold:100,prior:99.1,desc:"Two consecutive positive readings after long decline. Recession signal fading but not cleared.",score:0},
-  {name:"Consumer Sentiment",value:"48.9",raw:48.9,threshold:65,prior:44.8,desc:"Near all-time lows. Bounced from May's record low of 44.8 but still deeply depressed.",score:-2},
-  {name:"Personal Savings Rate",value:"2.6%",raw:2.6,threshold:5.0,prior:3.2,desc:"Well below pre-pandemic ~7% avg. Consumers drawing down savings to maintain spending.",score:-1},
-  {name:"S&P 500 EPS Growth",value:"+21.3%",raw:21.3,threshold:10,prior:15,desc:"CY 2026 consensus estimate. Broad-based across tech, healthcare, financials.",score:2},
+  {name:"Real GDP Growth", value:_fmtPct(_gdp), raw:_gdp, threshold:2.5, prior:_gdpPrior, desc:_gdp != null ? `Annualized quarterly rate at ${_gdp.toFixed(1)}%. Threshold: 2.5% = above-trend growth.` : 'Data pending next build.', score:_scoreUp(_gdp, 3.0, 2.0, 1.0, 0)},
+  {name:"Nonfarm Payrolls", value:_jobsAdded != null ? (_jobsAdded>=0?'+':'')+_jobsAdded+'K' : 'N/A', raw:_jobsAdded, threshold:150, prior:null, desc:_jobsAdded != null ? `Monthly change: ${_jobsAdded}K. Above 150K keeps pace with population growth.` : 'Data pending next build.', score:_scoreUp(_jobsAdded, 250, 150, 100, 50)},
+  {name:"Unemployment Rate", value:_unemp != null ? _unemp.toFixed(1)+'%' : 'N/A', raw:_unemp, threshold:4.5, prior:_unempPrior, desc:_unemp != null ? `At ${_unemp.toFixed(1)}%. Natural rate ~4.5%. Below 4% is historically tight.` : 'Data pending next build.', score:_scoreDown(_unemp, 3.5, 4.0, 4.5, 5.0)},
+  {name:"Retail Sales (MoM)", value:_retail != null ? _fmtPct(_retail) : 'N/A', raw:_retail, threshold:0.3, prior:_retailPrior, desc:_retail != null ? `MoM change: ${_retail.toFixed(2)}%. Consumer spending drives ~70% of GDP.` : 'Data pending next build.', score:_scoreUp(_retail, 0.6, 0.3, 0, -0.3)},
+  {name:"Housing Starts", value:_houst != null ? (_houst/1000).toFixed(3)+'M' : 'N/A', raw:_houst ? _houst/1000 : null, threshold:1.4, prior:_houstPrior ? _houstPrior/1000 : null, desc:_houst != null ? `At ${(_houst/1000).toFixed(3)}M SAAR. Above 1.4M is healthy; below 1.1M signals stress.` : 'Data pending next build.', score:_scoreUp(_houst ? _houst/1000 : null, 1.5, 1.3, 1.1, 0.9)},
+  {name:"Consumer Sentiment", value:_sentiment != null ? _sentiment.toFixed(1) : 'N/A', raw:_sentiment, threshold:65, prior:_sentPrior, desc:_sentiment != null ? `Michigan survey at ${_sentiment.toFixed(1)}. Pre-pandemic avg ~95. Below 65 = consumer pessimism.` : 'Data pending next build.', score:_scoreUp(_sentiment, 80, 65, 55, 45)},
+  {name:"Personal Savings Rate", value:_savings != null ? _savings.toFixed(1)+'%' : 'N/A', raw:_savings, threshold:5.0, prior:_savPrior, desc:_savings != null ? `At ${_savings.toFixed(1)}%. Pre-pandemic avg ~7%. Below 4% = consumers drawing down savings.` : 'Data pending next build.', score:_scoreUp(_savings, 7.0, 5.0, 4.0, 3.0)},
 ];
 
-// Inflation indicators: positive score = inflation rising/hot, negative = cooling
+// Inflation indicators: positive score = inflation rising/hot
 const inflationIndicators = [
-  {name:"CPI (Year-over-Year)",value:"4.2%",raw:4.2,threshold:3.0,prior:3.8,desc:"Surged to 4.2% in May from 2.6% mid-2025. Energy prices (+1.9% MoM) are the main driver.",score:2},
-  {name:"Core CPI (YoY)",value:"2.9%",raw:2.9,threshold:2.5,prior:2.8,desc:"Less alarming than headline but trending up. Services inflation remains sticky.",score:1},
-  {name:"Core PCE (YoY)",value:"3.3%",raw:3.3,threshold:2.0,prior:3.0,desc:"Fed's preferred gauge. Rose from 2.6% low to 3.3% — highest since late 2023. Moving wrong direction.",score:2},
-  {name:"Import Prices (MoM)",value:"+1.9%",raw:1.9,threshold:0.3,prior:0.4,desc:"Huge spike driven by oil/commodity costs from Middle East conflict. Leading indicator for future CPI.",score:2},
-  {name:"Wage Growth (YoY)",value:"+3.6%",raw:3.6,threshold:3.5,prior:3.7,desc:"Slightly above target but cooling. Now below CPI — negative real wages = consumer stress.",score:0},
-  {name:"1Y Inflation Expect.",value:"4.6%",raw:4.6,threshold:3.0,prior:4.8,desc:"Michigan survey. Edged down from 4.8% but still very elevated. Risk of expectations becoming unanchored.",score:1},
-  {name:"Fed Funds Rate",value:"3.50-3.75%",raw:3.625,threshold:3.0,prior:3.625,desc:"Held steady 4 meetings. 9/18 FOMC members projecting hikes. Market pricing ~52% chance of hike by Dec.",score:1},
-  {name:"10Y Treasury Yield",value:"4.51%",raw:4.51,threshold:4.0,prior:4.48,desc:"Elevated, reflecting inflation premium and fiscal deficit concerns. Above 5Y average of 3.5%.",score:1},
-  {name:"HY Credit Spread",value:"271 bps",raw:271,threshold:400,prior:280,desc:"Historically tight. Markets not pricing recession risk. Low spreads = complacency or confidence.",score:-1},
-  {name:"Oil / Energy Costs",value:"Elevated",raw:1,threshold:0,prior:0,desc:"Middle East conflict driving oil above $90. Gas prices weighing on consumers and pushing headline CPI higher.",score:2},
+  {name:"CPI (Year-over-Year)", value:_cpiYoY != null ? _cpiYoY.toFixed(1)+'%' : 'N/A', raw:_cpiYoY, threshold:3.0, prior:_cpiPrior, desc:_cpiYoY != null ? `CPI YoY at ${_cpiYoY.toFixed(1)}%. Fed target is 2%. Above 3% is elevated.` : 'Data pending next build.', score:_scoreUp(_cpiYoY, 4.0, 3.0, 2.5, 2.0)},
+  {name:"Core PCE (YoY)", value:_pceYoY != null ? _pceYoY.toFixed(1)+'%' : 'N/A', raw:_pceYoY, threshold:2.0, prior:_pcePrior, desc:_pceYoY != null ? `Fed's preferred gauge at ${_pceYoY.toFixed(1)}%. Target is 2%. Above 2.5% is concerning.` : 'Data pending next build.', score:_scoreUp(_pceYoY, 3.5, 2.5, 2.0, 1.5)},
+  {name:"Import Prices (MoM)", value:_importP != null ? _fmtPct(_importP) : 'N/A', raw:_importP, threshold:0.3, prior:_importPrior, desc:_importP != null ? `MoM change: ${_importP.toFixed(2)}%. Leading indicator for CPI with 2-3 month lag.` : 'Data pending next build.', score:_scoreUp(_importP, 1.0, 0.5, 0, -0.5)},
+  {name:"Wage Growth (YoY)", value:_wageYoY != null ? _fmtPct(_wageYoY) : 'N/A', raw:_wageYoY, threshold:3.5, prior:_wagePrior, desc:_wageYoY != null ? `Avg hourly earnings YoY at ${_wageYoY.toFixed(1)}%. Above 4% risks wage-price spiral.` : 'Data pending next build.', score:_scoreUp(_wageYoY, 4.5, 4.0, 3.5, 3.0)},
+  {name:"Fed Funds Rate", value:_ff != null ? _ff.toFixed(2)+'%' : 'N/A', raw:_ff, threshold:3.0, prior:null, desc:_ff != null ? `At ${_ff.toFixed(2)}%. Higher rates = tighter monetary policy to combat inflation.` : 'Data pending next build.', score:_scoreUp(_ff, 5.0, 4.0, 3.0, 2.0)},
+  {name:"10Y Treasury Yield", value:_ust10 != null ? _ust10.toFixed(2)+'%' : 'N/A', raw:_ust10, threshold:4.0, prior:_ust10Prior, desc:_ust10 != null ? `At ${_ust10.toFixed(2)}%. Reflects growth, inflation, and fiscal expectations.` : 'Data pending next build.', score:_scoreUp(_ust10, 5.0, 4.5, 4.0, 3.5)},
+  {name:"HY Credit Spread", value:_hyOas != null ? Math.round(_hyOas)+' bps' : 'N/A', raw:_hyOas, threshold:400, prior:_hyPrior, desc:_hyOas != null ? `HY OAS at ${Math.round(_hyOas)} bps. Below 300 = tight/complacent. Above 500 = stress.` : 'Data pending next build.', score:_scoreDown(_hyOas, 200, 300, 400, 500)},
+  {name:"Oil (WTI)", value:_oilPrice != null ? '$'+_oilPrice.toFixed(2) : 'N/A', raw:_oilPrice, threshold:80, prior:null, desc:_oilPrice != null ? `WTI crude at $${_oilPrice.toFixed(2)}. Above $90 = inflationary. Above $100 = energy cost stress.` : 'Data pending next build.', score:_scoreUp(_oilPrice, 100, 90, 80, 65)},
 ];
 
 // Calculate composite scores
@@ -2295,7 +2340,7 @@ document.getElementById('regimeDesc').innerHTML = regimeDescriptions[regime.name
 
 // Sector recommendations
 const sectorRecsHTML = `
-  <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;">Based on current stagflationary positioning:</div>
+  <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;">Based on current <span style="color:${regime.color};font-weight:700;">${regime.name}</span> positioning:</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
     <div>
       <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px;">FAVORED SECTORS</div>

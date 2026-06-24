@@ -130,6 +130,66 @@ def fetch_fred_data():
         print(f"  WARN: Failed to fetch GDP history: {e}")
         data["GDP_HIST"] = []
 
+    # ----- Additional indicator histories (for indicator modal charts) -----
+    indicator_hist_series = [
+        ("PAYEMS_HIST", "PAYEMS"),           # Nonfarm payrolls (level)
+        ("HOUST_HIST", "HOUST"),             # Housing starts
+        ("PERMIT_HIST", "PERMIT"),           # Building permits
+        ("BOPGSTB_HIST", "BOPGSTB"),         # Trade balance
+        ("INDPRO_HIST", "INDPRO"),           # Industrial production index
+        ("DGORDER_HIST", "DGORDER"),         # Durable goods orders
+        ("RSAFS_HIST", "RSAFS"),             # Retail sales
+        ("TOTALSL_HIST", "TOTALSL"),         # Consumer credit outstanding
+        ("WAGE_HIST", "CES0500000003"),      # Average hourly earnings
+        ("IMPORT_PRICE_HIST", "IR"),         # Import price index
+    ]
+    for label, sid in indicator_hist_series:
+        try:
+            s = fred.get_series(sid, observation_start=start_10y)
+            s = s.dropna()
+            if label == "WAGE_HIST":
+                s_yoy = s.pct_change(periods=12) * 100
+                s_yoy = s_yoy.dropna()
+                data[label] = [
+                    {"date": d.strftime("%Y-%m"), "val": round(float(v), 1)}
+                    for d, v in s_yoy.items()
+                ]
+            elif label == "IMPORT_PRICE_HIST":
+                s_mom = s.pct_change() * 100
+                s_mom = s_mom.dropna()
+                data[label] = [
+                    {"date": d.strftime("%Y-%m"), "val": round(float(v), 2)}
+                    for d, v in s_mom.items()
+                ]
+            elif label == "RSAFS_HIST":
+                s_mom = s.pct_change() * 100
+                s_mom = s_mom.dropna()
+                data[label] = [
+                    {"date": d.strftime("%Y-%m"), "val": round(float(v), 2)}
+                    for d, v in s_mom.items()
+                ]
+            elif label == "BOPGSTB_HIST":
+                data[label] = [
+                    {"date": d.strftime("%Y-%m"), "val": round(float(v) / 1000, 1)}
+                    for d, v in s.items()
+                ]
+            elif label == "TOTALSL_HIST":
+                s_mom = s.diff()
+                s_mom = s_mom.dropna()
+                data[label] = [
+                    {"date": d.strftime("%Y-%m"), "val": round(float(v) / 1000, 1)}
+                    for d, v in s_mom.items()
+                ]
+            else:
+                monthly = s.resample("MS").last().dropna() if len(s) > 500 else s
+                data[label] = [
+                    {"date": d.strftime("%Y-%m"), "val": round(float(v), 1)}
+                    for d, v in monthly.items()
+                ]
+        except Exception as e:
+            print(f"  WARN: Failed to fetch {label} ({sid}): {e}")
+            data[label] = []
+
     return data
 
 
