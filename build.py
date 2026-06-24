@@ -268,10 +268,12 @@ def fetch_fred_data():
 # ---------------------------------------------------------------------------
 
 LOGO_TICKERS = [
-    "AMZN", "NFLX", "AAPL", "GOOGL", "LLY", "HEI", "TSM", "NVDA", "MELI",
-    "UBER", "TDG", "V", "LNG", "APP", "APO", "BX", "CME", "QXO", "CBOE",
-    "GE", "ROKU", "SHOP", "MSFT", "COST", "PANW", "MRVL", "ABNB", "INTU",
-    "SBUX", "LULU", "NXPI", "MNST", "TJX", "RCL", "DKNG", "WYNN",
+    "AAPL", "AVGO", "TSM", "NVDA", "LLY", "NFLX", "LNG", "PANW", "APP",
+    "V", "AMZN", "MELI", "GOOGL", "APO", "BX", "ABBV", "AZN", "CBRE",
+    "COST", "GE", "HEI", "TDG", "UBER", "ADDYY", "QXO", "TLN", "GEV",
+    "VST", "DASH", "AXON", "VIK", "CTVA", "TTWO", "JPM", "DE", "PWR",
+    "RTX", "CAT", "MS", "SPOT", "TJX", "LHX", "FWONA", "HLT", "TT",
+    "COF", "MAR", "ETN", "ASML", "AVAV",
 ]
 
 INDEX_TICKERS = ["^GSPC", "^IXIC", "^RUA"]
