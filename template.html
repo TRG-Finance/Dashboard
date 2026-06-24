@@ -189,16 +189,16 @@ tr:hover td{background:#F8F9FB;}
 <div id="tab-macro" class="tab-content active">
 <div class="container">
 
-  <div class="section-label">Market Snapshot</div>
+  <div class="section-label">Market Snapshot <span style="font-size:9px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);margin-left:8px;">Click any card for 10-year chart</span></div>
   <div class="kpi-row">
-    <div class="kpi-card"><div class="kpi-label">S&P 500</div><div class="kpi-value">7,482</div><div class="kpi-change down">-0.24%</div></div>
-    <div class="kpi-card"><div class="kpi-label">Nasdaq</div><div class="kpi-value">26,423</div><div class="kpi-change up">+1.54%</div></div>
-    <div class="kpi-card"><div class="kpi-label">Russell 3000</div><div class="kpi-value">4,260</div><div class="kpi-change up">+1.06%</div></div>
-    <div class="kpi-card"><div class="kpi-label">10-Yr Treasury</div><div class="kpi-value">4.51%</div><div class="kpi-change neutral">+3 bps</div></div>
-    <div class="kpi-card"><div class="kpi-label">Fed Funds</div><div class="kpi-value">3.50-3.75%</div><div class="kpi-change neutral">Held 6/17</div></div>
-    <div class="kpi-card" id="kpiVix"><div class="kpi-label">VIX</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
-    <div class="kpi-card" id="kpiOil"><div class="kpi-label">WTI Crude</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
-    <div class="kpi-card" id="kpiGas"><div class="kpi-label">Nat Gas</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
+    <div class="kpi-card" style="cursor:pointer" onclick="window.open('https://www.tradingview.com/chart/?symbol=SP%3ASPX','_blank')"><div class="kpi-label">S&P 500</div><div class="kpi-value">7,482</div><div class="kpi-change down">-0.24%</div></div>
+    <div class="kpi-card" style="cursor:pointer" onclick="window.open('https://www.tradingview.com/chart/?symbol=NASDAQ%3AIXIC','_blank')"><div class="kpi-label">Nasdaq</div><div class="kpi-value">26,423</div><div class="kpi-change up">+1.54%</div></div>
+    <div class="kpi-card" style="cursor:pointer" onclick="window.open('https://www.tradingview.com/chart/?symbol=RUSSELL%3ARUA','_blank')"><div class="kpi-label">Russell 3000</div><div class="kpi-value">4,260</div><div class="kpi-change up">+1.06%</div></div>
+    <div class="kpi-card" style="cursor:pointer" onclick="window.open('https://fred.stlouisfed.org/series/DGS10','_blank')"><div class="kpi-label">10-Yr Treasury</div><div class="kpi-value">4.51%</div><div class="kpi-change neutral">+3 bps</div></div>
+    <div class="kpi-card" style="cursor:pointer" onclick="window.open('https://fred.stlouisfed.org/series/FEDFUNDS','_blank')"><div class="kpi-label">Fed Funds</div><div class="kpi-value">3.50-3.75%</div><div class="kpi-change neutral">Held 6/17</div></div>
+    <div class="kpi-card" id="kpiVix" style="cursor:pointer" onclick="window.open('https://www.tradingview.com/chart/?symbol=CBOE%3AVIX','_blank')"><div class="kpi-label">VIX</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
+    <div class="kpi-card" id="kpiOil" style="cursor:pointer" onclick="window.open('https://www.tradingview.com/chart/?symbol=NYMEX%3ACL1%21','_blank')"><div class="kpi-label">WTI Crude</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
+    <div class="kpi-card" id="kpiGas" style="cursor:pointer" onclick="window.open('https://www.tradingview.com/chart/?symbol=NYMEX%3ANG1%21','_blank')"><div class="kpi-label">Nat Gas</div><div class="kpi-value">--</div><div class="kpi-change neutral">--</div></div>
   </div>
 
   <!-- GDP -->
@@ -444,275 +444,45 @@ tr:hover td{background:#F8F9FB;}
   </div>
 
   <!-- CREDIT SPREAD CHARTS -->
-  <div class="section-label">Credit Spread Charts</div>
+  <div class="section-label">Credit Spread Charts <span style="font-size:9px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);margin-left:8px;">Source: FRED / ICE BofA Indices</span></div>
 
-  <!-- Summary table -->
+  <!-- Summary table — hydrated from FRED -->
   <div class="full-width">
     <div class="card">
-      <div class="card-header"><div class="card-title">Credit Spreads Summary (OAS)</div><span class="card-badge badge-live">June 2026</span></div>
+      <div class="card-header"><div class="card-title">Credit Spreads Summary (OAS)</div><span class="card-badge badge-live">FRED Live</span></div>
       <div class="card-body" style="padding:10px 20px 14px;">
-        <table>
-          <thead><tr><th>Metric</th><th class="text-right">Current</th><th class="text-right">LT Avg</th><th class="text-right">vs. Avg</th><th>Context</th></tr></thead>
+        <table id="spreadSummaryTable">
+          <thead><tr><th>Metric</th><th class="text-right">Current</th><th class="text-right">LT Avg</th><th class="text-right">vs. Avg</th><th>Source</th></tr></thead>
           <tbody>
-            <tr><td style="font-weight:600">HY OAS (ICE BofA)</td><td class="text-right font-mono">271 bps</td><td class="text-right font-mono">393 bps</td><td class="text-right font-mono down">-31%</td><td style="font-size:11px;color:var(--text-muted)">Historically tight</td></tr>
-            <tr><td style="font-weight:600">IG Corporate OAS</td><td class="text-right font-mono">77 bps</td><td class="text-right font-mono">150 bps</td><td class="text-right font-mono down">-49%</td><td style="font-size:11px;color:var(--text-muted)">25-year tights</td></tr>
-            <tr><td style="font-weight:600">BBB Corporate OAS</td><td class="text-right font-mono">100 bps</td><td class="text-right font-mono">185 bps</td><td class="text-right font-mono down">-46%</td><td style="font-size:11px;color:var(--text-muted)">Compressed</td></tr>
-            <tr><td style="font-weight:600">AA Corporate OAS</td><td class="text-right font-mono">50 bps</td><td class="text-right font-mono">90 bps</td><td class="text-right font-mono down">-44%</td><td style="font-size:11px;color:var(--text-muted)">Near floor</td></tr>
-            <tr><td style="font-weight:600">2s/10s Spread</td><td class="text-right font-mono">+27 bps</td><td class="text-right font-mono">+90 bps</td><td class="text-right font-mono down">-70%</td><td style="font-size:11px;color:var(--text-muted)">Curve flat vs. norm</td></tr>
+            <tr><td style="font-weight:600">HY OAS (ICE BofA)</td><td class="text-right font-mono" id="hyOasCurrent">--</td><td class="text-right font-mono">393 bps</td><td class="text-right font-mono" id="hyOasVsAvg">--</td><td style="font-size:10px;"><a href="https://fred.stlouisfed.org/series/BAMLH0A0HYM2" target="_blank" style="color:var(--accent-blue);">FRED</a></td></tr>
+            <tr><td style="font-weight:600">IG Corporate OAS</td><td class="text-right font-mono" id="igOasCurrent">--</td><td class="text-right font-mono">150 bps</td><td class="text-right font-mono" id="igOasVsAvg">--</td><td style="font-size:10px;"><a href="https://fred.stlouisfed.org/series/BAMLC0A0CM" target="_blank" style="color:var(--accent-blue);">FRED</a></td></tr>
+            <tr><td style="font-weight:600">BBB Corporate OAS</td><td class="text-right font-mono" id="bbbOasCurrent">--</td><td class="text-right font-mono">185 bps</td><td class="text-right font-mono" id="bbbOasVsAvg">--</td><td style="font-size:10px;"><a href="https://fred.stlouisfed.org/series/BAMLC0A4CBBB" target="_blank" style="color:var(--accent-blue);">FRED</a></td></tr>
+            <tr><td style="font-weight:600">2s/10s Spread</td><td class="text-right font-mono" id="t10y2yCurrent">--</td><td class="text-right font-mono">+90 bps</td><td class="text-right font-mono" id="t10y2yVsAvg">--</td><td style="font-size:10px;"><a href="https://fred.stlouisfed.org/series/T10Y2Y" target="_blank" style="color:var(--accent-blue);">FRED</a></td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- HY OAS + IG OAS charts -->
+  <!-- Credit spread charts — rendered dynamically from FRED data -->
   <div class="grid-2">
-    <!-- HY OAS Chart -->
     <div class="card">
-      <div class="card-header"><div class="card-title">High Yield OAS &mdash; 10 Year</div><span class="card-badge badge-live">271 bps</span></div>
-      <div class="card-body" style="padding:12px 16px;">
-        <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:200px;">
-          <!-- Grid: 0bps=180, 1100bps=15. y = 180 - (val/1100)*165 -->
-          <line x1="50" y1="15" x2="545" y2="15" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="56" x2="545" y2="56" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="97" x2="545" y2="97" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="138" x2="545" y2="138" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="180" x2="545" y2="180" stroke="#E2E6ED" stroke-width="0.5"/>
-          <text x="45" y="19" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">1100</text>
-          <text x="45" y="60" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">825</text>
-          <text x="45" y="101" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">550</text>
-          <text x="45" y="142" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">275</text>
-          <text x="45" y="184" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">0</text>
-          <!-- LT Avg line at 393bps: y = 180 - (393/1100)*165 = 180 - 59 = 121 -->
-          <line x1="50" y1="121" x2="545" y2="121" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4,3"/>
-          <text x="548" y="124" font-size="8" fill="var(--text-muted)" font-family="Inter">Avg 393</text>
-          <!-- HY OAS data points (monthly-ish, 2014-2026):
-               2014-Jan:380, Jun:320, Dec:500
-               2015-Jun:460, Dec:670
-               2016-Feb:840, Jun:530, Dec:420
-               2017-Jun:360, Dec:340
-               2018-Jun:340, Oct:380, Dec:530
-               2019-Jun:380, Dec:340
-               2020-Jan:360, Mar:1090, Jun:630, Dec:380
-               2021-Jun:290, Dec:310
-               2022-Jun:500, Oct:530, Dec:470
-               2023-Jun:400, Dec:330
-               2024-Jun:310, Dec:280
-               2025-Jun:290, Dec:300
-               2026-Jun:271
-               x: 50 to 545 over ~150 months (Jan 2014 = 50, Jun 2026 = 545)
-               x = 50 + (month_offset / 150) * 495
-               y = 180 - (val/1100)*165 -->
-          <defs><linearGradient id="hyg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#D94444" stop-opacity="0.15"/><stop offset="100%" stop-color="#D94444" stop-opacity="0.02"/></linearGradient></defs>
-          <polygon points="50,123 66,132 83,105 99,110 116,78 133,62 141,42 152,90 166,113 182,117 199,122 215,126 232,130 248,125 260,130 270,124 282,110 290,100 298,126 314,126 322,130 330,133 338,127 345,16 358,68 365,86 382,123 398,136 415,133 432,135 448,105 455,100 465,110 482,120 498,134 515,137 532,135 540,138 545,139 545,180 50,180" fill="url(#hyg)"/>
-          <polyline points="50,123 66,132 83,105 99,110 116,78 133,62 141,42 152,90 166,113 182,117 199,122 215,126 232,130 248,125 260,130 270,124 282,110 290,100 298,126 314,126 322,130 330,133 338,127 345,16 358,68 365,86 382,123 398,136 415,133 432,135 448,105 455,100 465,110 482,120 498,134 515,137 532,135 540,138 545,139" fill="none" stroke="var(--red)" stroke-width="2" stroke-linejoin="round"/>
-          <!-- COVID spike label -->
-          <circle cx="345" cy="16" r="3" fill="var(--red)"/>
-          <text x="345" y="10" font-size="9" fill="var(--red)" text-anchor="middle" font-weight="600" font-family="Inter">1,090</text>
-          <!-- Current -->
-          <circle cx="545" cy="139" r="3.5" fill="var(--accent-blue)"/>
-          <text x="530" y="152" font-size="9" fill="var(--accent-blue)" text-anchor="end" font-weight="600" font-family="Inter">271</text>
-          <!-- 2016 oil crisis -->
-          <circle cx="141" cy="42" r="2.5" fill="var(--red)"/>
-          <text x="141" y="37" font-size="8" fill="var(--red)" text-anchor="middle" font-weight="600" font-family="Inter">840</text>
-          <!-- X labels -->
-          <text x="50" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2014</text>
-          <text x="149" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2016</text>
-          <text x="248" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2018</text>
-          <text x="347" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2020</text>
-          <text x="446" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2022</text>
-          <text x="545" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2026</text>
-        </svg>
-        <div class="commentary"><strong>HY at 271bps</strong> is near post-GFC lows. COVID spike to 1,090 in Mar 2020 and oil-crisis spike to 840 in Feb 2016 show how fast spreads can blow out. Current tightness reflects strong risk appetite, but limited room for error.</div>
-      </div>
+      <div class="card-header"><div class="card-title">High Yield OAS</div><span class="card-badge badge-live" id="hyBadge">--</span></div>
+      <div class="card-body" style="padding:12px 16px;"><svg id="hyChart" viewBox="0 0 560 200" style="width:100%;height:200px;"></svg></div>
     </div>
-
-    <!-- IG Corporate OAS Chart -->
     <div class="card">
-      <div class="card-header"><div class="card-title">IG Corporate OAS &mdash; 10 Year</div><span class="card-badge badge-live">77 bps</span></div>
-      <div class="card-body" style="padding:12px 16px;">
-        <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:200px;">
-          <!-- Grid: 0bps=180, 400bps=15. y = 180 - (val/400)*165 -->
-          <line x1="50" y1="15" x2="545" y2="15" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="56" x2="545" y2="56" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="97" x2="545" y2="97" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="138" x2="545" y2="138" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="180" x2="545" y2="180" stroke="#E2E6ED" stroke-width="0.5"/>
-          <text x="45" y="19" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">400</text>
-          <text x="45" y="60" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">300</text>
-          <text x="45" y="101" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">200</text>
-          <text x="45" y="142" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">100</text>
-          <text x="45" y="184" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">0</text>
-          <!-- LT Avg at 150bps: y = 180 - (150/400)*165 = 180 - 62 = 118 -->
-          <line x1="50" y1="118" x2="545" y2="118" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4,3"/>
-          <text x="548" y="121" font-size="8" fill="var(--text-muted)" font-family="Inter">Avg 150</text>
-          <!-- IG OAS:
-               2014-Jan:110, Jun:95, Dec:140
-               2015-Jun:130, Dec:165
-               2016-Feb:200, Jun:145, Dec:125
-               2017-Jun:105, Dec:95
-               2018-Jun:95, Dec:155
-               2019-Jun:115, Dec:95
-               2020-Jan:100, Mar:375, Jun:150, Dec:100
-               2021-Jun:85, Dec:90
-               2022-Jun:140, Oct:165, Dec:140
-               2023-Jun:120, Dec:100
-               2024-Jun:85, Dec:80
-               2025-Jun:82, Dec:85
-               2026-Jun:77
-               y = 180 - (val/400)*165 -->
-          <defs><linearGradient id="igg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2E7DD1" stop-opacity="0.15"/><stop offset="100%" stop-color="#2E7DD1" stop-opacity="0.02"/></linearGradient></defs>
-          <polygon points="50,135 66,141 83,122 99,126 116,113 133,112 141,98 152,127 166,120 182,137 199,141 215,141 232,141 248,145 260,140 270,148 282,145 290,143 298,148 314,141 322,145 330,148 338,140 345,25 358,118 365,130 382,139 398,145 415,143 432,142 448,122 455,113 465,118 482,131 498,139 515,145 532,146 540,145 545,148 545,180 50,180" fill="url(#igg)"/>
-          <polyline points="50,135 66,141 83,122 99,126 116,113 133,112 141,98 152,127 166,120 182,137 199,141 215,141 232,141 248,145 260,140 270,148 282,145 290,143 298,148 314,141 322,145 330,148 338,140 345,25 358,118 365,130 382,139 398,145 415,143 432,142 448,122 455,113 465,118 482,131 498,139 515,145 532,146 540,145 545,148" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linejoin="round"/>
-          <!-- COVID spike -->
-          <circle cx="345" cy="25" r="3" fill="var(--red)"/>
-          <text x="345" y="19" font-size="9" fill="var(--red)" text-anchor="middle" font-weight="600" font-family="Inter">375</text>
-          <!-- Current -->
-          <circle cx="545" cy="148" r="3.5" fill="var(--accent-blue)"/>
-          <text x="530" y="160" font-size="9" fill="var(--accent-blue)" text-anchor="end" font-weight="600" font-family="Inter">77</text>
-          <text x="50" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2014</text>
-          <text x="149" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2016</text>
-          <text x="248" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2018</text>
-          <text x="347" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2020</text>
-          <text x="446" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2022</text>
-          <text x="545" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2026</text>
-        </svg>
-        <div class="commentary"><strong>IG at 77bps</strong> is near 25-year tights. COVID blowout to 375bps in Mar 2020 was the sharpest widening since the GFC. Spreads have compressed steadily since late 2022 as credit quality held up better than feared.</div>
-      </div>
+      <div class="card-header"><div class="card-title">IG Corporate OAS</div><span class="card-badge badge-live" id="igBadge">--</span></div>
+      <div class="card-body" style="padding:12px 16px;"><svg id="igChart" viewBox="0 0 560 200" style="width:100%;height:200px;"></svg></div>
     </div>
   </div>
-
-  <!-- BBB OAS + 2s/10s Spread charts -->
   <div class="grid-2">
-    <!-- BBB OAS Chart -->
     <div class="card">
-      <div class="card-header"><div class="card-title">BBB Corporate OAS &mdash; 10 Year</div><span class="card-badge badge-live">100 bps</span></div>
-      <div class="card-body" style="padding:12px 16px;">
-        <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:200px;">
-          <!-- Grid: 0bps=180, 500bps=15. y = 180 - (val/500)*165 -->
-          <line x1="50" y1="15" x2="545" y2="15" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="56" x2="545" y2="56" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="97" x2="545" y2="97" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="138" x2="545" y2="138" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="180" x2="545" y2="180" stroke="#E2E6ED" stroke-width="0.5"/>
-          <text x="45" y="19" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">500</text>
-          <text x="45" y="60" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">375</text>
-          <text x="45" y="101" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">250</text>
-          <text x="45" y="142" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">125</text>
-          <text x="45" y="184" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">0</text>
-          <!-- LT Avg at 185bps: y = 180 - (185/500)*165 = 180 - 61 = 119 -->
-          <line x1="50" y1="119" x2="545" y2="119" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4,3"/>
-          <text x="548" y="122" font-size="8" fill="var(--text-muted)" font-family="Inter">Avg 185</text>
-          <!-- BBB OAS:
-               2014-Jan:145, Jun:125, Dec:175
-               2015-Jun:165, Dec:210
-               2016-Feb:260, Jun:185, Dec:160
-               2017-Jun:130, Dec:120
-               2018-Jun:120, Dec:200
-               2019-Jun:145, Dec:120
-               2020-Jan:130, Mar:475, Jun:200, Dec:130
-               2021-Jun:110, Dec:115
-               2022-Jun:175, Oct:195, Dec:180
-               2023-Jun:150, Dec:125
-               2024-Jun:110, Dec:105
-               2025-Jun:105, Dec:108
-               2026-Jun:100
-               y = 180 - (val/500)*165 -->
-          <defs><linearGradient id="bbbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8873A" stop-opacity="0.15"/><stop offset="100%" stop-color="#E8873A" stop-opacity="0.02"/></linearGradient></defs>
-          <polygon points="50,132 66,139 83,122 99,126 116,115 133,107 141,94 152,119 166,126 182,137 199,143 215,143 232,146 248,140 260,138 270,147 282,147 290,143 298,147 314,138 322,142 330,145 338,137 345,23 358,114 365,127 382,137 398,144 415,143 432,142 448,122 455,116 465,121 482,131 498,144 515,143 532,145 540,144 545,147 545,180 50,180" fill="url(#bbbg)"/>
-          <polyline points="50,132 66,139 83,122 99,126 116,115 133,107 141,94 152,119 166,126 182,137 199,143 215,143 232,146 248,140 260,138 270,147 282,147 290,143 298,147 314,138 322,142 330,145 338,137 345,23 358,114 365,127 382,137 398,144 415,143 432,142 448,122 455,116 465,121 482,131 498,144 515,143 532,145 540,144 545,147" fill="none" stroke="var(--accent-orange)" stroke-width="2" stroke-linejoin="round"/>
-          <!-- COVID spike -->
-          <circle cx="345" cy="23" r="3" fill="var(--red)"/>
-          <text x="345" y="17" font-size="9" fill="var(--red)" text-anchor="middle" font-weight="600" font-family="Inter">475</text>
-          <!-- 2016 oil -->
-          <circle cx="141" cy="94" r="2.5" fill="var(--accent-orange)"/>
-          <text x="141" y="89" font-size="8" fill="var(--accent-orange)" text-anchor="middle" font-weight="600" font-family="Inter">260</text>
-          <!-- Current -->
-          <circle cx="545" cy="147" r="3.5" fill="var(--accent-blue)"/>
-          <text x="530" y="159" font-size="9" fill="var(--accent-blue)" text-anchor="end" font-weight="600" font-family="Inter">100</text>
-          <text x="50" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2014</text>
-          <text x="149" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2016</text>
-          <text x="248" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2018</text>
-          <text x="347" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2020</text>
-          <text x="446" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2022</text>
-          <text x="545" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2026</text>
-        </svg>
-        <div class="commentary"><strong>BBB at 100bps</strong> &mdash; the largest IG bucket and key "fallen angel" risk zone. BBB spreads spiked to 475bps during COVID. Current levels leave minimal buffer for downgrades. Watch for spread widening if recession fears grow.</div>
-      </div>
+      <div class="card-header"><div class="card-title">BBB Corporate OAS</div><span class="card-badge badge-live" id="bbbBadge">--</span></div>
+      <div class="card-body" style="padding:12px 16px;"><svg id="bbbChart" viewBox="0 0 560 200" style="width:100%;height:200px;"></svg></div>
     </div>
-
-    <!-- 2s/10s Spread Chart -->
     <div class="card">
-      <div class="card-header"><div class="card-title">2s/10s Treasury Spread &mdash; 10 Year</div><span class="card-badge badge-live">+27 bps</span></div>
-      <div class="card-body" style="padding:12px 16px;">
-        <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:200px;">
-          <!-- Grid: -150bps=15, +250bps=180 inverted so positive is up. Actually let's do: +250=15, -150=180. y = 15 + ((250-val)/400)*165 -->
-          <line x1="50" y1="15" x2="545" y2="15" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="56" x2="545" y2="56" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="97" x2="545" y2="97" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="138" x2="545" y2="138" stroke="#E2E6ED" stroke-width="0.5"/>
-          <line x1="50" y1="180" x2="545" y2="180" stroke="#E2E6ED" stroke-width="0.5"/>
-          <text x="45" y="19" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">+250</text>
-          <text x="45" y="60" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">+150</text>
-          <text x="45" y="101" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">+50</text>
-          <text x="45" y="142" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">-50</text>
-          <text x="45" y="184" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">-150</text>
-          <!-- Zero line at 0bps: y = 15 + (250/400)*165 = 15 + 103 = 118 -->
-          <line x1="50" y1="118" x2="545" y2="118" stroke="var(--navy)" stroke-width="1.5" stroke-opacity="0.3"/>
-          <text x="548" y="121" font-size="8" fill="var(--navy)" font-family="Inter" font-weight="600">0 bps</text>
-          <!-- Recession shading for inverted period (2022-2024) -->
-          <rect x="430" y="15" width="90" height="165" fill="var(--red)" opacity="0.04" rx="2"/>
-          <text x="475" y="28" font-size="8" fill="var(--red)" text-anchor="middle" font-family="Inter" opacity="0.6">Inverted</text>
-          <!-- 2s/10s data:
-               2014-Jan:+240, Jun:+220, Dec:+160
-               2015-Jun:+165, Dec:+125
-               2016-Jun:+95, Dec:+120
-               2017-Jun:+90, Dec:+55
-               2018-Jun:+35, Dec:+15
-               2019-Mar:0, Jun:+25, Aug:-5, Dec:+30
-               2020-Mar:+40, Jun:+55, Dec:+80
-               2021-Jun:+125, Dec:+80
-               2022-Apr:0, Jul:-5, Dec:-65
-               2023-Jun:-105, Dec:-40
-               2024-Jun:-25, Sep:-5, Dec:+10
-               2025-Jun:+25, Dec:+20
-               2026-Jun:+27
-               y = 15 + ((250-val)/400)*165 -->
-          <defs>
-            <linearGradient id="tsg_pos" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2EAE6D" stop-opacity="0.12"/><stop offset="100%" stop-color="#2EAE6D" stop-opacity="0.02"/></linearGradient>
-          </defs>
-          <!-- Filled area split at zero line -->
-          <polygon points="50,19 66,27 83,52 99,50 116,67 133,75 141,72 149,79 166,83 182,95 199,104 215,107 232,103 248,107 260,118 270,111 278,118 285,108 295,103 298,112 310,100 314,102 330,78 345,65 358,62 365,58 382,45 398,67 415,57 425,118 432,121 440,135 448,150 455,161 465,155 475,146 482,128 492,118 498,125 510,118 515,113 525,108 532,107 540,106 545,106 545,118 50,118" fill="url(#tsg_pos)" opacity="0.5"/>
-          <!-- Below zero fill in red -->
-          <polygon points="425,118 432,121 440,135 448,150 455,161 465,155 475,146 482,128 492,118 492,118 425,118" fill="var(--red)" opacity="0.08"/>
-          <polyline points="50,19 66,27 83,52 99,50 116,67 133,75 141,72 149,79 166,83 182,95 199,104 215,107 232,103 248,107 260,118 270,111 278,118 285,108 295,103 298,112 310,100 314,102 330,78 345,65 358,62 365,58 382,45 398,67 415,57 425,118 432,121 440,135 448,150 455,161 465,155 475,146 482,128 492,118 498,125 510,118 515,113 525,108 532,107 540,106 545,106" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linejoin="round"/>
-          <!-- Peak inversion label -->
-          <circle cx="455" cy="161" r="3" fill="var(--red)"/>
-          <text x="455" y="174" font-size="9" fill="var(--red)" text-anchor="middle" font-weight="600" font-family="Inter">-105 bps</text>
-          <!-- Current -->
-          <circle cx="545" cy="106" r="3.5" fill="var(--accent-blue)"/>
-          <text x="530" y="100" font-size="9" fill="var(--accent-blue)" text-anchor="end" font-weight="600" font-family="Inter">+27</text>
-          <!-- 2014 wide -->
-          <circle cx="50" cy="19" r="2.5" fill="var(--green)"/>
-          <text x="65" y="16" font-size="8" fill="var(--green)" font-family="Inter" font-weight="600">+240</text>
-          <text x="50" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2014</text>
-          <text x="149" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2016</text>
-          <text x="248" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2018</text>
-          <text x="347" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2020</text>
-          <text x="446" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2022</text>
-          <text x="545" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2026</text>
-        </svg>
-        <div class="commentary"><strong>Curve un-inverted</strong> in late 2024 after the deepest inversion (-105bps in mid-2023) since the early 1980s. Currently at +27bps &mdash; positive but well below the +90bps long-term average. The 2022-2024 inversion historically preceded recessions, though timing varies.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Risk summary -->
-  <div class="full-width">
-    <div class="card">
-      <div class="card-body" style="padding:14px 20px;">
-        <div class="commentary" style="margin:0;"><strong>Credit market risk assessment:</strong> Spreads are historically tight across all credit tiers &mdash; HY at 271bps (-31% vs avg), IG at 77bps (-49% vs avg), BBB at 100bps (-46% vs avg). This reflects strong risk appetite but leaves minimal cushion for macro shocks. The 2s/10s curve has normalized but remains flat. All-in yields still attractive (HY ~6.8%, IG ~5.3%) due to elevated Treasury base rates. Key risk: a credit event or recession scare could reprice spreads 200-400bps wider in weeks, as seen in Mar 2020.</div>
-      </div>
+      <div class="card-header"><div class="card-title">2s/10s Treasury Spread</div><span class="card-badge badge-live" id="t10y2yBadge">--</span></div>
+      <div class="card-body" style="padding:12px 16px;"><svg id="t10y2yChart" viewBox="0 0 560 200" style="width:100%;height:200px;"></svg></div>
     </div>
   </div>
 
@@ -1845,7 +1615,7 @@ function openModal(h) {
     <!-- Company Description -->
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
       <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px;">About</div>
-      <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;max-height:120px;overflow-y:auto;">${desc}</div>
+      <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">${desc}</div>
     </div>
 
     ${h.moat ? `<div style="margin-top:14px;"><div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px;">Competitive Moat</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">${h.moat}</div></div>` : ''}
@@ -2051,6 +1821,113 @@ function renderYieldChart(range) {
 
 // Initialize with 10Y view
 setYieldRange('10y');
+
+// ===== CREDIT SPREAD CHARTS FROM FRED DATA =====
+function renderSpreadChart(svgId, badgeId, dataKey, color, unit, ltAvg) {
+  const data = LIVE_DATA[dataKey];
+  const svg = document.getElementById(svgId);
+  const badge = document.getElementById(badgeId);
+  if (!data || data.length === 0) {
+    svg.innerHTML = '<text x="280" y="100" text-anchor="middle" font-size="12" fill="#8D95A8" font-family="Inter">No FRED data available</text>';
+    return;
+  }
+
+  const vals = data.map(d => d.val);
+  const W = 560, H = 200, pad = 50, right = 15, top = 15, bot = 25;
+  const chartW = W - pad - right, chartH = H - top - bot;
+  let yMin = Math.min(...vals), yMax = Math.max(...vals);
+  const yPad = (yMax - yMin) * 0.1;
+  yMin = Math.max(unit === 'bps' ? 0 : yMin - yPad, yMin - yPad);
+  yMax = yMax + yPad;
+
+  function toX(i) { return pad + (i / (data.length - 1)) * chartW; }
+  function toY(v) { return top + chartH - ((v - yMin) / (yMax - yMin)) * chartH; }
+
+  const gridCount = 4;
+  let html = '';
+  const gradId = 'sg_' + svgId;
+  html += '<defs><linearGradient id="'+gradId+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+color+'" stop-opacity="0.15"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0.02"/></linearGradient></defs>';
+
+  for (let i = 0; i <= gridCount; i++) {
+    const v = yMin + (i / gridCount) * (yMax - yMin);
+    const y = toY(v);
+    html += '<line x1="'+pad+'" y1="'+y+'" x2="'+(pad+chartW)+'" y2="'+y+'" stroke="#E2E6ED" stroke-width="0.5"/>';
+    const label = unit === 'bps' ? Math.round(v) : v.toFixed(1);
+    html += '<text x="'+(pad-6)+'" y="'+(y+4)+'" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">'+label+'</text>';
+  }
+
+  // LT Avg line
+  if (ltAvg !== null && ltAvg >= yMin && ltAvg <= yMax) {
+    const ay = toY(ltAvg);
+    html += '<line x1="'+pad+'" y1="'+ay+'" x2="'+(pad+chartW)+'" y2="'+ay+'" stroke="#8D95A8" stroke-width="1" stroke-dasharray="4,3"/>';
+    html += '<text x="'+(pad+chartW+4)+'" y="'+(ay+3)+'" font-size="8" fill="#8D95A8" font-family="Inter">Avg '+Math.round(ltAvg)+'</text>';
+  }
+
+  // Path
+  const pts = data.map((d, i) => toX(i)+','+toY(d.val)).join(' ');
+  html += '<polygon points="'+pts+' '+(pad+chartW)+','+toY(yMin)+' '+pad+','+toY(yMin)+'" fill="url(#'+gradId+')"/>';
+  html += '<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round"/>';
+
+  // Peak & current annotations
+  const maxI = vals.indexOf(Math.max(...vals));
+  const lastI = data.length - 1;
+  html += '<circle cx="'+toX(maxI)+'" cy="'+toY(vals[maxI])+'" r="3" fill="var(--red)"/>';
+  html += '<text x="'+toX(maxI)+'" y="'+(toY(vals[maxI])-8)+'" font-size="9" fill="var(--red)" text-anchor="middle" font-weight="600" font-family="Inter">'+(unit==='bps'?Math.round(vals[maxI]):vals[maxI].toFixed(2))+'</text>';
+  html += '<circle cx="'+toX(lastI)+'" cy="'+toY(vals[lastI])+'" r="4" fill="var(--accent-blue)"/>';
+  html += '<text x="'+(toX(lastI)-8)+'" y="'+(toY(vals[lastI])-10)+'" font-size="9" fill="var(--accent-blue)" text-anchor="end" font-weight="700" font-family="Inter">'+(unit==='bps'?Math.round(vals[lastI]):vals[lastI].toFixed(2))+'</text>';
+
+  // X labels (show ~6 evenly spaced year labels)
+  const step = Math.floor(data.length / 6);
+  for (let i = 0; i < data.length; i += step) {
+    const yr = data[i].date.substring(0, 4);
+    html += '<text x="'+toX(i)+'" y="'+(H-4)+'" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">'+yr+'</text>';
+  }
+  // Always label the last point
+  html += '<text x="'+toX(lastI)+'" y="'+(H-4)+'" font-size="8" fill="#8D95A8" text-anchor="end" font-family="Inter">Now</text>';
+
+  svg.innerHTML = html;
+
+  // Update badge
+  const lastVal = vals[lastI];
+  badge.textContent = (unit === 'bps' ? Math.round(lastVal) + ' bps' : lastVal.toFixed(2) + '%');
+
+  // Update summary table
+  const summaryMap = {hyChart:'hyOas',igChart:'igOas',bbbChart:'bbbOas',t10y2yChart:'t10y2y'};
+  const prefix = summaryMap[svgId];
+  if (prefix) {
+    const curEl = document.getElementById(prefix + 'Current');
+    const vsEl = document.getElementById(prefix + 'VsAvg');
+    if (curEl) curEl.textContent = (unit === 'bps' ? Math.round(lastVal) + ' bps' : (lastVal >= 0 ? '+' : '') + lastVal.toFixed(2) + '%');
+    if (vsEl && ltAvg) {
+      const pctVsAvg = Math.round((lastVal - ltAvg) / ltAvg * 100);
+      vsEl.textContent = (pctVsAvg >= 0 ? '+' : '') + pctVsAvg + '%';
+      vsEl.className = 'text-right font-mono ' + (pctVsAvg < 0 ? 'down' : 'up');
+    }
+  }
+}
+
+// Render all 4 spread charts from FRED data
+// HY_HIST values are in percentage (e.g. 2.71 = 271 bps), multiply by 100 for bps
+function renderAllSpreads() {
+  // Convert FRED percentage to bps for HY/IG/BBB
+  function toBps(arr) { return arr.map(d => ({date: d.date, val: Math.round(d.val * 100)})); }
+
+  if (LIVE_DATA.HY_HIST && LIVE_DATA.HY_HIST.length > 0)
+    renderSpreadChart('hyChart', 'hyBadge', 'HY_HIST_BPS', 'var(--red)', 'bps', 393);
+  if (LIVE_DATA.IG_HIST && LIVE_DATA.IG_HIST.length > 0)
+    renderSpreadChart('igChart', 'igBadge', 'IG_HIST_BPS', 'var(--accent-blue)', 'bps', 150);
+  if (LIVE_DATA.BBB_HIST && LIVE_DATA.BBB_HIST.length > 0)
+    renderSpreadChart('bbbChart', 'bbbBadge', 'BBB_HIST_BPS', 'var(--accent-orange)', 'bps', 185);
+  if (LIVE_DATA.T10Y2Y_HIST && LIVE_DATA.T10Y2Y_HIST.length > 0)
+    renderSpreadChart('t10y2yChart', 't10y2yBadge', 'T10Y2Y_HIST', 'var(--navy)', '%', 0.9);
+}
+
+// Convert HY/IG/BBB from percent to bps for chart rendering
+if (LIVE_DATA.HY_HIST) LIVE_DATA.HY_HIST_BPS = LIVE_DATA.HY_HIST.map(d => ({date:d.date, val:Math.round(d.val*100)}));
+if (LIVE_DATA.IG_HIST) LIVE_DATA.IG_HIST_BPS = LIVE_DATA.IG_HIST.map(d => ({date:d.date, val:Math.round(d.val*100)}));
+if (LIVE_DATA.BBB_HIST) LIVE_DATA.BBB_HIST_BPS = LIVE_DATA.BBB_HIST.map(d => ({date:d.date, val:Math.round(d.val*100)}));
+
+renderAllSpreads();
 
 // ===== MACRO FRAMEWORK ENGINE =====
 

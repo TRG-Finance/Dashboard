@@ -299,15 +299,28 @@ def fetch_yf_data():
                 "avg_volume": info.get("averageVolume", 0),
                 "description": info.get("longBusinessSummary", ""),
             }
-            # Fetch 1-year price history for chart
-            try:
-                hist = t.history(period="1y", interval="1wk")
-                h["price_history"] = [
-                    {"date": d.strftime("%Y-%m-%d"), "close": round(float(c), 2)}
-                    for d, c in hist["Close"].items()
-                ]
-            except:
-                h["price_history"] = []
+            # Fetch multi-period price history for charts
+            h["price_histories"] = {}
+            period_configs = [
+                ("1wk", "5d", "5m"),
+                ("1mo", "1mo", "1d"),
+                ("6mo", "6mo", "1d"),
+                ("1y", "1y", "1wk"),
+                ("5y", "5y", "1wk"),
+                ("10y", "10y", "1mo"),
+                ("20y", "max", "1mo"),
+            ]
+            for label, period, interval in period_configs:
+                try:
+                    hist = t.history(period=period, interval=interval)
+                    if len(hist) > 0:
+                        h["price_histories"][label] = [
+                            {"date": d.strftime("%Y-%m-%d"), "close": round(float(c), 2)}
+                            for d, c in hist["Close"].items()
+                        ]
+                except:
+                    pass
+            h["price_history"] = h["price_histories"].get("1y", [])
 
             holdings.append(h)
             print(f"    {sym}: ${h['price']} PE={h['pe']} FwdPE={h['fwdpe']} GM={h['gross_margin']} Target=${h['target_price']}")
