@@ -1373,6 +1373,47 @@ const holdings = [
   {rank:36,ticker:"WYNN",name:"Wynn Resorts",weight:0.80,price:"$105",mktcap:"$12B",pe:"20.0",fwdpe:"16.0",sector:"Consumer Discretionary",desc:"Luxury resort and casino operator in Las Vegas and Macau. Wynn Palace and Wynn Macau benefiting from China reopening. UAE resort (Wynn Al Marjan Island) opening 2027. Premium brand positioning.",revenue:"$7.5B+",revGrowth:"+12% YoY",margin:"EBITDA margin ~32%",moat:"Luxury brand, premium real estate, gaming licenses (limited supply), loyalty program",risks:"Macau regulatory risk, China economic slowdown, high leverage, construction risk",outlook:"Macau recovery still in mid-innings. UAE resort opening in 2027 opens entirely new market. Las Vegas strip property benefits from convention/events demand."}
 ];
 
+// Brand theses — Accuvest "iconic brand" / "consumption leader" perspective
+const brandTheses = {
+  AMZN:"Amazon is the defining iconic brand of modern commerce. Billions of consumers worldwide make their default purchase decision through Amazon's logo — from everyday essentials to cloud infrastructure. Prime's 200M+ members represent one of the deepest brand loyalty ecosystems ever built, driving repeat consumption across retail, entertainment, and services.",
+  NFLX:"Netflix is the iconic brand of the streaming era. Its logo is synonymous with entertainment itself — 300M+ subscribers make it the first screen consumers reach for. Netflix has earned a uniquely trusted position in global culture, shaping how the world consumes stories, and its brand power translates directly into pricing power and subscriber retention.",
+  AAPL:"Apple is perhaps the most iconic consumer brand in history. The Apple logo commands premium pricing, fierce loyalty, and an ecosystem that 1.5B+ users choose to live within. No other brand so consistently earns consumer trust and dollars across hardware, software, and services — making it a cornerstone holding for any brand-led portfolio.",
+  GOOGL:"Google is the iconic brand of the information age. 'Google it' is a verb in every language. Its logo sits atop 90%+ of global search, YouTube dominates video, and Android powers 3B+ devices. This brand entrenchment creates one of the widest economic moats in consumption — every day, billions make decisions that flow through Google.",
+  LLY:"Eli Lilly has become the iconic brand of the GLP-1 revolution — the most transformative healthcare development in decades. Mounjaro and Zepbound are reshaping how 100M+ Americans think about weight management, with brand recognition expanding from clinical to cultural. Lilly's logo now represents hope and efficacy in a $150B+ addressable market.",
+  HEI:"HEICO is the iconic brand of aerospace aftermarket parts — invisible to consumers but indispensable to airlines. Every flight depends on FAA-certified components, and HEICO's brand represents trusted quality and cost savings that keep airlines choosing their logo over OEM alternatives, flight after flight.",
+  TSM:"TSMC is the iconic brand of semiconductor manufacturing. Every advanced chip in the world — from iPhones to AI servers — bears TSMC's manufacturing imprint. When the world's most valuable companies need cutting-edge silicon, they trust one logo. That brand monopoly in fabrication is unmatched.",
+  NVDA:"NVIDIA is the iconic brand of the AI era. Its logo has become synonymous with artificial intelligence itself — every major AI model, every data center buildout, every autonomous vehicle starts with NVIDIA silicon. When companies invest in AI, NVIDIA is the first brand they reach for.",
+  MELI:"MercadoLibre is the iconic brand of Latin American digital commerce and finance. In a region of 650M people rapidly coming online, Mercado Libre's logo is the trusted gateway for shopping, payments, and credit — the Amazon and PayPal of an entire continent, with a brand moat deepening each year.",
+  UBER:"Uber is the iconic brand of mobility. 'Take an Uber' has replaced 'call a cab' globally. Its logo represents instant transportation and delivery in 10,000+ cities — a consumption habit so embedded in daily life that it persists across economic cycles.",
+  TDG:"TransDigm is the iconic brand of proprietary aerospace components. With 80%+ sole-source products, airlines and defense contractors have no alternative — TransDigm's brand represents the only FAA-certified option for thousands of critical parts.",
+  V:"Visa is the iconic brand of payments. Its logo appears on 4B+ cards worldwide and is accepted at 100M+ merchant locations. When consumers reach for their wallet, Visa's brand is the trust layer enabling $15T+ in annual transactions — the ultimate consumption infrastructure.",
+  LNG:"Cheniere is the iconic brand of American LNG exports. As the world shifts toward energy security, Cheniere's logo represents reliable, long-term contracted natural gas supply — a brand trusted by utilities and governments from Europe to Asia.",
+  APP:"AppLovin is the emerging iconic brand of AI-powered mobile advertising. Its AXON engine has earned the trust of app developers worldwide as the go-to platform for user acquisition — a brand that directly drives consumption in the $400B mobile economy.",
+  APO:"Apollo is the iconic brand of alternative asset management. Its logo represents sophisticated private credit and infrastructure investing at scale — trusted by institutions and increasingly by retail investors seeking returns beyond traditional markets.",
+  BX:"Blackstone is the iconic brand of alternative investments. With $1.1T+ in AUM, Blackstone's logo is the most recognized name in private equity, real estate, and credit — the brand institutions and advisors reach for first when allocating to alternatives.",
+  CME:"CME Group is the iconic brand of derivatives markets. Its logo is the backbone of global risk management — from interest rate futures to agricultural commodities, the world's largest companies trust CME's brand to hedge and discover prices.",
+  QXO:"QXO represents an emerging iconic brand play in building products distribution. Founded by Brad Jacobs, it aims to become the trusted logo in a fragmented $800B market — similar to how Jacobs built XPO into the transportation brand of choice.",
+  CBOE:"Cboe is the iconic brand of options trading. The VIX — 'Wall Street's fear gauge' — is Cboe's proprietary creation. Its logo represents the most sophisticated derivatives marketplace, trusted by traders and institutions globally.",
+  GE:"GE Aerospace is the iconic brand of jet propulsion. Every other commercial flight is powered by a GE or CFM engine. When airlines invest in their fleet, GE's logo represents reliability, efficiency, and decades of aftermarket support.",
+  ROKU:"Roku is the iconic brand of TV streaming access. Its logo is the first thing tens of millions of Americans see when they turn on their TV — the trusted neutral platform that connects consumers to every streaming service.",
+  SHOP:"Shopify is the iconic brand of entrepreneurial commerce. Its logo represents empowerment for 5M+ merchants worldwide — when entrepreneurs decide to sell online, Shopify is the brand they trust to build their business.",
+  MSFT:"Microsoft is the iconic brand of enterprise productivity. Its logo sits on every corporate desktop, powers the world's cloud infrastructure, and now leads AI integration. 400M+ Office users make Microsoft the most embedded brand in how the world works.",
+  COST:"Costco is the iconic brand of value-driven consumption. Its logo and membership card inspire fierce loyalty (97%+ renewal) — Costco shoppers don't just buy, they belong. In any economic environment, the Costco brand represents trusted value.",
+  PANW:"Palo Alto Networks is the iconic brand of cybersecurity. Its logo represents the front line of digital defense — when enterprises consolidate their security stack, Palo Alto's brand is the platform they trust to protect everything.",
+  MRVL:"Marvell is the emerging iconic brand of custom AI silicon. As hyperscalers demand custom chips beyond GPUs, Marvell's logo represents the trusted partner for bespoke data center semiconductors — a critical brand in the AI infrastructure buildout.",
+  ABNB:"Airbnb is the iconic brand of experiential travel. Its logo has redefined how the world thinks about accommodation — 'Stay at an Airbnb' is a cultural norm, representing authentic local experiences that 150M+ guests choose over traditional hotels.",
+  INTU:"Intuit is the iconic brand of financial self-management. TurboTax, QuickBooks, Credit Karma — each logo represents trust in life's most important financial moments. 100M+ customers rely on Intuit's brands to manage money, taxes, and credit.",
+  SBUX:"Starbucks is the iconic brand of the daily coffee ritual. Its logo is the most recognized symbol in food service — 38,000+ stores serving as the world's 'third place' between home and work. The Starbucks brand commands premium pricing through habitual consumption.",
+  LULU:"Lululemon is the iconic brand of premium athletic lifestyle. Its logo signals belonging to a community of wellness-minded consumers willing to pay more for quality and identity — brand loyalty that translates directly into pricing power and repeat purchases.",
+  NXPI:"NXP is the iconic brand of automotive semiconductors. As vehicles become computers on wheels, NXP's logo is embedded in every major automaker's electronics — the trusted chip brand powering the shift to electric, connected, autonomous driving.",
+  MNST:"Monster is the iconic brand of energy drinks. Its claw logo is a cultural symbol for a generation — representing energy, intensity, and lifestyle. Coca-Cola's distribution network gives Monster global reach that reinforces brand dominance shelf by shelf.",
+  TJX:"TJX is the iconic brand of treasure-hunt retail. TJ Maxx and Marshalls logos represent the thrill of discovery at a discount — a consumption model that actually strengthens when consumers trade down, making the brand counter-cyclically powerful.",
+  RCL:"Royal Caribbean is the iconic brand of cruise experiences. Its logo represents premium vacation experiences that create lifelong brand loyalists — record bookings show that once consumers experience the brand, they return again and again.",
+  DKNG:"DraftKings is the iconic brand of American sports betting. Its logo is becoming inseparable from the sports viewing experience — every game, every play, DraftKings is the brand consumers reach for to engage with sports on a deeper level.",
+  WYNN:"Wynn is the iconic brand of luxury resort experiences. Its logo represents the pinnacle of hospitality — from Las Vegas to Macau, Wynn's brand commands the highest room rates and guest loyalty in the industry."
+};
+holdings.forEach(h => { if (brandTheses[h.ticker]) h.brandThesis = brandTheses[h.ticker]; });
+
 // Build table
 const tbody = document.querySelector('#holdingsTable tbody');
 holdings.forEach(h => {
@@ -1533,9 +1574,15 @@ function openModal(h) {
       </div>
     </div>
 
-    <!-- Company Description -->
-    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
-      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px;">About</div>
+    <!-- Brand Thesis (Accuvest perspective — always shows static text) -->
+    ${h.brandThesis ? `<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="font-size:13px;font-weight:600;color:var(--accent-orange);margin-bottom:6px;">Why This Brand Matters</div>
+      <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">${h.brandThesis}</div>
+    </div>` : ''}
+
+    <!-- Company Description (from Yahoo Finance when available, fallback to static) -->
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px;">Company Overview</div>
       <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">${desc}</div>
     </div>
 
