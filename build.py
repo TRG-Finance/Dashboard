@@ -1,0 +1,268 @@
+"""
+Accuvest Daily Dashboard Builder
+Fetches live data from FRED + Yahoo Finance, renders the HTML dashboard.
+Run manually or via GitHub Actions on a daily schedule.
+"""
+
+import os
+import json
+import datetime
+from fredapi import Fred
+import yfinance as yf
+from jinja2 import Template
+
+FRED_API_KEY = os.environ.get("FRED_API_KEY", "")
+
+# ---------------------------------------------------------------------------
+# 1. FRED DATA
+# ---------------------------------------------------------------------------
+
+def fetch_fred_data():
+    """Fetch macro indicators from FRED."""
+    fred = Fred(api_key=FRED_API_KEY)
+    today = datetime.date.today()
+    start_10y = today - datetime.timedelta(days=365 * 11)
+    start_5y = today - datetime.timedelta(days=365 * 6)
+    start_2y = today - datetime.timedelta(days=365 * 3)
+    start_30y = today - datetime.timedelta(days=365 * 31)
+
+    data = {}
+
+    series_map = {
+        # Treasury yields (latest)
+        "UST_1M": "DGS1MO", "UST_3M": "DGS3MO", "UST_6M": "DGS6MO",
+        "UST_1Y": "DGS1", "UST_2Y": "DGS2", "UST_3Y": "DGS3",
+        "UST_5Y": "DGS5", "UST_7Y": "DGS7", "UST_10Y": "DGS10",
+        "UST_20Y": "DGS20", "UST_30Y": "DGS30",
+        # Macro indicators
+        "UNRATE": "UNRATE",
+        "CPI_YOY": "CPIAUCSL",
+        "CORE_CPI_YOY": "CPILFESL",
+        "CORE_PCE_YOY": "PCEPILFE",
+        "PAYEMS": "PAYEMS",
+        "PERSONAL_SAVING": "PSAVERT",
+        "UMCSENT": "UMCSENT",
+        "GDP": "A191RL1Q225SBEA",
+        # Credit spreads
+        "HY_OAS": "BAMLH0A0HYM2",
+        "IG_OAS": "BAMLC0A0CM",
+        "BBB_OAS": "BAMLC0A4CBBB",
+        # 2s10s spread
+        "T10Y2Y": "T10Y2Y",
+        # Fed funds
+        "FEDFUNDS": "FEDFUNDS",
+    }
+
+    for key, series_id in series_map.items():
+        try:
+            s = fred.get_series(series_id, observation_start=start_10y)
+            s = s.dropna()
+            if len(s) > 0:
+                data[key] = {
+                    "latest": round(float(s.iloc[-1]), 2),
+                    "prior": round(float(s.iloc[-2]), 2) if len(s) > 1 else None,
+                    "date": s.index[-1].strftime("%Y-%m-%d"),
+                }
+            else:
+                data[key] = {"latest": None, "prior": None, "date": None}
+        except Exception as e:
+            print(f"  WARN: Failed to fetch {key} ({series_id}): {e}")
+            data[key] = {"latest": None, "prior": None, "date": None}
+
+    # ----- Yield curve history for charts (10Y treasury, 30 years) -----
+    try:
+        hist_10y = fred.get_series("DGS10", observation_start=start_30y)
+        hist_10y = hist_10y.dropna()
+        # Resample to monthly to keep data manageable
+        monthly = hist_10y.resample("MS").last().dropna()
+        data["YIELD_HISTORY"] = [
+            {"date": d.strftime("%Y-%m"), "val": round(float(v), 2)}
+            for d, v in monthly.items()
+        ]
+    except Exception as e:
+        print(f"  WARN: Failed to fetch yield history: {e}")
+        data["YIELD_HISTORY"] = []
+
+    # ----- Credit spread histories (10 years) -----
+    for label, sid in [("HY_HIST", "BAMLH0A0HYM2"), ("IG_HIST", "BAMLC0A0CM"), ("BBB_HIST", "BAMLC0A4CBBB"), ("T10Y2Y_HIST", "T10Y2Y")]:
+        try:
+            s = fred.get_series(sid, observation_start=start_10y)
+            s = s.dropna().resample("MS").last().dropna()
+            data[label] = [
+                {"date": d.strftime("%Y-%m"), "val": round(float(v), 2)}
+                for d, v in s.items()
+            ]
+        except Exception as e:
+            print(f"  WARN: Failed to fetch {label}: {e}")
+            data[label] = []
+
+    # ----- CPI / Core PCE / Unemployment histories (5 years) -----
+    for label, sid in [("CPI_HIST", "CPIAUCSL"), ("PCE_HIST", "PCEPILFE"), ("UNEMP_HIST", "UNRATE"), ("SAVINGS_HIST", "PSAVERT"), ("UMCSENT_HIST", "UMCSENT")]:
+        try:
+            s = fred.get_series(sid, observation_start=start_5y)
+            s = s.dropna()
+            if label in ("CPI_HIST", "PCE_HIST"):
+                # Convert index level to YoY %
+                s_yoy = s.pct_change(periods=12) * 100
+                s_yoy = s_yoy.dropna()
+                data[label] = [
+                    {"date": d.strftime("%Y-%m"), "val": round(float(v), 1)}
+                    for d, v in s_yoy.items()
+                ]
+            else:
+                data[label] = [
+                    {"date": d.strftime("%Y-%m"), "val": round(float(v), 1)}
+                    for d, v in s.items()
+                ]
+        except Exception as e:
+            print(f"  WARN: Failed to fetch {label}: {e}")
+            data[label] = []
+
+    # ----- Quarterly GDP history -----
+    try:
+        gdp = fred.get_series("A191RL1Q225SBEA", observation_start=start_5y)
+        gdp = gdp.dropna()
+        data["GDP_HIST"] = [
+            {"date": d.strftime("%Y-Q") + str((d.month - 1) // 3 + 1), "val": round(float(v), 1)}
+            for d, v in gdp.items()
+        ]
+    except Exception as e:
+        print(f"  WARN: Failed to fetch GDP history: {e}")
+        data["GDP_HIST"] = []
+
+    return data
+
+
+# ---------------------------------------------------------------------------
+# 2. YAHOO FINANCE DATA
+# ---------------------------------------------------------------------------
+
+LOGO_TICKERS = [
+    "AMZN", "NFLX", "AAPL", "GOOGL", "LLY", "HEI", "TSM", "NVDA", "MELI",
+    "UBER", "TDG", "V", "LNG", "APP", "APO", "BX", "CME", "QXO", "CBOE",
+    "GE", "ROKU", "SHOP", "MSFT", "COST", "PANW", "MRVL", "ABNB", "INTU",
+    "SBUX", "LULU", "NXPI", "MNST", "TJX", "RCL", "DKNG", "WYNN",
+]
+
+INDEX_TICKERS = ["^GSPC", "^IXIC", "^RUA"]
+
+
+def fetch_yf_data():
+    """Fetch stock/index prices and fundamentals from Yahoo Finance."""
+    data = {}
+
+    # Indices
+    for sym in INDEX_TICKERS:
+        try:
+            t = yf.Ticker(sym)
+            info = t.fast_info
+            price = round(info.last_price, 2) if hasattr(info, 'last_price') else None
+            prev = round(info.previous_close, 2) if hasattr(info, 'previous_close') else price
+            chg = round((price - prev) / prev * 100, 2) if price and prev else 0
+            data[sym] = {"price": price, "change_pct": chg}
+        except Exception as e:
+            print(f"  WARN: Failed to fetch index {sym}: {e}")
+            data[sym] = {"price": None, "change_pct": 0}
+
+    # LOGO holdings
+    holdings = []
+    for sym in LOGO_TICKERS:
+        try:
+            t = yf.Ticker(sym)
+            info = t.info
+            holdings.append({
+                "ticker": sym,
+                "name": info.get("shortName", sym),
+                "price": round(info.get("currentPrice", info.get("regularMarketPrice", 0)), 2),
+                "mktcap": info.get("marketCap", 0),
+                "pe": round(info.get("trailingPE", 0), 1) if info.get("trailingPE") else "N/A",
+                "fwdpe": round(info.get("forwardPE", 0), 1) if info.get("forwardPE") else "N/A",
+                "sector": info.get("sector", ""),
+            })
+        except Exception as e:
+            print(f"  WARN: Failed to fetch {sym}: {e}")
+            holdings.append({
+                "ticker": sym, "name": sym, "price": 0,
+                "mktcap": 0, "pe": "N/A", "fwdpe": "N/A", "sector": "",
+            })
+
+    data["holdings"] = holdings
+
+    # S&P 500 PE (use SPY as proxy)
+    try:
+        spy = yf.Ticker("SPY")
+        spy_info = spy.info
+        data["sp500_pe"] = round(spy_info.get("trailingPE", 25), 1)
+        data["sp500_fwd_pe"] = round(spy_info.get("forwardPE", 21), 1)
+    except:
+        data["sp500_pe"] = None
+        data["sp500_fwd_pe"] = None
+
+    return data
+
+
+def format_mktcap(val):
+    if not val or val == 0:
+        return "N/A"
+    if val >= 1e12:
+        return f"${val/1e12:.2f}T"
+    if val >= 1e9:
+        return f"${val/1e9:.0f}B"
+    if val >= 1e6:
+        return f"${val/1e6:.0f}M"
+    return f"${val:,.0f}"
+
+
+# ---------------------------------------------------------------------------
+# 3. BUILD
+# ---------------------------------------------------------------------------
+
+def build_dashboard():
+    print(f"[{datetime.datetime.now()}] Starting dashboard build...")
+
+    print("  Fetching FRED data...")
+    fred_data = fetch_fred_data()
+
+    print("  Fetching Yahoo Finance data...")
+    yf_data = fetch_yf_data()
+
+    # Format holdings for template
+    for h in yf_data["holdings"]:
+        h["mktcap_fmt"] = format_mktcap(h["mktcap"])
+        h["price_fmt"] = f"${h['price']:,.2f}" if h["price"] else "N/A"
+
+    # Build context
+    now = datetime.datetime.now()
+    ctx = {
+        "build_date": now.strftime("%A, %B %d, %Y"),
+        "build_time": now.strftime("%I:%M %p ET"),
+        "fred": fred_data,
+        "yf": yf_data,
+        "sp500_price": yf_data.get("^GSPC", {}).get("price"),
+        "sp500_chg": yf_data.get("^GSPC", {}).get("change_pct", 0),
+        "nasdaq_price": yf_data.get("^IXIC", {}).get("price"),
+        "nasdaq_chg": yf_data.get("^IXIC", {}).get("change_pct", 0),
+        "russell_price": yf_data.get("^RUA", {}).get("price"),
+        "russell_chg": yf_data.get("^RUA", {}).get("change_pct", 0),
+        "holdings": yf_data["holdings"],
+        "fred_json": json.dumps(fred_data, default=str),
+        "holdings_json": json.dumps(yf_data["holdings"], default=str),
+    }
+
+    # Load and render template
+    template_path = os.path.join(os.path.dirname(__file__), "template.html")
+    with open(template_path, "r", encoding="utf-8") as f:
+        tmpl = Template(f.read())
+
+    html = tmpl.render(**ctx)
+
+    out_path = os.path.join(os.path.dirname(__file__), "index.html")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(html)
+
+    print(f"  Dashboard written to {out_path}")
+    print(f"[{datetime.datetime.now()}] Done.")
+
+
+if __name__ == "__main__":
+    build_dashboard()

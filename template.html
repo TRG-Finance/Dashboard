@@ -1,0 +1,2122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accuvest | Daily Market Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0B1D3A;
+  --navy-light: #132B52;
+  --navy-mid: #1A3562;
+  --accent-blue: #2E7DD1;
+  --accent-orange: #E8873A;
+  --green: #2EAE6D;
+  --red: #D94444;
+  --bg: #F4F6F9;
+  --card-bg: #FFFFFF;
+  --text-primary: #1A1F36;
+  --text-secondary: #5E6782;
+  --text-muted: #8D95A8;
+  --border: #E2E6ED;
+  --shadow: 0 1px 3px rgba(11,29,58,0.06), 0 1px 2px rgba(11,29,58,0.04);
+  --shadow-lg: 0 4px 12px rgba(11,29,58,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text-primary);line-height:1.5;-webkit-font-smoothing:antialiased;}
+
+/* Header */
+.header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);padding:20px 40px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--accent-orange);}
+.header-left{display:flex;align-items:center;gap:20px;}
+.logo-text{font-size:24px;font-weight:700;color:white;letter-spacing:1.5px;}
+.logo-text span{color:var(--accent-orange);}
+.header-divider{width:1px;height:28px;background:rgba(255,255,255,0.2);}
+.header-subtitle{color:rgba(255,255,255,0.75);font-size:13px;font-weight:400;}
+.header-date{color:rgba(255,255,255,0.6);font-size:12px;text-align:right;}
+.header-date strong{color:rgba(255,255,255,0.9);font-weight:500;}
+
+/* Tabs */
+.tab-bar{background:var(--navy);display:flex;gap:0;padding:0 40px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.tab-btn{padding:12px 28px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.55);cursor:pointer;border:none;background:none;letter-spacing:0.5px;text-transform:uppercase;position:relative;transition:color 0.2s;}
+.tab-btn:hover{color:rgba(255,255,255,0.85);}
+.tab-btn.active{color:white;}
+.tab-btn.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--accent-orange);border-radius:3px 3px 0 0;}
+
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* Layout */
+.container{max-width:1480px;margin:0 auto;padding:24px 32px 48px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px;}
+.full-width{margin-bottom:20px;}
+
+/* Cards */
+.card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;}
+.card-header{padding:14px 20px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.card-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--navy);}
+.card-badge{font-size:10px;padding:3px 10px;border-radius:12px;font-weight:500;}
+.badge-live{background:#E8F5EE;color:var(--green);}
+.badge-updated{background:#EBF2FB;color:var(--accent-blue);}
+.card-body{padding:16px 20px;}
+
+.section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--accent-orange);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* KPI Row */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px;}
+.kpi-card{background:var(--card-bg);border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);padding:14px 16px;text-align:center;}
+.kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);margin-bottom:4px;}
+.kpi-value{font-size:22px;font-weight:700;color:var(--navy);}
+.kpi-change{font-size:11px;font-weight:500;margin-top:2px;}
+.up{color:var(--green);}.down{color:var(--red);}.neutral{color:var(--text-muted);}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);padding:7px 10px;border-bottom:2px solid var(--border);}
+td{padding:8px 10px;font-size:12px;border-bottom:1px solid #F0F2F5;color:var(--text-primary);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#F8F9FB;}
+.text-right{text-align:right;}.text-center{text-align:center;}
+.font-mono{font-family:'SF Mono','Consolas',monospace;font-size:11px;}
+
+/* GDP bars */
+.gdp-bar-container{display:flex;align-items:center;gap:8px;}
+.gdp-bar-track{flex:1;height:7px;background:#EEF0F4;border-radius:4px;overflow:hidden;}
+.gdp-bar{height:100%;border-radius:4px;}
+.gdp-bar.positive{background:linear-gradient(90deg,var(--accent-blue),#4D9BE6);}
+.gdp-bar.negative{background:linear-gradient(90deg,var(--red),#E86B6B);}
+.gdp-value{font-size:12px;font-weight:600;min-width:48px;text-align:right;}
+
+/* Sector heat */
+.sector-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.sector-cell{padding:10px;border-radius:6px;text-align:center;font-size:12px;font-weight:500;}
+.sector-cell .sector-name{font-size:10px;font-weight:400;opacity:0.85;margin-bottom:2px;}
+.sector-cell .sector-val{font-size:14px;font-weight:700;}
+.sector-green{background:#E8F5EE;color:#1A7A47;}
+.sector-red{background:#FDE8E8;color:#B52A2A;}
+.sector-neutral{background:#F0F2F5;color:var(--text-secondary);}
+
+/* Commentary */
+.commentary{background:#FFF8F0;border-left:3px solid var(--accent-orange);padding:12px 16px;border-radius:0 8px 8px 0;font-size:12px;color:var(--text-secondary);line-height:1.6;margin-top:12px;}
+
+/* Stat pills */
+.stat-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
+.stat-pill{background:#F4F6F9;border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:100px;}
+.stat-pill-label{font-size:10px;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:0.4px;}
+.stat-pill-value{font-size:15px;font-weight:700;color:var(--navy);margin-top:2px;}
+
+/* Calendar */
+.cal-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #F0F2F5;}
+.cal-item:last-child{border-bottom:none;}
+.cal-date{min-width:44px;text-align:center;background:var(--navy);color:white;border-radius:6px;padding:5px 7px;font-size:10px;font-weight:600;line-height:1.3;}
+.cal-date .day{font-size:15px;display:block;}
+.cal-info{flex:1;}
+.cal-name{font-size:12px;font-weight:600;color:var(--text-primary);}
+.cal-desc{font-size:11px;color:var(--text-secondary);margin-top:2px;}
+.cal-time{font-size:10px;color:var(--text-muted);font-weight:500;}
+
+/* Ticker badges */
+.ticker-badge{display:inline-block;background:var(--navy);color:white;font-family:'SF Mono','Consolas',monospace;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;letter-spacing:0.3px;}
+.weight-bar{display:inline-block;height:5px;border-radius:3px;background:linear-gradient(90deg,var(--accent-blue),var(--accent-orange));vertical-align:middle;margin-right:6px;}
+
+/* FedWatch bars */
+.fw-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.fw-label{font-size:11px;font-weight:500;min-width:80px;color:var(--text-secondary);}
+.fw-bar-track{flex:1;height:20px;background:#EEF0F4;border-radius:4px;overflow:hidden;position:relative;}
+.fw-bar{height:100%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:10px;font-weight:600;color:white;min-width:30px;transition:width 0.5s;}
+
+/* Indicator cards */
+.ind-card{background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:14px;box-shadow:var(--shadow);}
+.ind-card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:4px;}
+.ind-card-value{font-size:20px;font-weight:700;color:var(--navy);}
+.ind-card-sub{font-size:11px;color:var(--text-secondary);margin-top:2px;}
+
+/* Company modal */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(11,29,58,0.5);z-index:1000;justify-content:center;align-items:center;padding:40px;}
+.modal-overlay.show{display:flex;}
+.modal{background:white;border-radius:12px;width:100%;max-width:900px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:white;z-index:1;border-radius:12px 12px 0 0;}
+.modal-close{width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:white;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);}
+.modal-close:hover{background:#F4F6F9;}
+.modal-body{padding:24px;}
+
+/* Company row hover */
+.company-row{cursor:pointer;transition:background 0.15s;}
+.company-row:hover td{background:#EBF2FB !important;}
+
+/* Mini chart canvas */
+.mini-chart{width:100%;height:180px;border-radius:6px;background:#F8F9FB;border:1px solid var(--border);}
+
+/* Footer */
+.footer{text-align:center;padding:20px;font-size:10px;color:var(--text-muted);border-top:1px solid var(--border);margin-top:20px;}
+
+/* Yield range toggle buttons */
+.yld-range-btn{padding:4px 12px;font-size:11px;font-weight:600;border:1px solid var(--border);border-radius:6px;background:white;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;}
+.yld-range-btn:hover{background:#F4F6F9;}
+.yld-range-btn.active{background:var(--navy);color:white;border-color:var(--navy);}
+
+/* Tooltip for indicator rows */
+.has-tooltip{position:relative;}
+.has-tooltip .tooltip{display:none;position:absolute;left:0;top:100%;z-index:100;background:var(--navy);color:white;font-size:11px;padding:8px 12px;border-radius:6px;width:320px;line-height:1.5;box-shadow:0 4px 12px rgba(0,0,0,0.15);pointer-events:none;}
+.has-tooltip:hover .tooltip{display:block;}
+
+@media print{body{background:white;}.header{border-bottom-color:var(--accent-orange);}.card{break-inside:avoid;box-shadow:none;border:1px solid #ddd;}.tab-bar{display:none;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo-text">ACCUVEST<span>.</span></div>
+    <div class="header-divider"></div>
+    <div class="header-subtitle">Daily Market & Economic Dashboard</div>
+  </div>
+  <div class="header-date"><strong id="currentDate"></strong><br>Data as of prior close</div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('macro')">Macro Overview</button>
+  <button class="tab-btn" onclick="switchTab('indicators')">Economic Indicators</button>
+  <button class="tab-btn" onclick="switchTab('alpha')">Alpha Brands (LOGO)</button>
+  <button class="tab-btn" onclick="switchTab('framework')">Macro Framework</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 1: MACRO OVERVIEW                                        -->
+<!-- ============================================================ -->
+<div id="tab-macro" class="tab-content active">
+<div class="container">
+
+  <div class="section-label">Market Snapshot</div>
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">S&P 500</div><div class="kpi-value">7,482</div><div class="kpi-change down">-0.24%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Nasdaq</div><div class="kpi-value">26,423</div><div class="kpi-change up">+1.54%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Russell 3000</div><div class="kpi-value">4,260</div><div class="kpi-change up">+1.06%</div></div>
+    <div class="kpi-card"><div class="kpi-label">10-Yr Treasury</div><div class="kpi-value">4.51%</div><div class="kpi-change neutral">+3 bps</div></div>
+    <div class="kpi-card"><div class="kpi-label">Fed Funds</div><div class="kpi-value">3.50-3.75%</div><div class="kpi-change neutral">Held 6/17</div></div>
+  </div>
+
+  <!-- GDP -->
+  <div class="section-label">GDP & Economic Growth</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Q1 2026 Real GDP &mdash; Second Estimate</div><span class="card-badge badge-updated">BEA 5/28</span></div>
+      <div class="card-body">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px;">
+          <span style="font-size:32px;font-weight:700;color:var(--navy);">+1.6%</span>
+          <span style="font-size:13px;color:var(--text-secondary);">annualized (revised from +2.0%)</span>
+        </div>
+        <table>
+          <thead><tr><th>Component</th><th class="text-right">Growth</th><th style="width:42%">Contribution</th></tr></thead>
+          <tbody>
+            <tr><td>Consumer Spending</td><td class="text-right font-mono up">+1.4%</td><td><div class="gdp-bar-container"><div class="gdp-bar-track"><div class="gdp-bar positive" style="width:28%"></div></div><span class="gdp-value up">+0.94pp</span></div></td></tr>
+            <tr><td style="color:var(--text-muted);padding-left:20px">Services</td><td class="text-right font-mono" style="color:var(--text-muted)">+1.8%</td><td><span style="font-size:11px;color:var(--text-muted)">Primary consumption driver</span></td></tr>
+            <tr><td style="color:var(--text-muted);padding-left:20px">Goods</td><td class="text-right font-mono" style="color:var(--text-muted)">+0.4%</td><td><span style="font-size:11px;color:var(--text-muted)">Subdued demand</span></td></tr>
+            <tr><td>Nonresidential Investment</td><td class="text-right font-mono up">+10.1%</td><td><div class="gdp-bar-container"><div class="gdp-bar-track"><div class="gdp-bar positive" style="width:65%"></div></div><span class="gdp-value up">+1.34pp</span></div></td></tr>
+            <tr><td>Residential Investment</td><td class="text-right font-mono down">-6.2%</td><td><div class="gdp-bar-container"><div class="gdp-bar-track"><div class="gdp-bar negative" style="width:15%"></div></div><span class="gdp-value down">-0.24pp</span></div></td></tr>
+            <tr><td>Government Spending</td><td class="text-right font-mono up">+4.4%</td><td><div class="gdp-bar-container"><div class="gdp-bar-track"><div class="gdp-bar positive" style="width:35%"></div></div><span class="gdp-value up">+0.72pp</span></div></td></tr>
+            <tr><td>Exports</td><td class="text-right font-mono up">+13.1%</td><td><div class="gdp-bar-container"><div class="gdp-bar-track"><div class="gdp-bar positive" style="width:45%"></div></div><span class="gdp-value up">+1.42pp</span></div></td></tr>
+            <tr><td>Imports</td><td class="text-right font-mono down">+21.1%</td><td><div class="gdp-bar-container"><div class="gdp-bar-track"><div class="gdp-bar negative" style="width:52%"></div></div><span class="gdp-value down">-2.67pp</span></div></td></tr>
+          </tbody>
+        </table>
+        <div class="commentary"><strong>Key:</strong> Revised down 0.4pp on weaker inventories. Business investment strong (+10.1%), led by equipment (+17.2%) &amp; IP (+11.6%). Net trade dragged -1.25pp as imports surged. <strong>Third estimate releases June 25.</strong></div>
+
+        <div style="margin-top:14px;font-size:12px;font-weight:600;color:var(--navy);margin-bottom:6px;">Recent Quarterly Real GDP (Annualized)</div>
+        <svg viewBox="0 0 500 90" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:90px;">
+          <!-- Bars for Q1'24 through Q1'26: 1.3, 3.0, 3.1, 2.4, 2.4, 3.8, 4.3, 1.4, 1.6 -->
+          <!-- y baseline at 75, max 4.3% -> bar height scale: (val/4.5)*55 -->
+          <rect x="20" y="59" width="42" height="16" rx="2" fill="var(--accent-blue)" opacity="0.6"/>
+          <rect x="72" y="38" width="42" height="37" rx="2" fill="var(--accent-blue)" opacity="0.7"/>
+          <rect x="124" y="37" width="42" height="38" rx="2" fill="var(--accent-blue)" opacity="0.7"/>
+          <rect x="176" y="46" width="42" height="29" rx="2" fill="var(--accent-blue)" opacity="0.7"/>
+          <rect x="228" y="46" width="42" height="29" rx="2" fill="var(--accent-blue)" opacity="0.7"/>
+          <rect x="280" y="29" width="42" height="46" rx="2" fill="var(--accent-blue)" opacity="0.8"/>
+          <rect x="332" y="23" width="42" height="52" rx="2" fill="var(--green)" opacity="0.8"/>
+          <rect x="384" y="58" width="42" height="17" rx="2" fill="var(--accent-orange)" opacity="0.7"/>
+          <rect x="436" y="55" width="42" height="20" rx="2" fill="var(--accent-orange)"/>
+          <!-- Value labels -->
+          <text x="41" y="55" font-size="9" fill="var(--navy)" text-anchor="middle" font-weight="600" font-family="Inter">1.3</text>
+          <text x="93" y="34" font-size="9" fill="var(--navy)" text-anchor="middle" font-weight="600" font-family="Inter">3.0</text>
+          <text x="145" y="33" font-size="9" fill="var(--navy)" text-anchor="middle" font-weight="600" font-family="Inter">3.1</text>
+          <text x="197" y="42" font-size="9" fill="var(--navy)" text-anchor="middle" font-weight="600" font-family="Inter">2.4</text>
+          <text x="249" y="42" font-size="9" fill="var(--navy)" text-anchor="middle" font-weight="600" font-family="Inter">2.4</text>
+          <text x="301" y="25" font-size="9" fill="var(--navy)" text-anchor="middle" font-weight="600" font-family="Inter">3.8</text>
+          <text x="353" y="19" font-size="9" fill="var(--navy)" text-anchor="middle" font-weight="600" font-family="Inter">4.3</text>
+          <text x="405" y="54" font-size="9" fill="var(--navy)" text-anchor="middle" font-weight="600" font-family="Inter">1.4</text>
+          <text x="457" y="51" font-size="9" fill="var(--navy)" text-anchor="middle" font-weight="600" font-family="Inter">1.6</text>
+          <!-- Quarter labels -->
+          <text x="41" y="87" font-size="7" fill="#8D95A8" text-anchor="middle" font-family="Inter">Q1'24</text>
+          <text x="93" y="87" font-size="7" fill="#8D95A8" text-anchor="middle" font-family="Inter">Q2'24</text>
+          <text x="145" y="87" font-size="7" fill="#8D95A8" text-anchor="middle" font-family="Inter">Q3'24</text>
+          <text x="197" y="87" font-size="7" fill="#8D95A8" text-anchor="middle" font-family="Inter">Q4'24</text>
+          <text x="249" y="87" font-size="7" fill="#8D95A8" text-anchor="middle" font-family="Inter">Q1'25</text>
+          <text x="301" y="87" font-size="7" fill="#8D95A8" text-anchor="middle" font-family="Inter">Q2'25</text>
+          <text x="353" y="87" font-size="7" fill="#8D95A8" text-anchor="middle" font-family="Inter">Q3'25</text>
+          <text x="405" y="87" font-size="7" fill="#8D95A8" text-anchor="middle" font-family="Inter">Q4'25</text>
+          <text x="457" y="87" font-size="7" fill="#8D95A8" text-anchor="middle" font-family="Inter">Q1'26</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">What Is Driving Growth</div><span class="card-badge badge-updated">Analysis</span></div>
+      <div class="card-body">
+        <h3 style="font-size:14px;font-weight:600;color:var(--green);margin-bottom:6px;">Tailwinds</h3>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;margin-bottom:14px;">
+          <div><strong>Equipment Investment (+17.2%)</strong> &mdash; AI infrastructure, automation, and reshoring capex. Strongest since Q3 2023.</div>
+          <div style="margin-top:4px"><strong>Government Spending (+4.4%)</strong> &mdash; Rebound after Q4 shutdown. Defense and non-defense both accelerated.</div>
+          <div style="margin-top:4px"><strong>Export Surge (+13.1%)</strong> &mdash; Strong demand for U.S. services and LNG. Early-Q1 dollar weakness aided.</div>
+          <div style="margin-top:4px"><strong>IP Investment (+11.6%)</strong> &mdash; Software and R&amp;D spending elevated on generative AI buildout.</div>
+        </div>
+        <h3 style="font-size:14px;font-weight:600;color:var(--red);margin-bottom:6px;">Headwinds</h3>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">
+          <div><strong>Import Surge (+21.1%)</strong> &mdash; Front-loaded imports ahead of tariff risks and Middle East supply disruptions (-2.67pp drag).</div>
+          <div style="margin-top:4px"><strong>Residential Investment (-6.2%)</strong> &mdash; Mortgage rates (6.8%+) suppress housing. Existing home sales near decade lows.</div>
+          <div style="margin-top:4px"><strong>Consumer Goods (+0.4%)</strong> &mdash; Nearly flat as consumers pull back on discretionary. Services remain the bright spot.</div>
+          <div style="margin-top:4px"><strong>Inflation Persistence</strong> &mdash; PCE at 3.5%, well above 2% target. Core PCE 3.3% and rising.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S&P 500 Valuation & Sectors -->
+  <div class="section-label">S&P 500 Valuation & Sectors</div>
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">S&P 500 Valuation & Earnings</div><span class="card-badge badge-live">June 2026</span></div>
+      <div class="card-body" style="padding:12px 20px 16px;">
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;">
+          <div class="ind-card"><div class="ind-card-title">Trailing P/E</div><div class="ind-card-value">25.1x</div><div class="ind-card-sub">5Y avg: 22.8x</div></div>
+          <div class="ind-card"><div class="ind-card-title">Forward P/E</div><div class="ind-card-value">20.9x</div><div class="ind-card-sub">10Y avg: 18.5x</div></div>
+          <div class="ind-card"><div class="ind-card-title">EV/EBITDA</div><div class="ind-card-value">16.8x</div><div class="ind-card-sub">5Y avg: 15.2x</div></div>
+          <div class="ind-card"><div class="ind-card-title">EPS Growth (Est.)</div><div class="ind-card-value up">+21.3%</div><div class="ind-card-sub">CY 2026 consensus</div></div>
+          <div class="ind-card"><div class="ind-card-title">EBITDA Growth</div><div class="ind-card-value up">+14.5%</div><div class="ind-card-sub">CY 2026 consensus</div></div>
+          <div class="ind-card"><div class="ind-card-title">EPS (2026E)</div><div class="ind-card-value">$340</div><div class="ind-card-sub">GS forecast, +24% YoY</div></div>
+        </div>
+        <div class="commentary" style="margin-top:10px;"><strong>Valuation context:</strong> Both trailing P/E (25.1x) and forward P/E (20.9x) are above 5 and 10-year averages, reflecting the AI-driven earnings premium. EV/EBITDA at 16.8x is elevated but supported by 21%+ earnings growth. Earnings growth is broad-based across tech, healthcare, and financials.</div>
+      </div>
+    </div>
+  </div>
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Weekly Sector Returns</div><span class="card-badge badge-live">Week of 6/22</span></div>
+      <div class="card-body">
+        <div class="sector-grid">
+          <div class="sector-cell sector-green"><div class="sector-name">Financials</div><div class="sector-val">+0.76%</div></div>
+          <div class="sector-cell sector-green"><div class="sector-name">Real Estate</div><div class="sector-val">+0.76%</div></div>
+          <div class="sector-cell sector-green"><div class="sector-name">Utilities</div><div class="sector-val">+0.65%</div></div>
+          <div class="sector-cell sector-green"><div class="sector-name">Healthcare</div><div class="sector-val">+0.47%</div></div>
+          <div class="sector-cell sector-green"><div class="sector-name">Technology</div><div class="sector-val">+0.22%</div></div>
+          <div class="sector-cell sector-neutral"><div class="sector-name">Cons. Defensive</div><div class="sector-val">+0.06%</div></div>
+          <div class="sector-cell sector-neutral"><div class="sector-name">Energy</div><div class="sector-val">+0.03%</div></div>
+          <div class="sector-cell sector-red"><div class="sector-name">Cons. Cyclical</div><div class="sector-val">-0.92%</div></div>
+          <div class="sector-cell sector-red"><div class="sector-name">Materials</div><div class="sector-val">-1.16%</div></div>
+          <div class="sector-cell sector-red"><div class="sector-name">Industrials</div><div class="sector-val">-2.05%</div></div>
+          <div class="sector-cell sector-red"><div class="sector-name">Comm. Services</div><div class="sector-val">-3.37%</div></div>
+          <div class="sector-cell" style="background:var(--navy);color:white;"><div class="sector-name" style="opacity:0.7">S&P 500</div><div class="sector-val">+0.93%</div></div>
+        </div>
+        <div class="commentary"><strong>Rotation:</strong> Defensives and rate-sensitive sectors led post hawkish FOMC dot plot. Comm. Services lagged sharply (-3.37%) on weak ad-revenue guidance.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BONDS / YIELDS / CREDIT -->
+  <div class="section-label">Bonds, Yields & Credit</div>
+  <div class="grid-2">
+
+    <!-- Yield Curve -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">U.S. Treasury Yield Curve</div><span class="card-badge badge-live">6/22/2026</span></div>
+      <div class="card-body">
+        <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:200px;">
+          <line x1="50" y1="20" x2="540" y2="20" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="56" x2="540" y2="56" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="92" x2="540" y2="92" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="128" x2="540" y2="128" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="164" x2="540" y2="164" stroke="#E2E6ED" stroke-width="0.5"/>
+          <text x="44" y="24" font-size="10" fill="#8D95A8" text-anchor="end" font-family="Inter">5.0%</text>
+          <text x="44" y="60" font-size="10" fill="#8D95A8" text-anchor="end" font-family="Inter">4.5%</text>
+          <text x="44" y="96" font-size="10" fill="#8D95A8" text-anchor="end" font-family="Inter">4.0%</text>
+          <text x="44" y="132" font-size="10" fill="#8D95A8" text-anchor="end" font-family="Inter">3.5%</text>
+          <text x="44" y="168" font-size="10" fill="#8D95A8" text-anchor="end" font-family="Inter">3.0%</text>
+          <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2E7DD1" stop-opacity="0.15"/><stop offset="100%" stop-color="#2E7DD1" stop-opacity="0.02"/></linearGradient></defs>
+          <polygon points="75,116 124,103 173,93 222,89 271,75 320,74 369,71 418,64 467,55 516,22 540,23 540,164 75,164" fill="url(#cg)"/>
+          <polyline points="75,116 124,103 173,93 222,89 271,75 320,74 369,71 418,64 467,55 516,22 540,23" fill="none" stroke="#2E7DD1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="75" cy="116" r="3" fill="#2E7DD1"/><circle cx="124" cy="103" r="3" fill="#2E7DD1"/><circle cx="173" cy="93" r="3" fill="#2E7DD1"/><circle cx="222" cy="89" r="3" fill="#2E7DD1"/><circle cx="271" cy="75" r="3" fill="#2E7DD1"/><circle cx="320" cy="74" r="3" fill="#2E7DD1"/><circle cx="369" cy="71" r="3" fill="#2E7DD1"/><circle cx="418" cy="64" r="3" fill="#2E7DD1"/><circle cx="467" cy="55" r="3" fill="#2E7DD1"/><circle cx="516" cy="22" r="3" fill="#2E7DD1"/><circle cx="540" cy="23" r="3" fill="#2E7DD1"/>
+          <text x="75" y="110" font-size="9" fill="#0B1D3A" text-anchor="middle" font-weight="600" font-family="Inter">3.66</text>
+          <text x="271" y="69" font-size="9" fill="#0B1D3A" text-anchor="middle" font-weight="600" font-family="Inter">4.24</text>
+          <text x="467" y="49" font-size="9" fill="#0B1D3A" text-anchor="middle" font-weight="600" font-family="Inter">4.51</text>
+          <text x="540" y="17" font-size="9" fill="#0B1D3A" text-anchor="middle" font-weight="600" font-family="Inter">4.95</text>
+          <text x="75" y="182" font-size="9" fill="#8D95A8" text-anchor="middle" font-family="Inter">1M</text>
+          <text x="124" y="182" font-size="9" fill="#8D95A8" text-anchor="middle" font-family="Inter">3M</text>
+          <text x="173" y="182" font-size="9" fill="#8D95A8" text-anchor="middle" font-family="Inter">6M</text>
+          <text x="222" y="182" font-size="9" fill="#8D95A8" text-anchor="middle" font-family="Inter">1Y</text>
+          <text x="271" y="182" font-size="9" fill="#8D95A8" text-anchor="middle" font-family="Inter">2Y</text>
+          <text x="320" y="182" font-size="9" fill="#8D95A8" text-anchor="middle" font-family="Inter">3Y</text>
+          <text x="369" y="182" font-size="9" fill="#8D95A8" text-anchor="middle" font-family="Inter">5Y</text>
+          <text x="418" y="182" font-size="9" fill="#8D95A8" text-anchor="middle" font-family="Inter">7Y</text>
+          <text x="467" y="182" font-size="9" fill="#8D95A8" text-anchor="middle" font-family="Inter">10Y</text>
+          <text x="516" y="182" font-size="9" fill="#8D95A8" text-anchor="middle" font-family="Inter">20Y</text>
+          <text x="540" y="182" font-size="9" fill="#8D95A8" text-anchor="middle" font-family="Inter">30Y</text>
+        </svg>
+        <div class="stat-row">
+          <div class="stat-pill"><div class="stat-pill-label">2s/10s Spread</div><div class="stat-pill-value">+27 bps</div></div>
+          <div class="stat-pill"><div class="stat-pill-label">Curve</div><div class="stat-pill-value" style="font-size:13px">Normal / Steep</div></div>
+          <div class="stat-pill"><div class="stat-pill-label">3M Bill</div><div class="stat-pill-value">3.85%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOMC & FedWatch -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">FOMC & Rate Expectations</div><span class="card-badge badge-updated">6/17 Decision</span></div>
+      <div class="card-body">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+          <span style="font-size:26px;font-weight:700;color:var(--navy);">3.50&ndash;3.75%</span>
+          <span style="font-size:12px;color:var(--text-secondary);">Held Steady &bull; 12-0 vote &bull; 4th consecutive hold</span>
+        </div>
+        <div style="background:#F4F6F9;border-radius:8px;padding:12px 14px;margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:600;color:var(--navy);margin-bottom:6px;">FOMC Statement Highlights</div>
+          <ul style="font-size:11px;color:var(--text-secondary);padding-left:14px;line-height:1.7;">
+            <li>Economy expanding at "solid pace" despite elevated uncertainty</li>
+            <li>Inflation "remains elevated" &mdash; supply shocks &amp; energy</li>
+            <li>9 of 18 members project at least one hike before year-end</li>
+            <li>Median dot for end-2026: 3.80% (up from 3.40% in March)</li>
+          </ul>
+        </div>
+
+        <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;">Mini FedWatch &mdash; Market-Implied Probabilities</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;">Based on Fed Funds futures pricing</div>
+
+        <div style="margin-bottom:6px;font-size:11px;font-weight:600;color:var(--text-secondary);">Jul 29, 2026</div>
+        <div class="fw-bar-row"><div class="fw-label">Hold 3.50-3.75</div><div class="fw-bar-track"><div class="fw-bar" style="width:89%;background:var(--accent-blue);">89%</div></div></div>
+        <div class="fw-bar-row"><div class="fw-label">Hike to 3.75-4.00</div><div class="fw-bar-track"><div class="fw-bar" style="width:8%;background:var(--red);">8%</div></div></div>
+        <div class="fw-bar-row"><div class="fw-label">Cut to 3.25-3.50</div><div class="fw-bar-track"><div class="fw-bar" style="width:3%;background:var(--green);">3%</div></div></div>
+
+        <div style="margin:10px 0 6px;font-size:11px;font-weight:600;color:var(--text-secondary);">Sep 16, 2026</div>
+        <div class="fw-bar-row"><div class="fw-label">Hold 3.50-3.75</div><div class="fw-bar-track"><div class="fw-bar" style="width:72%;background:var(--accent-blue);">72%</div></div></div>
+        <div class="fw-bar-row"><div class="fw-label">Hike +25bp</div><div class="fw-bar-track"><div class="fw-bar" style="width:22%;background:var(--red);">22%</div></div></div>
+        <div class="fw-bar-row"><div class="fw-label">Cut -25bp</div><div class="fw-bar-track"><div class="fw-bar" style="width:6%;background:var(--green);">6%</div></div></div>
+
+        <div style="margin:10px 0 6px;font-size:11px;font-weight:600;color:var(--text-secondary);">Oct 28, 2026</div>
+        <div class="fw-bar-row"><div class="fw-label">Hold</div><div class="fw-bar-track"><div class="fw-bar" style="width:58%;background:var(--accent-blue);">58%</div></div></div>
+        <div class="fw-bar-row"><div class="fw-label">Hike +25bp</div><div class="fw-bar-track"><div class="fw-bar" style="width:35%;background:var(--red);">35%</div></div></div>
+        <div class="fw-bar-row"><div class="fw-label">Cut -25bp</div><div class="fw-bar-track"><div class="fw-bar" style="width:7%;background:var(--green);">7%</div></div></div>
+
+        <div style="margin:10px 0 6px;font-size:11px;font-weight:600;color:var(--text-secondary);">Dec 16, 2026</div>
+        <div class="fw-bar-row"><div class="fw-label">Hold</div><div class="fw-bar-track"><div class="fw-bar" style="width:42%;background:var(--accent-blue);">42%</div></div></div>
+        <div class="fw-bar-row"><div class="fw-label">Hike +25bp</div><div class="fw-bar-track"><div class="fw-bar" style="width:40%;background:var(--red);">40%</div></div></div>
+        <div class="fw-bar-row"><div class="fw-label">Hike +50bp</div><div class="fw-bar-track"><div class="fw-bar" style="width:12%;background:#B52A2A;">12%</div></div></div>
+        <div class="fw-bar-row"><div class="fw-label">Cut -25bp</div><div class="fw-bar-track"><div class="fw-bar" style="width:6%;background:var(--green);">6%</div></div></div>
+
+        <div class="commentary" style="margin-top:10px;"><strong>Takeaway:</strong> Markets pricing ~52% chance of at least one hike by December, aligning with the hawkish dot-plot shift. October is the earliest meeting with meaningful hike probability (35%).</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Treasury Yield History -->
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">10-Year Treasury Yield History</div>
+        <div style="display:flex;gap:4px;">
+          <button class="yld-range-btn active" onclick="setYieldRange('10y')">10Y</button>
+          <button class="yld-range-btn" onclick="setYieldRange('20y')">20Y</button>
+          <button class="yld-range-btn" onclick="setYieldRange('30y')">30Y</button>
+        </div>
+      </div>
+      <div class="card-body" style="padding:12px 16px;">
+        <div id="yieldChartContainer">
+          <!-- 30Y chart (1996-2026) — default hidden charts swap via JS -->
+          <svg id="yieldChart" viewBox="0 0 1100 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:260px;"></svg>
+        </div>
+        <div class="commentary" id="yieldCommentary"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREDIT SPREAD CHARTS -->
+  <div class="section-label">Credit Spread Charts</div>
+
+  <!-- Summary table -->
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Credit Spreads Summary (OAS)</div><span class="card-badge badge-live">June 2026</span></div>
+      <div class="card-body" style="padding:10px 20px 14px;">
+        <table>
+          <thead><tr><th>Metric</th><th class="text-right">Current</th><th class="text-right">LT Avg</th><th class="text-right">vs. Avg</th><th>Context</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600">HY OAS (ICE BofA)</td><td class="text-right font-mono">271 bps</td><td class="text-right font-mono">393 bps</td><td class="text-right font-mono down">-31%</td><td style="font-size:11px;color:var(--text-muted)">Historically tight</td></tr>
+            <tr><td style="font-weight:600">IG Corporate OAS</td><td class="text-right font-mono">77 bps</td><td class="text-right font-mono">150 bps</td><td class="text-right font-mono down">-49%</td><td style="font-size:11px;color:var(--text-muted)">25-year tights</td></tr>
+            <tr><td style="font-weight:600">BBB Corporate OAS</td><td class="text-right font-mono">100 bps</td><td class="text-right font-mono">185 bps</td><td class="text-right font-mono down">-46%</td><td style="font-size:11px;color:var(--text-muted)">Compressed</td></tr>
+            <tr><td style="font-weight:600">AA Corporate OAS</td><td class="text-right font-mono">50 bps</td><td class="text-right font-mono">90 bps</td><td class="text-right font-mono down">-44%</td><td style="font-size:11px;color:var(--text-muted)">Near floor</td></tr>
+            <tr><td style="font-weight:600">2s/10s Spread</td><td class="text-right font-mono">+27 bps</td><td class="text-right font-mono">+90 bps</td><td class="text-right font-mono down">-70%</td><td style="font-size:11px;color:var(--text-muted)">Curve flat vs. norm</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- HY OAS + IG OAS charts -->
+  <div class="grid-2">
+    <!-- HY OAS Chart -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">High Yield OAS &mdash; 10 Year</div><span class="card-badge badge-live">271 bps</span></div>
+      <div class="card-body" style="padding:12px 16px;">
+        <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:200px;">
+          <!-- Grid: 0bps=180, 1100bps=15. y = 180 - (val/1100)*165 -->
+          <line x1="50" y1="15" x2="545" y2="15" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="56" x2="545" y2="56" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="97" x2="545" y2="97" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="138" x2="545" y2="138" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="180" x2="545" y2="180" stroke="#E2E6ED" stroke-width="0.5"/>
+          <text x="45" y="19" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">1100</text>
+          <text x="45" y="60" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">825</text>
+          <text x="45" y="101" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">550</text>
+          <text x="45" y="142" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">275</text>
+          <text x="45" y="184" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">0</text>
+          <!-- LT Avg line at 393bps: y = 180 - (393/1100)*165 = 180 - 59 = 121 -->
+          <line x1="50" y1="121" x2="545" y2="121" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="548" y="124" font-size="8" fill="var(--text-muted)" font-family="Inter">Avg 393</text>
+          <!-- HY OAS data points (monthly-ish, 2014-2026):
+               2014-Jan:380, Jun:320, Dec:500
+               2015-Jun:460, Dec:670
+               2016-Feb:840, Jun:530, Dec:420
+               2017-Jun:360, Dec:340
+               2018-Jun:340, Oct:380, Dec:530
+               2019-Jun:380, Dec:340
+               2020-Jan:360, Mar:1090, Jun:630, Dec:380
+               2021-Jun:290, Dec:310
+               2022-Jun:500, Oct:530, Dec:470
+               2023-Jun:400, Dec:330
+               2024-Jun:310, Dec:280
+               2025-Jun:290, Dec:300
+               2026-Jun:271
+               x: 50 to 545 over ~150 months (Jan 2014 = 50, Jun 2026 = 545)
+               x = 50 + (month_offset / 150) * 495
+               y = 180 - (val/1100)*165 -->
+          <defs><linearGradient id="hyg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#D94444" stop-opacity="0.15"/><stop offset="100%" stop-color="#D94444" stop-opacity="0.02"/></linearGradient></defs>
+          <polygon points="50,123 66,132 83,105 99,110 116,78 133,62 141,42 152,90 166,113 182,117 199,122 215,126 232,130 248,125 260,130 270,124 282,110 290,100 298,126 314,126 322,130 330,133 338,127 345,16 358,68 365,86 382,123 398,136 415,133 432,135 448,105 455,100 465,110 482,120 498,134 515,137 532,135 540,138 545,139 545,180 50,180" fill="url(#hyg)"/>
+          <polyline points="50,123 66,132 83,105 99,110 116,78 133,62 141,42 152,90 166,113 182,117 199,122 215,126 232,130 248,125 260,130 270,124 282,110 290,100 298,126 314,126 322,130 330,133 338,127 345,16 358,68 365,86 382,123 398,136 415,133 432,135 448,105 455,100 465,110 482,120 498,134 515,137 532,135 540,138 545,139" fill="none" stroke="var(--red)" stroke-width="2" stroke-linejoin="round"/>
+          <!-- COVID spike label -->
+          <circle cx="345" cy="16" r="3" fill="var(--red)"/>
+          <text x="345" y="10" font-size="9" fill="var(--red)" text-anchor="middle" font-weight="600" font-family="Inter">1,090</text>
+          <!-- Current -->
+          <circle cx="545" cy="139" r="3.5" fill="var(--accent-blue)"/>
+          <text x="530" y="152" font-size="9" fill="var(--accent-blue)" text-anchor="end" font-weight="600" font-family="Inter">271</text>
+          <!-- 2016 oil crisis -->
+          <circle cx="141" cy="42" r="2.5" fill="var(--red)"/>
+          <text x="141" y="37" font-size="8" fill="var(--red)" text-anchor="middle" font-weight="600" font-family="Inter">840</text>
+          <!-- X labels -->
+          <text x="50" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2014</text>
+          <text x="149" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2016</text>
+          <text x="248" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2018</text>
+          <text x="347" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2020</text>
+          <text x="446" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2022</text>
+          <text x="545" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2026</text>
+        </svg>
+        <div class="commentary"><strong>HY at 271bps</strong> is near post-GFC lows. COVID spike to 1,090 in Mar 2020 and oil-crisis spike to 840 in Feb 2016 show how fast spreads can blow out. Current tightness reflects strong risk appetite, but limited room for error.</div>
+      </div>
+    </div>
+
+    <!-- IG Corporate OAS Chart -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">IG Corporate OAS &mdash; 10 Year</div><span class="card-badge badge-live">77 bps</span></div>
+      <div class="card-body" style="padding:12px 16px;">
+        <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:200px;">
+          <!-- Grid: 0bps=180, 400bps=15. y = 180 - (val/400)*165 -->
+          <line x1="50" y1="15" x2="545" y2="15" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="56" x2="545" y2="56" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="97" x2="545" y2="97" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="138" x2="545" y2="138" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="180" x2="545" y2="180" stroke="#E2E6ED" stroke-width="0.5"/>
+          <text x="45" y="19" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">400</text>
+          <text x="45" y="60" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">300</text>
+          <text x="45" y="101" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">200</text>
+          <text x="45" y="142" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">100</text>
+          <text x="45" y="184" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">0</text>
+          <!-- LT Avg at 150bps: y = 180 - (150/400)*165 = 180 - 62 = 118 -->
+          <line x1="50" y1="118" x2="545" y2="118" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="548" y="121" font-size="8" fill="var(--text-muted)" font-family="Inter">Avg 150</text>
+          <!-- IG OAS:
+               2014-Jan:110, Jun:95, Dec:140
+               2015-Jun:130, Dec:165
+               2016-Feb:200, Jun:145, Dec:125
+               2017-Jun:105, Dec:95
+               2018-Jun:95, Dec:155
+               2019-Jun:115, Dec:95
+               2020-Jan:100, Mar:375, Jun:150, Dec:100
+               2021-Jun:85, Dec:90
+               2022-Jun:140, Oct:165, Dec:140
+               2023-Jun:120, Dec:100
+               2024-Jun:85, Dec:80
+               2025-Jun:82, Dec:85
+               2026-Jun:77
+               y = 180 - (val/400)*165 -->
+          <defs><linearGradient id="igg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2E7DD1" stop-opacity="0.15"/><stop offset="100%" stop-color="#2E7DD1" stop-opacity="0.02"/></linearGradient></defs>
+          <polygon points="50,135 66,141 83,122 99,126 116,113 133,112 141,98 152,127 166,120 182,137 199,141 215,141 232,141 248,145 260,140 270,148 282,145 290,143 298,148 314,141 322,145 330,148 338,140 345,25 358,118 365,130 382,139 398,145 415,143 432,142 448,122 455,113 465,118 482,131 498,139 515,145 532,146 540,145 545,148 545,180 50,180" fill="url(#igg)"/>
+          <polyline points="50,135 66,141 83,122 99,126 116,113 133,112 141,98 152,127 166,120 182,137 199,141 215,141 232,141 248,145 260,140 270,148 282,145 290,143 298,148 314,141 322,145 330,148 338,140 345,25 358,118 365,130 382,139 398,145 415,143 432,142 448,122 455,113 465,118 482,131 498,139 515,145 532,146 540,145 545,148" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linejoin="round"/>
+          <!-- COVID spike -->
+          <circle cx="345" cy="25" r="3" fill="var(--red)"/>
+          <text x="345" y="19" font-size="9" fill="var(--red)" text-anchor="middle" font-weight="600" font-family="Inter">375</text>
+          <!-- Current -->
+          <circle cx="545" cy="148" r="3.5" fill="var(--accent-blue)"/>
+          <text x="530" y="160" font-size="9" fill="var(--accent-blue)" text-anchor="end" font-weight="600" font-family="Inter">77</text>
+          <text x="50" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2014</text>
+          <text x="149" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2016</text>
+          <text x="248" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2018</text>
+          <text x="347" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2020</text>
+          <text x="446" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2022</text>
+          <text x="545" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2026</text>
+        </svg>
+        <div class="commentary"><strong>IG at 77bps</strong> is near 25-year tights. COVID blowout to 375bps in Mar 2020 was the sharpest widening since the GFC. Spreads have compressed steadily since late 2022 as credit quality held up better than feared.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BBB OAS + 2s/10s Spread charts -->
+  <div class="grid-2">
+    <!-- BBB OAS Chart -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">BBB Corporate OAS &mdash; 10 Year</div><span class="card-badge badge-live">100 bps</span></div>
+      <div class="card-body" style="padding:12px 16px;">
+        <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:200px;">
+          <!-- Grid: 0bps=180, 500bps=15. y = 180 - (val/500)*165 -->
+          <line x1="50" y1="15" x2="545" y2="15" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="56" x2="545" y2="56" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="97" x2="545" y2="97" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="138" x2="545" y2="138" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="180" x2="545" y2="180" stroke="#E2E6ED" stroke-width="0.5"/>
+          <text x="45" y="19" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">500</text>
+          <text x="45" y="60" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">375</text>
+          <text x="45" y="101" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">250</text>
+          <text x="45" y="142" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">125</text>
+          <text x="45" y="184" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">0</text>
+          <!-- LT Avg at 185bps: y = 180 - (185/500)*165 = 180 - 61 = 119 -->
+          <line x1="50" y1="119" x2="545" y2="119" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="548" y="122" font-size="8" fill="var(--text-muted)" font-family="Inter">Avg 185</text>
+          <!-- BBB OAS:
+               2014-Jan:145, Jun:125, Dec:175
+               2015-Jun:165, Dec:210
+               2016-Feb:260, Jun:185, Dec:160
+               2017-Jun:130, Dec:120
+               2018-Jun:120, Dec:200
+               2019-Jun:145, Dec:120
+               2020-Jan:130, Mar:475, Jun:200, Dec:130
+               2021-Jun:110, Dec:115
+               2022-Jun:175, Oct:195, Dec:180
+               2023-Jun:150, Dec:125
+               2024-Jun:110, Dec:105
+               2025-Jun:105, Dec:108
+               2026-Jun:100
+               y = 180 - (val/500)*165 -->
+          <defs><linearGradient id="bbbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8873A" stop-opacity="0.15"/><stop offset="100%" stop-color="#E8873A" stop-opacity="0.02"/></linearGradient></defs>
+          <polygon points="50,132 66,139 83,122 99,126 116,115 133,107 141,94 152,119 166,126 182,137 199,143 215,143 232,146 248,140 260,138 270,147 282,147 290,143 298,147 314,138 322,142 330,145 338,137 345,23 358,114 365,127 382,137 398,144 415,143 432,142 448,122 455,116 465,121 482,131 498,144 515,143 532,145 540,144 545,147 545,180 50,180" fill="url(#bbbg)"/>
+          <polyline points="50,132 66,139 83,122 99,126 116,115 133,107 141,94 152,119 166,126 182,137 199,143 215,143 232,146 248,140 260,138 270,147 282,147 290,143 298,147 314,138 322,142 330,145 338,137 345,23 358,114 365,127 382,137 398,144 415,143 432,142 448,122 455,116 465,121 482,131 498,144 515,143 532,145 540,144 545,147" fill="none" stroke="var(--accent-orange)" stroke-width="2" stroke-linejoin="round"/>
+          <!-- COVID spike -->
+          <circle cx="345" cy="23" r="3" fill="var(--red)"/>
+          <text x="345" y="17" font-size="9" fill="var(--red)" text-anchor="middle" font-weight="600" font-family="Inter">475</text>
+          <!-- 2016 oil -->
+          <circle cx="141" cy="94" r="2.5" fill="var(--accent-orange)"/>
+          <text x="141" y="89" font-size="8" fill="var(--accent-orange)" text-anchor="middle" font-weight="600" font-family="Inter">260</text>
+          <!-- Current -->
+          <circle cx="545" cy="147" r="3.5" fill="var(--accent-blue)"/>
+          <text x="530" y="159" font-size="9" fill="var(--accent-blue)" text-anchor="end" font-weight="600" font-family="Inter">100</text>
+          <text x="50" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2014</text>
+          <text x="149" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2016</text>
+          <text x="248" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2018</text>
+          <text x="347" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2020</text>
+          <text x="446" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2022</text>
+          <text x="545" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2026</text>
+        </svg>
+        <div class="commentary"><strong>BBB at 100bps</strong> &mdash; the largest IG bucket and key "fallen angel" risk zone. BBB spreads spiked to 475bps during COVID. Current levels leave minimal buffer for downgrades. Watch for spread widening if recession fears grow.</div>
+      </div>
+    </div>
+
+    <!-- 2s/10s Spread Chart -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">2s/10s Treasury Spread &mdash; 10 Year</div><span class="card-badge badge-live">+27 bps</span></div>
+      <div class="card-body" style="padding:12px 16px;">
+        <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:200px;">
+          <!-- Grid: -150bps=15, +250bps=180 inverted so positive is up. Actually let's do: +250=15, -150=180. y = 15 + ((250-val)/400)*165 -->
+          <line x1="50" y1="15" x2="545" y2="15" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="56" x2="545" y2="56" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="97" x2="545" y2="97" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="138" x2="545" y2="138" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="50" y1="180" x2="545" y2="180" stroke="#E2E6ED" stroke-width="0.5"/>
+          <text x="45" y="19" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">+250</text>
+          <text x="45" y="60" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">+150</text>
+          <text x="45" y="101" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">+50</text>
+          <text x="45" y="142" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">-50</text>
+          <text x="45" y="184" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">-150</text>
+          <!-- Zero line at 0bps: y = 15 + (250/400)*165 = 15 + 103 = 118 -->
+          <line x1="50" y1="118" x2="545" y2="118" stroke="var(--navy)" stroke-width="1.5" stroke-opacity="0.3"/>
+          <text x="548" y="121" font-size="8" fill="var(--navy)" font-family="Inter" font-weight="600">0 bps</text>
+          <!-- Recession shading for inverted period (2022-2024) -->
+          <rect x="430" y="15" width="90" height="165" fill="var(--red)" opacity="0.04" rx="2"/>
+          <text x="475" y="28" font-size="8" fill="var(--red)" text-anchor="middle" font-family="Inter" opacity="0.6">Inverted</text>
+          <!-- 2s/10s data:
+               2014-Jan:+240, Jun:+220, Dec:+160
+               2015-Jun:+165, Dec:+125
+               2016-Jun:+95, Dec:+120
+               2017-Jun:+90, Dec:+55
+               2018-Jun:+35, Dec:+15
+               2019-Mar:0, Jun:+25, Aug:-5, Dec:+30
+               2020-Mar:+40, Jun:+55, Dec:+80
+               2021-Jun:+125, Dec:+80
+               2022-Apr:0, Jul:-5, Dec:-65
+               2023-Jun:-105, Dec:-40
+               2024-Jun:-25, Sep:-5, Dec:+10
+               2025-Jun:+25, Dec:+20
+               2026-Jun:+27
+               y = 15 + ((250-val)/400)*165 -->
+          <defs>
+            <linearGradient id="tsg_pos" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2EAE6D" stop-opacity="0.12"/><stop offset="100%" stop-color="#2EAE6D" stop-opacity="0.02"/></linearGradient>
+          </defs>
+          <!-- Filled area split at zero line -->
+          <polygon points="50,19 66,27 83,52 99,50 116,67 133,75 141,72 149,79 166,83 182,95 199,104 215,107 232,103 248,107 260,118 270,111 278,118 285,108 295,103 298,112 310,100 314,102 330,78 345,65 358,62 365,58 382,45 398,67 415,57 425,118 432,121 440,135 448,150 455,161 465,155 475,146 482,128 492,118 498,125 510,118 515,113 525,108 532,107 540,106 545,106 545,118 50,118" fill="url(#tsg_pos)" opacity="0.5"/>
+          <!-- Below zero fill in red -->
+          <polygon points="425,118 432,121 440,135 448,150 455,161 465,155 475,146 482,128 492,118 492,118 425,118" fill="var(--red)" opacity="0.08"/>
+          <polyline points="50,19 66,27 83,52 99,50 116,67 133,75 141,72 149,79 166,83 182,95 199,104 215,107 232,103 248,107 260,118 270,111 278,118 285,108 295,103 298,112 310,100 314,102 330,78 345,65 358,62 365,58 382,45 398,67 415,57 425,118 432,121 440,135 448,150 455,161 465,155 475,146 482,128 492,118 498,125 510,118 515,113 525,108 532,107 540,106 545,106" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linejoin="round"/>
+          <!-- Peak inversion label -->
+          <circle cx="455" cy="161" r="3" fill="var(--red)"/>
+          <text x="455" y="174" font-size="9" fill="var(--red)" text-anchor="middle" font-weight="600" font-family="Inter">-105 bps</text>
+          <!-- Current -->
+          <circle cx="545" cy="106" r="3.5" fill="var(--accent-blue)"/>
+          <text x="530" y="100" font-size="9" fill="var(--accent-blue)" text-anchor="end" font-weight="600" font-family="Inter">+27</text>
+          <!-- 2014 wide -->
+          <circle cx="50" cy="19" r="2.5" fill="var(--green)"/>
+          <text x="65" y="16" font-size="8" fill="var(--green)" font-family="Inter" font-weight="600">+240</text>
+          <text x="50" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2014</text>
+          <text x="149" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2016</text>
+          <text x="248" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2018</text>
+          <text x="347" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2020</text>
+          <text x="446" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2022</text>
+          <text x="545" y="196" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2026</text>
+        </svg>
+        <div class="commentary"><strong>Curve un-inverted</strong> in late 2024 after the deepest inversion (-105bps in mid-2023) since the early 1980s. Currently at +27bps &mdash; positive but well below the +90bps long-term average. The 2022-2024 inversion historically preceded recessions, though timing varies.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risk summary -->
+  <div class="full-width">
+    <div class="card">
+      <div class="card-body" style="padding:14px 20px;">
+        <div class="commentary" style="margin:0;"><strong>Credit market risk assessment:</strong> Spreads are historically tight across all credit tiers &mdash; HY at 271bps (-31% vs avg), IG at 77bps (-49% vs avg), BBB at 100bps (-46% vs avg). This reflects strong risk appetite but leaves minimal cushion for macro shocks. The 2s/10s curve has normalized but remains flat. All-in yields still attractive (HY ~6.8%, IG ~5.3%) due to elevated Treasury base rates. Key risk: a credit event or recession scare could reprice spreads 200-400bps wider in weeks, as seen in Mar 2020.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 2: ECONOMIC INDICATORS                                   -->
+<!-- ============================================================ -->
+<div id="tab-indicators" class="tab-content">
+<div class="container">
+
+  <div class="section-label">Key Indicators at a Glance</div>
+
+  <!-- Top indicator cards -->
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px;">
+    <div class="ind-card"><div class="ind-card-title">CPI (YoY)</div><div class="ind-card-value down">4.2%</div><div class="ind-card-sub">May 2026 &bull; Prior: 3.8%</div></div>
+    <div class="ind-card"><div class="ind-card-title">Core CPI (YoY)</div><div class="ind-card-value neutral">2.9%</div><div class="ind-card-sub">May 2026 &bull; Prior: 2.8%</div></div>
+    <div class="ind-card"><div class="ind-card-title">Unemployment</div><div class="ind-card-value neutral">4.3%</div><div class="ind-card-sub">May 2026 &bull; Prior: 4.2%</div></div>
+    <div class="ind-card"><div class="ind-card-title">Nonfarm Payrolls</div><div class="ind-card-value up">+172K</div><div class="ind-card-sub">May 2026 &bull; Est: 85K</div></div>
+    <div class="ind-card"><div class="ind-card-title">Core PCE (YoY)</div><div class="ind-card-value down">3.3%</div><div class="ind-card-sub">Apr 2026 &bull; Prior: 3.0%</div></div>
+  </div>
+
+  <!-- Charts for key indicators -->
+  <div class="grid-2">
+
+    <!-- CPI Inflation Chart -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">CPI Inflation (YoY) &mdash; 5 Year Trend</div><span class="card-badge badge-updated">May 2026</span></div>
+      <div class="card-body" style="padding:12px 16px;">
+        <svg viewBox="0 0 560 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:180px;">
+          <line x1="45" y1="15" x2="545" y2="15" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="50" x2="545" y2="50" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="85" x2="545" y2="85" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="120" x2="545" y2="120" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="155" x2="545" y2="155" stroke="#E2E6ED" stroke-width="0.5"/>
+          <text x="40" y="19" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">9%</text>
+          <text x="40" y="54" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">7%</text>
+          <text x="40" y="89" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">5%</text>
+          <text x="40" y="124" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">3%</text>
+          <text x="40" y="159" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">1%</text>
+          <!-- 2% target line -->
+          <line x1="45" y1="137" x2="545" y2="137" stroke="var(--red)" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="548" y="140" font-size="8" fill="var(--red)" font-family="Inter">2% target</text>
+          <!-- CPI: 2021-mid:5.4, 2022-Jun:9.1, 2022-Dec:6.5, 2023-Jun:3.0, 2023-Dec:3.4, 2024-Jun:3.0, 2024-Dec:2.9, 2025-Jun:2.6, 2025-Dec:2.9, 2026-Mar:3.5, 2026-May:4.2 -->
+          <!-- Y: 1%=155, 9%=15; y = 155 - ((val-1)/8)*140 -->
+          <defs><linearGradient id="ig" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#D94444" stop-opacity="0.12"/><stop offset="100%" stop-color="#D94444" stop-opacity="0.02"/></linearGradient></defs>
+          <polygon points="50,78 100,15 150,59 200,120 250,113 300,120 350,122 400,132 450,122 490,103 545,82 545,155 50,155" fill="url(#ig)"/>
+          <polyline points="50,78 100,15 150,59 200,120 250,113 300,120 350,122 400,132 450,122 490,103 545,82" fill="none" stroke="var(--red)" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="100" cy="15" r="3" fill="var(--red)"/>
+          <text x="100" y="10" font-size="9" fill="var(--red)" text-anchor="middle" font-weight="600" font-family="Inter">9.1%</text>
+          <circle cx="545" cy="82" r="3.5" fill="var(--red)"/>
+          <text x="530" y="76" font-size="9" fill="var(--red)" text-anchor="end" font-weight="600" font-family="Inter">4.2%</text>
+          <!-- X labels -->
+          <text x="50" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2021</text>
+          <text x="150" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2022</text>
+          <text x="250" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2023</text>
+          <text x="350" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2024</text>
+          <text x="450" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2025</text>
+          <text x="545" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2026</text>
+        </svg>
+        <div class="commentary"><strong>Inflation re-accelerating:</strong> CPI jumped to 4.2% YoY in May from 3.5% in March, driven by energy prices (+1.9% MoM from Middle East conflict) and services inflation. Core CPI at 2.9% is closer to target but trend is concerning.</div>
+      </div>
+    </div>
+
+    <!-- Unemployment Chart -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Unemployment Rate &mdash; 5 Year Trend</div><span class="card-badge badge-updated">May 2026</span></div>
+      <div class="card-body" style="padding:12px 16px;">
+        <svg viewBox="0 0 560 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:180px;">
+          <line x1="45" y1="15" x2="545" y2="15" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="50" x2="545" y2="50" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="85" x2="545" y2="85" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="120" x2="545" y2="120" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="155" x2="545" y2="155" stroke="#E2E6ED" stroke-width="0.5"/>
+          <text x="40" y="19" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">7%</text>
+          <text x="40" y="54" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">6%</text>
+          <text x="40" y="89" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">5%</text>
+          <text x="40" y="124" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">4%</text>
+          <text x="40" y="159" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">3%</text>
+          <!-- Unemp: 2021-Jun:5.9, 2022-Jun:3.6, 2023-Jun:3.6, 2024-Jun:4.1, 2025-Jun:4.2, 2026-May:4.3 -->
+          <!-- Y: 3%=155, 7%=15; y = 155 - ((val-3)/4)*140 -->
+          <defs><linearGradient id="ug" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2E7DD1" stop-opacity="0.12"/><stop offset="100%" stop-color="#2E7DD1" stop-opacity="0.02"/></linearGradient></defs>
+          <polygon points="50,54 100,65 150,105 200,148 250,148 300,122 350,118 400,113 450,115 500,112 545,109 545,155 50,155" fill="url(#ug)"/>
+          <polyline points="50,54 100,65 150,105 200,148 250,148 300,122 350,118 400,113 450,115 500,112 545,109" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="200" cy="148" r="3" fill="var(--green)"/>
+          <text x="200" y="143" font-size="9" fill="var(--green)" text-anchor="middle" font-weight="600" font-family="Inter">3.4%</text>
+          <circle cx="545" cy="109" r="3.5" fill="var(--accent-blue)"/>
+          <text x="530" y="103" font-size="9" fill="var(--accent-blue)" text-anchor="end" font-weight="600" font-family="Inter">4.3%</text>
+          <text x="50" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2021</text>
+          <text x="150" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2022</text>
+          <text x="250" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2023</text>
+          <text x="350" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2024</text>
+          <text x="450" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2025</text>
+          <text x="545" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2026</text>
+        </svg>
+        <div class="commentary"><strong>Labor market softening modestly:</strong> 4.3% is up from the 3.4% cycle low but remains historically healthy. +172K payrolls in May beat expectations (85K), with leisure/hospitality and government leading.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Consumer Health Charts -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Personal Savings Rate</div><span class="card-badge badge-updated">Apr 2026</span></div>
+      <div class="card-body" style="padding:12px 16px;">
+        <svg viewBox="0 0 560 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:160px;">
+          <line x1="45" y1="10" x2="545" y2="10" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="46" x2="545" y2="46" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="82" x2="545" y2="82" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="118" x2="545" y2="118" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="140" x2="545" y2="140" stroke="#E2E6ED" stroke-width="0.5"/>
+          <text x="40" y="14" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">10%</text>
+          <text x="40" y="50" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">7.5%</text>
+          <text x="40" y="86" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">5%</text>
+          <text x="40" y="122" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">2.5%</text>
+          <text x="40" y="144" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">1%</text>
+          <!-- Savings: 2022:3.4, 2023:4.7, 2024:4.6, 2025-Jan:5.8, 2025-Dec:4.0, 2026-Apr:2.6 -->
+          <!-- Y: 1%=140, 10%=10; y = 140 - ((val-1)/9)*130 -->
+          <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8873A" stop-opacity="0.15"/><stop offset="100%" stop-color="#E8873A" stop-opacity="0.02"/></linearGradient></defs>
+          <polygon points="50,105 150,87 250,88 350,72 400,82 450,97 500,110 545,117 545,140 50,140" fill="url(#sg)"/>
+          <polyline points="50,105 150,87 250,88 350,72 400,82 450,97 500,110 545,117" fill="none" stroke="var(--accent-orange)" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="350" cy="72" r="3" fill="var(--green)"/>
+          <text x="350" y="66" font-size="9" fill="var(--green)" text-anchor="middle" font-weight="600" font-family="Inter">5.8%</text>
+          <circle cx="545" cy="117" r="3.5" fill="var(--red)"/>
+          <text x="530" y="112" font-size="9" fill="var(--red)" text-anchor="end" font-weight="600" font-family="Inter">2.6%</text>
+          <text x="50" y="155" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2022</text>
+          <text x="200" y="155" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2023</text>
+          <text x="350" y="155" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2025</text>
+          <text x="545" y="155" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2026</text>
+        </svg>
+        <div class="commentary"><strong>Consumer stress signal:</strong> Savings rate at 2.6% is well below the pre-pandemic ~7% average. Inflation outpacing wages (+3.6% vs +3.8% CPI) is forcing households to draw down savings and lean on credit.</div>
+      </div>
+    </div>
+
+    <!-- Consumer Sentiment Chart -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Michigan Consumer Sentiment &mdash; 2 Year</div><span class="card-badge badge-updated">Jun 2026</span></div>
+      <div class="card-body" style="padding:12px 16px;">
+        <svg viewBox="0 0 560 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:160px;">
+          <line x1="45" y1="10" x2="545" y2="10" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="46" x2="545" y2="46" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="82" x2="545" y2="82" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="118" x2="545" y2="118" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="140" x2="545" y2="140" stroke="#E2E6ED" stroke-width="0.5"/>
+          <text x="40" y="14" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">80</text>
+          <text x="40" y="50" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">70</text>
+          <text x="40" y="86" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">60</text>
+          <text x="40" y="122" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">50</text>
+          <text x="40" y="144" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">43</text>
+          <!-- Monthly: Jan'25:74, Feb:72, Mar:65, Apr:57, May:52, Jun:52, Jul:61, Aug:62, Sep:58, Oct:55, Nov:53, Dec:51, Jan'26:49, Feb:48, Mar:47, Apr:46, May:45, Jun:49 (prelim 53.2 final) -->
+          <!-- Y: 43=140, 80=10; y = 140 - ((val-43)/37)*130 -->
+          <defs><linearGradient id="csg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2E7DD1" stop-opacity="0.12"/><stop offset="100%" stop-color="#2E7DD1" stop-opacity="0.02"/></linearGradient></defs>
+          <polygon points="50,31 78,38 105,57 133,69 160,82 188,82 215,70 243,68 270,74 298,79 325,82 353,87 380,93 408,96 435,98 463,101 490,105 518,100 545,104 545,140 50,140" fill="url(#csg)"/>
+          <polyline points="50,31 78,38 105,57 133,69 160,82 188,82 215,70 243,68 270,74 298,79 325,82 353,87 380,93 408,96 435,98 463,101 490,105 518,100 545,104" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="50" cy="31" r="3" fill="var(--green)"/>
+          <text x="50" y="26" font-size="9" fill="var(--green)" text-anchor="middle" font-weight="600" font-family="Inter">74.0</text>
+          <circle cx="490" cy="105" r="2.5" fill="var(--red)"/>
+          <text x="490" y="117" font-size="8" fill="var(--red)" text-anchor="middle" font-weight="600" font-family="Inter">44.8</text>
+          <circle cx="545" cy="104" r="3.5" fill="var(--accent-blue)"/>
+          <text x="530" y="98" font-size="9" fill="var(--accent-blue)" text-anchor="end" font-weight="600" font-family="Inter">48.9</text>
+          <text x="50" y="155" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">Jan '25</text>
+          <text x="188" y="155" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">Jun '25</text>
+          <text x="353" y="155" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">Dec '25</text>
+          <text x="545" y="155" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">Jun '26</text>
+        </svg>
+        <div class="commentary"><strong>Sentiment near historic lows:</strong> Down 34% from Jan 2025 high of 74. May 2026 hit an all-time low of 44.8 before a slight bounce. Inflation expectations (4.6% 1Y) remain elevated.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Core PCE Chart -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Core PCE (YoY) &mdash; Fed's Preferred Measure</div><span class="card-badge badge-updated">Apr 2026</span></div>
+      <div class="card-body" style="padding:12px 16px;">
+        <svg viewBox="0 0 560 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:180px;">
+          <line x1="45" y1="15" x2="545" y2="15" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="50" x2="545" y2="50" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="85" x2="545" y2="85" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="120" x2="545" y2="120" stroke="#E2E6ED" stroke-width="0.5"/>
+          <line x1="45" y1="155" x2="545" y2="155" stroke="#E2E6ED" stroke-width="0.5"/>
+          <text x="40" y="19" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">6%</text>
+          <text x="40" y="54" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">5%</text>
+          <text x="40" y="89" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">4%</text>
+          <text x="40" y="124" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">3%</text>
+          <text x="40" y="159" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">2%</text>
+          <!-- 2% target line at y=155 -->
+          <line x1="45" y1="155" x2="545" y2="155" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <text x="548" y="158" font-size="8" fill="var(--red)" font-family="Inter">2% target</text>
+          <!-- Core PCE: 2021-Jun:3.5, 2022-Feb:5.4(peak), Jun:4.8, Dec:4.6, 2023-Jun:4.1, Dec:2.9, 2024-Jun:2.6, Dec:2.8, 2025-Jun:2.6, Dec:3.0, 2026-Jan:3.1, Mar:3.2, Apr:3.3 -->
+          <!-- Y: 2%=155, 6%=15; y = 155 - ((val-2)/4)*140 -->
+          <defs><linearGradient id="pceg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8873A" stop-opacity="0.15"/><stop offset="100%" stop-color="#E8873A" stop-opacity="0.02"/></linearGradient></defs>
+          <polygon points="50,102 80,85 110,36 140,50 170,62 200,68 230,78 260,85 290,117 320,134 350,134 380,127 410,140 440,134 470,120 490,117 510,113 530,110 545,108 545,155 50,155" fill="url(#pceg)"/>
+          <polyline points="50,102 80,85 110,36 140,50 170,62 200,68 230,78 260,85 290,117 320,134 350,134 380,127 410,140 440,134 470,120 490,117 510,113 530,110 545,108" fill="none" stroke="var(--accent-orange)" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="110" cy="36" r="3" fill="var(--red)"/>
+          <text x="110" y="30" font-size="9" fill="var(--red)" text-anchor="middle" font-weight="600" font-family="Inter">5.4%</text>
+          <circle cx="350" cy="134" r="2.5" fill="var(--green)"/>
+          <text x="350" y="128" font-size="8" fill="var(--green)" text-anchor="middle" font-weight="600" font-family="Inter">2.6%</text>
+          <circle cx="545" cy="108" r="3.5" fill="var(--accent-orange)"/>
+          <text x="530" y="102" font-size="9" fill="var(--accent-orange)" text-anchor="end" font-weight="600" font-family="Inter">3.3%</text>
+          <text x="50" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2021</text>
+          <text x="150" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2022</text>
+          <text x="250" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2023</text>
+          <text x="350" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2024</text>
+          <text x="450" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2025</text>
+          <text x="545" y="172" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">2026</text>
+        </svg>
+        <div class="commentary"><strong>Re-acceleration concern:</strong> Core PCE rose from 2.6% low in mid-2024/2025 to 3.3% in Apr 2026 &mdash; highest since late 2023. This is the Fed's preferred gauge and it's moving the wrong direction, supporting the hawkish dot-plot shift.</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <!-- Quick ref cards for PCE detail -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Inflation Breakdown</div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="ind-card"><div class="ind-card-title">Headline CPI</div><div class="ind-card-value down">4.2%</div><div class="ind-card-sub">Energy driving headline</div></div>
+            <div class="ind-card"><div class="ind-card-title">Core CPI</div><div class="ind-card-value neutral">2.9%</div><div class="ind-card-sub">Closer to target</div></div>
+            <div class="ind-card"><div class="ind-card-title">Core PCE</div><div class="ind-card-value down">3.3%</div><div class="ind-card-sub">Fed's preferred</div></div>
+            <div class="ind-card"><div class="ind-card-title">Import Prices</div><div class="ind-card-value down">+1.9%</div><div class="ind-card-sub">MoM surge in May</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Inflation Expectations</div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="ind-card"><div class="ind-card-title">1Y Consumer</div><div class="ind-card-value">4.6%</div><div class="ind-card-sub">Michigan survey</div></div>
+            <div class="ind-card"><div class="ind-card-title">5Y Breakeven</div><div class="ind-card-value">2.5%</div><div class="ind-card-sub">TIPS-implied</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Macro indicators table -->
+  <div class="section-label">Macroeconomic Indicators</div>
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Latest Readings &mdash; Hover for descriptions</div><span class="card-badge badge-updated">Current</span></div>
+      <div class="card-body" style="padding:10px 16px;">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Indicator</th><th class="text-right">Latest</th><th>Period</th><th class="text-right">Prior</th><th>Trend</th><th>Next Release</th></tr>
+          </thead>
+          <tbody>
+            <tr class="has-tooltip"><td>1</td><td style="font-weight:600">GDP Growth (Annualized)</td><td class="text-right font-mono">+1.6%</td><td>Q1 2026</td><td class="text-right font-mono">+1.4%</td><td class="down" style="font-weight:600">Slowing</td><td>Jun 25<div class="tooltip">Quarter-over-quarter real GDP growth at an annualized rate. The broadest measure of economic output. Revised down from initial +2.0% estimate.</div></td></tr>
+            <tr class="has-tooltip"><td>2</td><td style="font-weight:600">Monthly Jobs Added</td><td class="text-right font-mono">+172K</td><td>May 2026</td><td class="text-right font-mono">+179K</td><td class="up" style="font-weight:600">Strong</td><td>Jul 3<div class="tooltip">Nonfarm payrolls — total new jobs created. Above 150K generally signals a healthy labor market. May's 172K beat expectations of 85K.</div></td></tr>
+            <tr class="has-tooltip"><td>3</td><td style="font-weight:600">Manufacturing Health (PMI)</td><td class="text-right font-mono">54.0</td><td>May 2026</td><td class="text-right font-mono">52.7</td><td class="up" style="font-weight:600">Expanding</td><td>Jul 1<div class="tooltip">ISM Manufacturing PMI. Above 50 = expansion, below 50 = contraction. 54.0 signals the strongest manufacturing growth in over a year.</div></td></tr>
+            <tr class="has-tooltip"><td>4</td><td style="font-weight:600">Retail Spending (MoM)</td><td class="text-right font-mono">+0.9%</td><td>May 2026</td><td class="text-right font-mono">+0.4%</td><td class="up" style="font-weight:600">Accelerating</td><td>Jul 15<div class="tooltip">Month-over-month change in retail sales. Measures consumer spending on goods. +0.9% was a strong beat, driven by gas station sales (+3.4%).</div></td></tr>
+            <tr class="has-tooltip"><td>5</td><td style="font-weight:600">New Home Construction</td><td class="text-right font-mono">1.177M</td><td>May 2026</td><td class="text-right font-mono">1.392M</td><td class="down" style="font-weight:600">Falling</td><td>Jul 16<div class="tooltip">Housing starts at a seasonally adjusted annual rate. Lowest since May 2020. High mortgage rates (6.8%+) are discouraging new construction.</div></td></tr>
+            <tr class="has-tooltip"><td>6</td><td style="font-weight:600">Building Permits</td><td class="text-right font-mono">1.413M</td><td>May 2026</td><td class="text-right font-mono">1.423M</td><td class="neutral" style="font-weight:600">Stable</td><td>Jul 16<div class="tooltip">Number of permits issued for new housing units (SAAR). A leading indicator of future construction activity. Holding relatively steady despite starts declining.</div></td></tr>
+            <tr class="has-tooltip"><td>7</td><td style="font-weight:600">Trade Deficit</td><td class="text-right font-mono">-$55.9B</td><td>Apr 2026</td><td class="text-right font-mono">-$56.6B</td><td class="up" style="font-weight:600">Narrowing</td><td>Jul 2<div class="tooltip">Monthly trade balance (exports minus imports). A wider deficit subtracts from GDP. Narrowed slightly in April as export growth outpaced imports.</div></td></tr>
+            <tr class="has-tooltip"><td>8</td><td style="font-weight:600">Consumer Borrowing (MoM)</td><td class="text-right font-mono">+$9.5B</td><td>Feb 2026</td><td class="text-right font-mono">+$8.1B</td><td class="up" style="font-weight:600">Expanding</td><td>Jul 8<div class="tooltip">Monthly change in consumer credit outstanding. Rising consumer credit can signal confidence or financial stress. Non-revolving credit (auto, student loans) drove most of the gain.</div></td></tr>
+            <tr class="has-tooltip"><td>9</td><td style="font-weight:600">Import Prices (MoM)</td><td class="text-right font-mono">+1.9%</td><td>May 2026</td><td class="text-right font-mono">+0.4%</td><td class="down" style="font-weight:600">Surging</td><td>Jul 15<div class="tooltip">Month-over-month change in the price of imported goods. +1.9% is a major jump driven by oil and commodities from the Middle East conflict. A leading signal for future CPI increases.</div></td></tr>
+            <tr class="has-tooltip"><td>10</td><td style="font-weight:600">Leading Economic Index</td><td class="text-right font-mono">99.3</td><td>May 2026</td><td class="text-right font-mono">99.1</td><td class="neutral" style="font-weight:600">Stabilizing</td><td>Jul 18<div class="tooltip">Conference Board LEI — a composite of 10 indicators that tend to lead the business cycle. After months of decline, two consecutive positive readings suggest recession risk has eased.</div></td></tr>
+            <tr class="has-tooltip"><td>11</td><td style="font-weight:600">Wage Growth (YoY)</td><td class="text-right font-mono">+3.6%</td><td>May 2026</td><td class="text-right font-mono">+3.7%</td><td class="neutral" style="font-weight:600">Cooling</td><td>Jul 3<div class="tooltip">Average hourly earnings year-over-year. Currently below CPI (4.2%), meaning real wages are negative — a key consumer stress signal. The Fed watches this for wage-price spiral risk.</div></td></tr>
+            <tr class="has-tooltip"><td>12</td><td style="font-weight:600">10-Year Treasury Yield</td><td class="text-right font-mono">4.51%</td><td>Jun 22</td><td class="text-right font-mono">4.48%</td><td class="neutral" style="font-weight:600">Elevated</td><td>Daily<div class="tooltip">Benchmark long-term interest rate. Affects mortgage rates, corporate borrowing costs, and stock valuations. Currently near the middle of its 50-year range.</div></td></tr>
+            <tr class="has-tooltip"><td>13</td><td style="font-weight:600">Inflation Expectations (1Y)</td><td class="text-right font-mono">4.6%</td><td>Jun 2026</td><td class="text-right font-mono">4.8%</td><td class="up" style="font-weight:600">Easing</td><td>Jul 11<div class="tooltip">Michigan survey — what consumers expect inflation to be in 12 months. At 4.6%, it's still elevated. The Fed monitors expectations closely because they can become self-fulfilling.</div></td></tr>
+            <tr class="has-tooltip"><td>14</td><td style="font-weight:600">Durable Goods Orders</td><td class="text-right font-mono">+0.8%</td><td>Apr 2026</td><td class="text-right font-mono">+1.2%</td><td class="neutral" style="font-weight:600">Steady</td><td>Jun 28<div class="tooltip">New orders for manufactured goods expected to last 3+ years (appliances, machinery, aircraft). Proxy for business investment intentions and capex spending.</div></td></tr>
+            <tr class="has-tooltip"><td>15</td><td style="font-weight:600">Industrial Production (MoM)</td><td class="text-right font-mono">+0.3%</td><td>May 2026</td><td class="text-right font-mono">+0.1%</td><td class="up" style="font-weight:600">Growing</td><td>Jul 16<div class="tooltip">Fed measure of output from factories, mines, and utilities. Growth aligns with the expanding ISM PMI. Manufacturing capacity utilization at 78.2%.</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming Calendar -->
+  <div class="section-label">Upcoming Releases</div>
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Economic Calendar</div><span class="card-badge badge-updated">This Week + Key Dates</span></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;">This Week (Jun 23-27)</div>
+            <div class="cal-item"><div class="cal-date"><span class="day">25</span>JUN</div><div class="cal-info"><div class="cal-name">GDP (Third Estimate) &mdash; Q1 2026</div><div class="cal-desc">Final revision. 2nd est was +1.6%.</div></div><div class="cal-time">8:30 AM</div></div>
+            <div class="cal-item"><div class="cal-date"><span class="day">25</span>JUN</div><div class="cal-info"><div class="cal-name">Michigan Consumer Sentiment (Final)</div><div class="cal-desc">Prelim was 53.2.</div></div><div class="cal-time">10:00 AM</div></div>
+            <div class="cal-item"><div class="cal-date"><span class="day">27</span>JUN</div><div class="cal-info"><div class="cal-name">Consumer Confidence</div><div class="cal-desc">Conference Board index.</div></div><div class="cal-time">10:00 AM</div></div>
+            <div class="cal-item"><div class="cal-date"><span class="day">27</span>JUN</div><div class="cal-info"><div class="cal-name">New Home Sales</div><div class="cal-desc">Key housing demand gauge.</div></div><div class="cal-time">10:00 AM</div></div>
+            <div class="cal-item"><div class="cal-date"><span class="day">28</span>JUN</div><div class="cal-info"><div class="cal-name">Durable Goods Orders</div><div class="cal-desc">Business capex proxy.</div></div><div class="cal-time">8:30 AM</div></div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;">Key Upcoming Dates</div>
+            <div class="cal-item"><div class="cal-date"><span class="day">3</span>JUL</div><div class="cal-info"><div class="cal-name">Employment Situation (June)</div><div class="cal-desc">Nonfarm payrolls + unemployment rate.</div></div><div class="cal-time">8:30 AM</div></div>
+            <div class="cal-item"><div class="cal-date"><span class="day">10</span>JUL</div><div class="cal-info"><div class="cal-name">CPI Report (June)</div><div class="cal-desc">Critical inflation read after May's 4.2%.</div></div><div class="cal-time">8:30 AM</div></div>
+            <div class="cal-item"><div class="cal-date"><span class="day">29</span>JUL</div><div class="cal-info"><div class="cal-name">FOMC Rate Decision</div><div class="cal-desc">Market pricing 89% hold, 8% hike.</div></div><div class="cal-time">2:00 PM</div></div>
+            <div class="cal-item"><div class="cal-date"><span class="day">30</span>JUL</div><div class="cal-info"><div class="cal-name">GDP Advance &mdash; Q2 2026</div><div class="cal-desc">First look at Q2 growth.</div></div><div class="cal-time">8:30 AM</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 3: ALPHA BRANDS (LOGO)                                   -->
+<!-- ============================================================ -->
+<div id="tab-alpha" class="tab-content">
+<div class="container">
+
+  <div class="section-label">Alpha Brands Consumption Leaders ETF (LOGO)</div>
+  <div style="display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap;">
+    <div class="stat-pill"><div class="stat-pill-label">Ticker</div><div class="stat-pill-value">LOGO</div></div>
+    <div class="stat-pill"><div class="stat-pill-label">Holdings</div><div class="stat-pill-value">36</div></div>
+    <div class="stat-pill"><div class="stat-pill-label">Top 10 Weight</div><div class="stat-pill-value">49.2%</div></div>
+    <div class="stat-pill"><div class="stat-pill-label">Strategy</div><div class="stat-pill-value" style="font-size:13px">Active / Brand-Led</div></div>
+    <div class="stat-pill"><div class="stat-pill-label">Sub-Advisor</div><div class="stat-pill-value" style="font-size:12px">Accuvest Global Advisors</div></div>
+    <div class="stat-pill"><div class="stat-pill-label">Benchmark</div><div class="stat-pill-value" style="font-size:11px">Accuvest Iconic Brands Idx</div></div>
+  </div>
+
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Holdings &mdash; Click any row for research report</div>
+        <span class="card-badge badge-updated">Current Portfolio</span>
+      </div>
+      <div class="card-body" style="padding:8px 16px 16px;">
+        <table id="holdingsTable">
+          <thead>
+            <tr><th>#</th><th>Ticker</th><th>Company</th><th class="text-right">Weight</th><th class="text-right">Price</th><th class="text-right">Mkt Cap</th><th class="text-right">P/E</th><th style="width:80px"></th></tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 4: MACRO FRAMEWORK                                       -->
+<!-- ============================================================ -->
+<div id="tab-framework" class="tab-content">
+<div class="container">
+
+  <div class="section-label">Economic Regime Framework</div>
+
+  <div class="grid-2">
+    <!-- Quadrant Map -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Growth / Inflation Regime Map</div><span class="card-badge badge-live" id="regimeLabel">Stagflationary</span></div>
+      <div class="card-body" style="padding:16px;">
+        <svg id="quadrantSvg" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:520px;"></svg>
+      </div>
+    </div>
+
+    <!-- Regime Description & Sector Recs -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Current Regime Assessment</div></div>
+        <div class="card-body" id="regimeDesc"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Sector Positioning</div><span class="card-badge badge-updated">Regime-Based</span></div>
+        <div class="card-body" id="sectorRecs"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">What Would Change the Regime</div></div>
+        <div class="card-body" id="regimeRisks"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Indicator Scoring -->
+  <div class="section-label">Indicator Scorecard</div>
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Growth & Inflation Signal Scoring</div><span class="card-badge badge-updated">Each indicator scored -2 to +2</span></div>
+      <div class="card-body" style="padding:10px 16px;">
+        <div class="grid-2" style="margin-bottom:0;">
+          <!-- Growth Indicators -->
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+              <span>Growth Signals</span>
+              <span id="growthScoreLabel" style="font-size:14px;"></span>
+            </div>
+            <table id="growthTable">
+              <thead><tr><th>Indicator</th><th class="text-right">Value</th><th class="text-center">Signal</th><th class="text-center">Score</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <!-- Inflation Indicators -->
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+              <span>Inflation Signals</span>
+              <span id="inflationScoreLabel" style="font-size:14px;"></span>
+            </div>
+            <table id="inflationTable">
+              <thead><tr><th>Indicator</th><th class="text-right">Value</th><th class="text-center">Signal</th><th class="text-center">Score</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Composite Gauges -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Growth Composite</div></div>
+      <div class="card-body" style="padding:12px 16px;">
+        <div id="growthGauge"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Inflation Composite</div></div>
+      <div class="card-body" style="padding:12px 16px;">
+        <div id="inflationGauge"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LAYER 2: STRUCTURAL FORCES ===== -->
+  <div class="section-label">Layer 2 &mdash; Structural Forces & Disruption</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">These secular themes operate independently of the business cycle and can overwhelm cyclical signals for affected sectors.</div>
+
+  <!-- AI / Compute -->
+  <div class="full-width">
+    <div class="card" style="border-left:4px solid var(--accent-blue);">
+      <div class="card-header">
+        <div class="card-title" style="display:flex;align-items:center;gap:10px;">AI & Compute Buildout <span style="background:#E8F5EE;color:var(--green);font-size:10px;padding:2px 10px;border-radius:10px;font-weight:600;">ACCELERATING</span></div>
+      </div>
+      <div class="card-body">
+        <div class="grid-2" style="margin-bottom:0;">
+          <div>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+              <strong style="color:var(--navy);">The scale:</strong> Hyperscaler capex hitting <strong>$725B in 2026</strong>, up 77% from 2025. Amazon ($200B), Microsoft ($190B), Alphabet ($175-185B), Meta ($115-135B). This is the largest private infrastructure buildout in history.
+              <br><br>
+              <strong style="color:var(--navy);">What it means:</strong> Massive demand for GPUs (NVDA), custom silicon (TSM, MRVL), power infrastructure, cooling systems, and data center REITs. AI software monetization (MSFT Copilot, GOOGL AI Overviews) in early innings. Enterprise adoption still <10% penetrated.
+              <br><br>
+              <strong style="color:var(--navy);">The risk:</strong> ROI questions are growing. $725B in capex needs to generate returns. If AI revenue growth disappoints in late 2026/2027, the capex cycle could decelerate sharply — creating a semiconductor downcycle.
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;">Sector Impact Map</div>
+            <div style="font-size:12px;line-height:1.9;color:var(--text-secondary);">
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>Semiconductors (NVDA, TSM, MRVL)</span><span style="color:var(--green);font-weight:700;">Strong +</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>Cloud Platforms (AMZN, MSFT, GOOGL)</span><span style="color:var(--green);font-weight:700;">Strong +</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>Power / Utilities / Energy</span><span style="color:var(--green);font-weight:600;">Moderate +</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>Ad Tech (APP, GOOGL, META)</span><span style="color:var(--green);font-weight:600;">Moderate +</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>Traditional IT Services / Outsourcing</span><span style="color:var(--red);font-weight:600;">Negative</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;"><span>Office / Knowledge Work (displacement)</span><span style="color:var(--red);font-weight:600;">Negative</span></div>
+            </div>
+            <div style="margin-top:10px;font-size:11px;font-weight:600;color:var(--navy);">LOGO Exposure:</div>
+            <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">
+              <span class="ticker-badge">NVDA</span><span class="ticker-badge">TSM</span><span class="ticker-badge">MSFT</span><span class="ticker-badge">GOOGL</span><span class="ticker-badge">AMZN</span><span class="ticker-badge">APP</span><span class="ticker-badge">MRVL</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GLP-1 -->
+  <div class="full-width">
+    <div class="card" style="border-left:4px solid var(--green);">
+      <div class="card-header">
+        <div class="card-title" style="display:flex;align-items:center;gap:10px;">GLP-1 & Healthcare Transformation <span style="background:#E8F5EE;color:var(--green);font-size:10px;padding:2px 10px;border-radius:10px;font-weight:600;">ACCELERATING</span></div>
+      </div>
+      <div class="card-body">
+        <div class="grid-2" style="margin-bottom:0;">
+          <div>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+              <strong style="color:var(--navy);">The scale:</strong> GLP-1 market projected at <strong>$82B in 2026</strong>, growing to $150B+ by 2030 and $190B by 2035. ~20M Americans now on branded GLP-1s, expected to reach 30M by 2030. Oral formulations launching in 2026 will massively expand access.
+              <br><br>
+              <strong style="color:var(--navy);">The disruption:</strong> This isn't just a pharma story. JPMorgan estimates <strong>$30-55B in annual food &amp; beverage revenue destruction</strong> by 2030. GLP-1 users consume 21% fewer calories and spend 31% less on groceries. Snack food, fast food, alcohol, and bariatric surgery are all losing demand. Meanwhile, health insurers may benefit from reduced obesity-related costs long term.
+              <br><br>
+              <strong style="color:var(--navy);">Competition heating up:</strong> Novo Nordisk, Lilly lead, but Amgen, Viking Therapeutics, Roche, AstraZeneca, and Pfizer all have candidates. Pricing pressure is inevitable as competition grows.
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;">Sector Impact Map</div>
+            <div style="font-size:12px;line-height:1.9;color:var(--text-secondary);">
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>GLP-1 Pharma (LLY, NVO)</span><span style="color:var(--green);font-weight:700;">Strong +</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>Health Insurers (long term)</span><span style="color:var(--green);font-weight:600;">Moderate +</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>Fitness / Athleisure (LULU)</span><span style="color:var(--green);font-weight:500;">Mild +</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>Packaged Food / Snacks (KO, PEP, MNST)</span><span style="color:var(--red);font-weight:600;">Negative</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>Fast Food / Restaurants</span><span style="color:var(--red);font-weight:600;">Negative</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>Medical Devices (bariatric, sleep apnea)</span><span style="color:var(--red);font-weight:500;">Mild -</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;"><span>Alcohol / Tobacco</span><span style="color:var(--red);font-weight:500;">Mild -</span></div>
+            </div>
+            <div style="margin-top:10px;font-size:11px;font-weight:600;color:var(--navy);">LOGO Exposure:</div>
+            <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">
+              <span class="ticker-badge">LLY</span><span class="ticker-badge" style="background:var(--accent-orange);">MNST</span><span class="ticker-badge" style="background:var(--accent-orange);">SBUX</span>
+              <span style="font-size:10px;color:var(--text-muted);margin-left:4px;">orange = exposed to headwinds</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Energy Security -->
+  <div class="full-width">
+    <div class="card" style="border-left:4px solid var(--red);">
+      <div class="card-header">
+        <div class="card-title" style="display:flex;align-items:center;gap:10px;">Energy Security & Middle East Crisis <span style="background:#FDE8E8;color:var(--red);font-size:10px;padding:2px 10px;border-radius:10px;font-weight:600;">ACUTE RISK</span></div>
+      </div>
+      <div class="card-body">
+        <div class="grid-2" style="margin-bottom:0;">
+          <div>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+              <strong style="color:var(--navy);">The crisis:</strong> Iran conflict has caused the <strong>largest supply disruption in oil market history</strong> (IEA). Strait of Hormuz restrictions affecting 27% of global crude and 20% of LNG trade. Brent averaged $86/bbl in 2026 (up from $69 in 2025), peaking above $100. Qatar LNG capacity hit — 17% reduction, 3-5 year repair timeline.
+              <br><br>
+              <strong style="color:var(--navy);">Macro impact:</strong> Energy prices projected +24% in 2026 (World Bank). This is the primary driver of CPI re-acceleration to 4.2%. European energy crisis 2.0 unfolding (TTF gas doubled). Import prices surged 1.9% MoM in May — the pipeline for more inflation ahead.
+              <br><br>
+              <strong style="color:var(--navy);">Duration risk:</strong> Unlike 2022 (Russia-Ukraine), this disruption affects the Strait of Hormuz choke point. Resolution timeline is uncertain. Even a ceasefire won't quickly restore Qatar LNG capacity.
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;">Sector Impact Map</div>
+            <div style="font-size:12px;line-height:1.9;color:var(--text-secondary);">
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>US LNG Exporters (LNG/Cheniere)</span><span style="color:var(--green);font-weight:700;">Strong +</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>Oil Producers / E&P</span><span style="color:var(--green);font-weight:700;">Strong +</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>Defense / Aerospace (GE, HEI, TDG)</span><span style="color:var(--green);font-weight:600;">Moderate +</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>Airlines / Transportation</span><span style="color:var(--red);font-weight:700;">Strong -</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f2f5;"><span>Consumer (gas prices → less spending)</span><span style="color:var(--red);font-weight:600;">Negative</span></div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;"><span>European Industrials / Utilities</span><span style="color:var(--red);font-weight:600;">Negative</span></div>
+            </div>
+            <div style="margin-top:10px;font-size:11px;font-weight:600;color:var(--navy);">LOGO Exposure:</div>
+            <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">
+              <span class="ticker-badge">LNG</span><span class="ticker-badge">GE</span><span class="ticker-badge">HEI</span><span class="ticker-badge">TDG</span><span class="ticker-badge" style="background:var(--accent-orange);">RCL</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deglobalization -->
+  <div class="grid-2">
+    <div class="card" style="border-left:4px solid var(--accent-orange);">
+      <div class="card-header">
+        <div class="card-title" style="display:flex;align-items:center;gap:10px;">Deglobalization & Reshoring <span style="background:#FFF3E0;color:var(--accent-orange);font-size:10px;padding:2px 10px;border-radius:10px;font-weight:600;">STRUCTURAL</span></div>
+      </div>
+      <div class="card-body">
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">
+          <strong>$1.7T in reshoring announced</strong> through 2024 (+53% YoY). CHIPS Act and IRA fully operational. Semis (35%) and EV/solar (31%) dominating. Shift from globalization to regionalization — structurally inflationary as supply chains are rebuilt at higher cost.
+        </div>
+        <div style="margin-top:10px;font-size:12px;line-height:1.7;">
+          <div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="color:var(--green);font-weight:600;">Winners:</span><span>Industrials, Construction, Domestic Semis</span></div>
+          <div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="color:var(--red);font-weight:600;">Losers:</span><span>Import-dependent retailers, Low-cost mfg</span></div>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;">
+          <span class="ticker-badge">TSM</span><span class="ticker-badge">GE</span><span class="ticker-badge">QXO</span><span class="ticker-badge">NXPI</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Consumer Bifurcation -->
+    <div class="card" style="border-left:4px solid var(--navy-mid);">
+      <div class="card-header">
+        <div class="card-title" style="display:flex;align-items:center;gap:10px;">Consumer Bifurcation <span style="background:#FDE8E8;color:var(--red);font-size:10px;padding:2px 10px;border-radius:10px;font-weight:600;">WORSENING</span></div>
+      </div>
+      <div class="card-body">
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">
+          <strong>K-shaped consumer economy.</strong> Savings rate at 2.6% (crisis level). Real wages negative (3.6% wages vs 4.2% CPI). Credit delinquencies rising. Consumer sentiment near all-time lows. But: high-income consumers still spending. Luxury and value ends hold; middle is squeezed.
+        </div>
+        <div style="margin-top:10px;font-size:12px;line-height:1.7;">
+          <div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="color:var(--green);font-weight:600;">Winners:</span><span>Costco, TJX (value), Luxury, Services</span></div>
+          <div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="color:var(--red);font-weight:600;">Losers:</span><span>Mid-tier retail, Discretionary, Housing</span></div>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;">
+          <span class="ticker-badge">COST</span><span class="ticker-badge">TJX</span><span class="ticker-badge">AMZN</span><span class="ticker-badge" style="background:var(--accent-orange);">SBUX</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LAYER 3: RISK RADAR ===== -->
+  <div class="section-label">Layer 3 &mdash; Risk Radar</div>
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Tail Risks & Scenario Monitoring</div><span class="card-badge badge-live">Active Watch</span></div>
+      <div class="card-body" style="padding:10px 16px;">
+        <table>
+          <thead><tr><th style="width:25%">Risk</th><th class="text-center" style="width:10%">Likelihood</th><th class="text-center" style="width:10%">Impact</th><th style="width:15%">Attention</th><th>If Triggered &rarr; Market Impact</th></tr></thead>
+          <tbody>
+            <tr style="background:#FDE8E810;">
+              <td style="font-weight:600;color:var(--red);">ME Escalation / Hormuz Closure</td>
+              <td class="text-center"><span style="background:#FDE8E8;color:var(--red);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">HIGH</span></td>
+              <td class="text-center"><span style="background:#FDE8E8;color:var(--red);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">SEVERE</span></td>
+              <td><div style="height:6px;background:#eee;border-radius:3px;"><div style="width:90%;height:100%;background:var(--red);border-radius:3px;"></div></div></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Oil to $120+, deep stagflation, S&P -15-20%, flight to Treasuries. Energy stocks surge, everything else sells.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">Fed Policy Error (Hike into Weakness)</td>
+              <td class="text-center"><span style="background:#FFF3E0;color:var(--accent-orange);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">MED</span></td>
+              <td class="text-center"><span style="background:#FDE8E8;color:var(--red);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">HIGH</span></td>
+              <td><div style="height:6px;background:#eee;border-radius:3px;"><div style="width:55%;height:100%;background:var(--accent-orange);border-radius:3px;"></div></div></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Yield curve re-inverts, housing collapse accelerates, credit spreads blow out 200+ bps. Recession within 6-9 months.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">AI Capex Disappointment</td>
+              <td class="text-center"><span style="background:#FFF3E0;color:var(--accent-orange);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">MED</span></td>
+              <td class="text-center"><span style="background:#FFF3E0;color:var(--accent-orange);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">MED</span></td>
+              <td><div style="height:6px;background:#eee;border-radius:3px;"><div style="width:40%;height:100%;background:var(--accent-orange);border-radius:3px;"></div></div></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Semis correct 30-40%, Nasdaq -10-15%. Hyperscalers guide down capex. Rotation to value/defensives. NVDA, TSM, APP most exposed.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">China Slowdown / Taiwan Escalation</td>
+              <td class="text-center"><span style="background:#EBF2FB;color:var(--accent-blue);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">LOW</span></td>
+              <td class="text-center"><span style="background:#FDE8E8;color:var(--red);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">SEVERE</span></td>
+              <td><div style="height:6px;background:#eee;border-radius:3px;"><div style="width:30%;height:100%;background:var(--accent-blue);border-radius:3px;"></div></div></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Global semiconductor supply chain catastrophe. TSM = 90% of advanced chips. AAPL China revenue (-20% of total) at risk. Global recession scenario.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">Credit Event / HY Repricing</td>
+              <td class="text-center"><span style="background:#EBF2FB;color:var(--accent-blue);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">LOW</span></td>
+              <td class="text-center"><span style="background:#FFF3E0;color:var(--accent-orange);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">MED</span></td>
+              <td><div style="height:6px;background:#eee;border-radius:3px;"><div style="width:20%;height:100%;background:var(--accent-blue);border-radius:3px;"></div></div></td>
+              <td style="font-size:11px;color:var(--text-secondary);">HY spreads from 271 to 500+ bps. Leveraged firms crushed. Small caps (-20%). Banks tighten lending. Recession risk spikes.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">Inflation Expectations Unanchor</td>
+              <td class="text-center"><span style="background:#FFF3E0;color:var(--accent-orange);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">MED</span></td>
+              <td class="text-center"><span style="background:#FDE8E8;color:var(--red);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">HIGH</span></td>
+              <td><div style="height:6px;background:#eee;border-radius:3px;"><div style="width:50%;height:100%;background:var(--accent-orange);border-radius:3px;"></div></div></td>
+              <td style="font-size:11px;color:var(--text-secondary);">1Y expectations already at 4.6%. If they breach 5%, the Fed is forced into aggressive hikes regardless of growth. Replay of 2022 but from a weaker starting point.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LAYER 4: SECTOR SYNTHESIS ===== -->
+  <div class="section-label">Layer 4 &mdash; Sector Synthesis</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Combining cyclical regime + structural themes + risk exposure into an overall sector view.</div>
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Integrated Sector Positioning</div><span class="card-badge badge-live">All Layers Combined</span></div>
+      <div class="card-body" style="padding:10px 16px;">
+        <table>
+          <thead><tr><th>Sector</th><th class="text-center">Cyclical Signal</th><th class="text-center">Structural Theme</th><th class="text-center">Risk Exposure</th><th class="text-center" style="width:15%;">Net Signal</th><th>Rationale</th></tr></thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:700;">Energy</td>
+              <td class="text-center"><span style="color:var(--green);font-weight:600;">Favored</span></td>
+              <td class="text-center"><span style="color:var(--green);font-weight:600;">ME Crisis +</span></td>
+              <td class="text-center"><span style="color:var(--accent-orange);">Geopolitical</span></td>
+              <td class="text-center"><span style="background:#E8F5EE;color:var(--green);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">OVERWEIGHT</span></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Stagflation hedge + ME crisis direct beneficiary. LNG positioned as structural winner. Volatile but high conviction.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">Healthcare</td>
+              <td class="text-center"><span style="color:var(--green);font-weight:600;">Favored</span></td>
+              <td class="text-center"><span style="color:var(--green);font-weight:700;">GLP-1 +++</span></td>
+              <td class="text-center"><span style="color:var(--green);">Low</span></td>
+              <td class="text-center"><span style="background:#E8F5EE;color:var(--green);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">OVERWEIGHT</span></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Defensive in stagflation + GLP-1 secular megatrend. Dual tailwind. LLY is the clearest expression.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">Technology</td>
+              <td class="text-center"><span style="color:var(--red);font-weight:600;">Vulnerable</span></td>
+              <td class="text-center"><span style="color:var(--green);font-weight:700;">AI Capex +++</span></td>
+              <td class="text-center"><span style="color:var(--accent-orange);">ROI risk</span></td>
+              <td class="text-center"><span style="background:#FFF3E0;color:var(--accent-orange);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">SELECTIVE</span></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Macro says vulnerable (high P/E + rising rates), but AI is the largest capex cycle ever. Favor profitable AI picks (NVDA, MSFT, GOOGL). Avoid unprofitable growth.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">Industrials</td>
+              <td class="text-center"><span style="color:var(--text-muted);">Neutral</span></td>
+              <td class="text-center"><span style="color:var(--green);font-weight:600;">Reshoring +</span></td>
+              <td class="text-center"><span style="color:var(--green);">Low</span></td>
+              <td class="text-center"><span style="background:#EBF2FB;color:var(--accent-blue);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">OVERWEIGHT</span></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Aero aftermarket (HEI, TDG, GE) + reshoring/defense spending provide structural floor. ISM at 54 confirms expansion.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">Financials</td>
+              <td class="text-center"><span style="color:var(--green);font-weight:600;">Favored</span></td>
+              <td class="text-center"><span style="color:var(--green);font-weight:600;">Alt Mgrs +</span></td>
+              <td class="text-center"><span style="color:var(--accent-orange);">Credit risk</span></td>
+              <td class="text-center"><span style="background:#EBF2FB;color:var(--accent-blue);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">OVERWEIGHT</span></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Higher rates help NIM. Alt managers (APO, BX) benefit from private credit boom. Exchanges (CME, CBOE) thrive on volatility. Avoid regional banks.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">Consumer Staples</td>
+              <td class="text-center"><span style="color:var(--green);font-weight:600;">Favored</span></td>
+              <td class="text-center"><span style="color:var(--red);font-weight:600;">GLP-1 risk</span></td>
+              <td class="text-center"><span style="color:var(--green);">Low</span></td>
+              <td class="text-center"><span style="background:#FFF3E0;color:var(--accent-orange);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">SELECTIVE</span></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Defensive positioning helps macro, but GLP-1 headwind for food/beverage. Favor COST (value model) over snack/packaged food names.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">Cons. Discretionary</td>
+              <td class="text-center"><span style="color:var(--red);font-weight:600;">Weak</span></td>
+              <td class="text-center"><span style="color:var(--red);font-weight:600;">Bifurcation -</span></td>
+              <td class="text-center"><span style="color:var(--accent-orange);">Consumer stress</span></td>
+              <td class="text-center"><span style="background:#FDE8E8;color:var(--red);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">UNDERWEIGHT</span></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Squeezed consumer (negative real wages, 2.6% savings). Exception: AMZN (market share gains), TJX (trade-down), cruise lines (experiential shift).</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">Real Estate</td>
+              <td class="text-center"><span style="color:var(--red);font-weight:600;">Weak</span></td>
+              <td class="text-center"><span style="color:var(--text-muted);">Neutral</span></td>
+              <td class="text-center"><span style="color:var(--red);">Rate risk</span></td>
+              <td class="text-center"><span style="background:#FDE8E8;color:var(--red);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">UNDERWEIGHT</span></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Higher-for-longer rates crush cap rates and housing starts. Data center REITs are the sole bright spot (AI demand).</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">Utilities</td>
+              <td class="text-center"><span style="color:var(--green);font-weight:600;">Favored</span></td>
+              <td class="text-center"><span style="color:var(--green);font-weight:600;">AI Power +</span></td>
+              <td class="text-center"><span style="color:var(--green);">Low</span></td>
+              <td class="text-center"><span style="background:#E8F5EE;color:var(--green);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">OVERWEIGHT</span></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Defensive in stagflation + AI data center power demand creating a structural demand surge. Best sector for dual cyclical/structural tailwind.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">Materials</td>
+              <td class="text-center"><span style="color:var(--green);font-weight:600;">Favored</span></td>
+              <td class="text-center"><span style="color:var(--green);font-weight:600;">Reshoring +</span></td>
+              <td class="text-center"><span style="color:var(--accent-orange);">Cyclical</span></td>
+              <td class="text-center"><span style="background:#EBF2FB;color:var(--accent-blue);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">NEUTRAL+</span></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Inflation hedge + infrastructure buildout. But ISM prices surging — input costs a risk for processors. Favor commodity producers over processors.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">Comm. Services</td>
+              <td class="text-center"><span style="color:var(--red);font-weight:600;">Weak</span></td>
+              <td class="text-center"><span style="color:var(--green);font-weight:600;">AI/Ads +</span></td>
+              <td class="text-center"><span style="color:var(--accent-orange);">Ad cycle</span></td>
+              <td class="text-center"><span style="background:#FFF3E0;color:var(--accent-orange);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">SELECTIVE</span></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Worst weekly sector (-3.37%) on ad weakness. But GOOGL and NFLX have AI and subscriber tailwinds. Split within sector is wide.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Final synthesis commentary -->
+  <div class="full-width">
+    <div class="card">
+      <div class="card-body" style="padding:16px 20px;">
+        <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:10px;">Framework Summary</div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+          <strong>The cyclical regime alone would say: go defensive.</strong> But the structural forces tell a more nuanced story. Two of the most powerful secular tailwinds in decades — the $725B AI infrastructure buildout and the $80B+ GLP-1 revolution — are happening <em>during</em> a stagflationary macro environment. This creates a market where sector selection matters far more than market-level calls.
+          <br><br>
+          <strong>The highest-conviction positions</strong> combine cyclical AND structural tailwinds: <strong>Energy</strong> (stagflation hedge + ME crisis), <strong>Healthcare</strong> (defensive + GLP-1), <strong>Utilities</strong> (defensive + AI power demand), and <strong>select Industrials</strong> (reshoring + aero aftermarket).
+          <br><br>
+          <strong>The trickiest call is Tech.</strong> The macro screams vulnerability (25x P/E, rising rates), but the AI capex cycle is unprecedented. The resolution: be selective. Own the profitable AI infrastructure layer (NVDA, TSM, MSFT, GOOGL) and avoid speculative/unprofitable names. If the AI ROI narrative cracks, even the good names will correct — but they'll recover fastest.
+          <br><br>
+          <strong>The biggest risk to monitor:</strong> Middle East escalation. It's simultaneously the most likely, most impactful, and most uncertain variable. An oil spike to $120+ would push the regime dot deeper into stagflation and force defensive positioning across the board.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- Company Research Modal -->
+<div class="modal-overlay" id="companyModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <span class="ticker-badge" id="modalTicker" style="font-size:14px;padding:4px 12px;"></span>
+        <span id="modalName" style="font-size:18px;font-weight:700;color:var(--navy);margin-left:12px;"></span>
+      </div>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="footer">Accuvest Global Advisors &bull; For internal use only &bull; Data sourced from BEA, Federal Reserve, U.S. Treasury, and public market feeds</div>
+
+<script>
+// ===== LIVE DATA (injected by build.py) =====
+const LIVE_DATA = {{ fred_json|safe }};
+const LIVE_HOLDINGS = {{ holdings_json|safe }};
+const LIVE_META = {
+  buildDate: "{{ build_date }}",
+  buildTime: "{{ build_time }}",
+  sp500: { price: {{ sp500_price or 'null' }}, chg: {{ sp500_chg or '0' }} },
+  nasdaq: { price: {{ nasdaq_price or 'null' }}, chg: {{ nasdaq_chg or '0' }} },
+  russell: { price: {{ russell_price or 'null' }}, chg: {{ russell_chg or '0' }} },
+  sp500_pe: {{ yf.sp500_pe or 'null' }},
+  sp500_fwd_pe: {{ yf.sp500_fwd_pe or 'null' }},
+};
+
+// ===== HYDRATION — update hardcoded values with live data =====
+function hydrate() {
+  // Header date
+  const dateEl = document.getElementById('currentDate');
+  if (LIVE_META.buildDate) dateEl.textContent = LIVE_META.buildDate;
+
+  // KPI cards (by order)
+  const kpis = document.querySelectorAll('.kpi-card');
+  if (kpis.length >= 5) {
+    // S&P 500
+    if (LIVE_META.sp500.price) {
+      kpis[0].querySelector('.kpi-value').textContent = Math.round(LIVE_META.sp500.price).toLocaleString();
+      const chgEl = kpis[0].querySelector('.kpi-change');
+      chgEl.textContent = (LIVE_META.sp500.chg >= 0 ? '+' : '') + LIVE_META.sp500.chg.toFixed(2) + '%';
+      chgEl.className = 'kpi-change ' + (LIVE_META.sp500.chg >= 0 ? 'up' : 'down');
+    }
+    // Nasdaq
+    if (LIVE_META.nasdaq.price) {
+      kpis[1].querySelector('.kpi-value').textContent = Math.round(LIVE_META.nasdaq.price).toLocaleString();
+      const chgEl = kpis[1].querySelector('.kpi-change');
+      chgEl.textContent = (LIVE_META.nasdaq.chg >= 0 ? '+' : '') + LIVE_META.nasdaq.chg.toFixed(2) + '%';
+      chgEl.className = 'kpi-change ' + (LIVE_META.nasdaq.chg >= 0 ? 'up' : 'down');
+    }
+    // Russell
+    if (LIVE_META.russell.price) {
+      kpis[2].querySelector('.kpi-value').textContent = Math.round(LIVE_META.russell.price).toLocaleString();
+      const chgEl = kpis[2].querySelector('.kpi-change');
+      chgEl.textContent = (LIVE_META.russell.chg >= 0 ? '+' : '') + LIVE_META.russell.chg.toFixed(2) + '%';
+      chgEl.className = 'kpi-change ' + (LIVE_META.russell.chg >= 0 ? 'up' : 'down');
+    }
+    // 10Y yield
+    if (LIVE_DATA.UST_10Y && LIVE_DATA.UST_10Y.latest) {
+      kpis[3].querySelector('.kpi-value').textContent = LIVE_DATA.UST_10Y.latest.toFixed(2) + '%';
+    }
+    // Fed Funds
+    if (LIVE_DATA.FEDFUNDS && LIVE_DATA.FEDFUNDS.latest) {
+      const ff = LIVE_DATA.FEDFUNDS.latest;
+      kpis[4].querySelector('.kpi-value').textContent = ff.toFixed(2) + '%';
+    }
+  }
+
+  // S&P P/E cards
+  if (LIVE_META.sp500_pe) {
+    const peCards = document.querySelectorAll('.ind-card');
+    // These are harder to target generically — the valuation section would need IDs for full hydration
+  }
+
+  // Update LOGO holdings table if live data present
+  if (LIVE_HOLDINGS && LIVE_HOLDINGS.length > 0) {
+    // The holdings JS array will be updated separately below
+  }
+}
+
+// Run hydration after DOM loads
+document.addEventListener('DOMContentLoaded', hydrate);
+
+{% raw %}
+// Tab switching
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+}
+
+// Date
+const now = new Date();
+document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+// Holdings data
+const holdings = [
+  {rank:1,ticker:"AMZN",name:"Amazon.com",weight:7.66,price:"$244.39",mktcap:"$2.58T",pe:"29.4",fwdpe:"29.3",sector:"Consumer Discretionary",desc:"World's largest e-commerce and cloud computing company. AWS is the dominant cloud platform with ~31% market share. Advertising business now $60B+ run-rate. Investing heavily in AI infrastructure and same-day delivery.",revenue:"$700B+",revGrowth:"+12% YoY",margin:"Operating margin expanding to ~11%",moat:"Scale, logistics network, AWS ecosystem, Prime flywheel",risks:"Antitrust scrutiny, capex intensity, margin pressure from investment cycle",outlook:"AI integration across AWS, Alexa, and advertising driving next growth leg. Consensus expects mid-teens earnings growth through 2027."},
+  {rank:2,ticker:"NFLX",name:"Netflix",weight:6.15,price:"$73.95",mktcap:"$311B",pe:"23.6",fwdpe:"25.0",sector:"Communication Services",desc:"Global streaming leader with 300M+ paid subscribers. Ad-supported tier growing rapidly. Live events (sports, WWE) expanding addressable market. Password-sharing crackdown driving subscriber additions.",revenue:"$45B+",revGrowth:"+14% YoY",margin:"Operating margin ~28%, targeting 30%+",moat:"Content library, global scale, recommendation algorithm, brand",risks:"Content cost inflation, competitive intensity, ad tier pricing pressure",outlook:"Live sports rights and ad tier monetization are key catalysts. Management guiding for sustained double-digit revenue growth."},
+  {rank:3,ticker:"AAPL",name:"Apple",weight:5.08,price:"$291.13",mktcap:"$4.45T",pe:"33.5",fwdpe:"30.2",sector:"Technology",desc:"World's most valuable company. iPhone ecosystem anchors services revenue ($100B+ run-rate). Apple Intelligence AI features driving upgrade cycles. Wearables and services growing faster than hardware.",revenue:"$410B+",revGrowth:"+5% YoY",margin:"Gross margin ~46%, services margin ~74%",moat:"Ecosystem lock-in, brand loyalty, privacy positioning, App Store",risks:"China revenue exposure, regulatory (EU DMA, App Store fees), hardware maturity",outlook:"AI-driven iPhone upgrade supercycle expected through 2027. Services mix shift expanding margins. Vision Pro enterprise adoption growing."},
+  {rank:4,ticker:"GOOGL",name:"Alphabet",weight:4.68,price:"$368.03",mktcap:"$2.25T",pe:"27.8",fwdpe:"21.5",sector:"Communication Services",desc:"Dominant search and digital advertising platform (Google Search, YouTube). Google Cloud growing ~28% YoY with AI workloads. Waymo autonomous driving scaling. DeepMind AI research leader.",revenue:"$380B+",revGrowth:"+15% YoY",margin:"Operating margin ~32%",moat:"Search monopoly, YouTube scale, AI/ML leadership, Android ecosystem",risks:"Antitrust remedies (DOJ search case), AI search disruption, regulatory",outlook:"AI Overviews in search driving engagement. Cloud profitability inflecting. Gemini AI models competitive with frontier labs."},
+  {rank:5,ticker:"LLY",name:"Eli Lilly",weight:4.36,price:"$1,107.50",mktcap:"$1.03T",pe:"39.7",fwdpe:"32.0",sector:"Healthcare",desc:"Global pharma leader, dominant in GLP-1 obesity/diabetes drugs. Mounjaro and Zepbound are blockbuster franchises. Pipeline includes Alzheimer's (donanemab), oncology, and immunology assets.",revenue:"$55B+",revGrowth:"+30% YoY",margin:"Gross margin ~80%",moat:"GLP-1 first-mover advantage, manufacturing scale, pipeline depth",risks:"GLP-1 competition (Novo Nordisk, others), pricing pressure, supply constraints",outlook:"GLP-1 market projected at $150B+ by 2030. Lilly's manufacturing investments de-risking supply. Alzheimer's drug launch adds another growth vector."},
+  {rank:6,ticker:"HEI",name:"HEICO Corp",weight:4.21,price:"$333.29",mktcap:"$46.6B",pe:"60.2",fwdpe:"48.0",sector:"Industrials",desc:"Niche aerospace parts manufacturer and repair specialist. Dominant in PMA (Parts Manufacturer Approval) aftermarket parts. Acquisitive growth strategy with 100+ acquisitions. Defense & space electronics division growing.",revenue:"$4.2B",revGrowth:"+12% YoY",margin:"Operating margin ~22%",moat:"FAA-certified replacement parts, customer switching costs, acquisition flywheel",risks:"Premium valuation, acquisition integration, defense budget dependency",outlook:"Aerospace aftermarket benefits from aging fleet and strong air travel demand. Acquisition pipeline remains robust. Premium valuation justified by consistent 15%+ earnings growth."},
+  {rank:7,ticker:"TSM",name:"Taiwan Semiconductor",weight:4.09,price:"$467.67",mktcap:"$1.97T",pe:"38.5",fwdpe:"27.9",sector:"Technology",desc:"World's largest contract chipmaker, fabricating ~90% of advanced semiconductors. Key supplier to Apple, NVIDIA, AMD, Qualcomm. Building $40B+ US fab in Arizona. Leading-edge 2nm process in development.",revenue:"$95B+",revGrowth:"+28% YoY",margin:"Gross margin ~57%",moat:"Manufacturing process leadership, customer captivity, massive capex barriers",risks:"Taiwan geopolitical risk, customer concentration, capex cycle intensity",outlook:"AI chip demand driving unprecedented growth. US/Japan fab diversification reduces geopolitical risk premium. N2 process node expected 2025-2026 ramp."},
+  {rank:8,ticker:"NVDA",name:"NVIDIA",weight:3.87,price:"$203.27",mktcap:"$4.98T",pe:"32.3",fwdpe:"21.2",sector:"Technology",desc:"Dominant AI/GPU computing platform. Data center revenue $35B+/quarter driven by Hopper and Blackwell GPU architectures. CUDA ecosystem creates deep moat. Networking (InfiniBand/Spectrum-X) growing rapidly.",revenue:"$150B+",revGrowth:"+55% YoY",margin:"Gross margin ~73%",moat:"CUDA software ecosystem, GPU architecture leadership, AI training standard",risks:"Customer concentration (hyperscalers), China export controls, ASP sustainability",outlook:"Blackwell architecture cycle extending through 2027. Enterprise AI adoption still early innings. Sovereign AI infrastructure buildouts providing new demand vector."},
+  {rank:9,ticker:"MELI",name:"MercadoLibre",weight:3.52,price:"$2,850",mktcap:"$145B",pe:"52.0",fwdpe:"38.0",sector:"Consumer Discretionary",desc:"Latin America's largest e-commerce and fintech platform. Mercado Pago payments ecosystem growing 40%+ YoY. Logistics network (Mercado Envios) handles 80%+ of packages. Operating in 18 countries across LatAm.",revenue:"$22B+",revGrowth:"+35% YoY",margin:"Operating margin expanding to ~14%",moat:"Network effects, logistics infrastructure, fintech integration, brand trust",risks:"LatAm macro/currency volatility, regulatory risk, competition from Shopee/Amazon",outlook:"LatAm e-commerce penetration still ~12% vs 25%+ in developed markets. Fintech (credit, insurance, crypto) expanding TAM. Brazil and Mexico driving growth."},
+  {rank:10,ticker:"UBER",name:"Uber Technologies",weight:3.52,price:"$71.48",mktcap:"$144B",pe:"35.0",fwdpe:"25.0",sector:"Technology",desc:"Global mobility and delivery platform. Rides and delivery both profitable. Advertising platform growing rapidly. Autonomous vehicle partnerships (Waymo) positioning for next era. Uber One membership driving frequency.",revenue:"$44B+",revGrowth:"+18% YoY",margin:"Adjusted EBITDA margin ~15%",moat:"Network density, driver supply, global scale, brand recognition",risks:"Autonomous disruption, labor regulation, competitive intensity in delivery",outlook:"Free cash flow inflecting positive. AV partnerships de-risk disruption narrative. Advertising and Uber One driving monetization per trip higher."},
+  {rank:11,ticker:"TDG",name:"TransDigm Group",weight:3.32,price:"$1,480",mktcap:"$85B",pe:"42.0",fwdpe:"35.0",sector:"Industrials",desc:"Aerospace components manufacturer with pricing power. Portfolio of proprietary, sole-source aftermarket parts. 80%+ of revenue from products with no direct competition. Aggressive M&A strategy.",revenue:"$8.5B",revGrowth:"+15% YoY",margin:"EBITDA margin ~52%",moat:"Sole-source proprietary parts, FAA certification barriers, aftermarket dominance",risks:"Leverage, regulatory scrutiny on pricing, defense budget shifts",outlook:"Aftermarket growth accelerating with air travel recovery. Acquisition pipeline robust. One of the highest-margin industrials globally."},
+  {rank:12,ticker:"V",name:"Visa",weight:3.26,price:"$345",mktcap:"$705B",pe:"32.0",fwdpe:"27.0",sector:"Financials",desc:"World's largest payment network processing $15T+ annually. Cross-border payments growing 15%+ as travel recovers. Value-added services (fraud detection, data analytics) expanding. Stablecoin/crypto settlement capabilities.",revenue:"$38B+",revGrowth:"+11% YoY",margin:"Operating margin ~67%",moat:"Network effects, merchant acceptance, regulatory moat, brand trust",risks:"Regulatory (interchange fee caps), fintech disruption, antitrust",outlook:"Digital payment secular growth continues. Cross-border travel recovery tailwind. New flows (B2B, government, crypto) expanding TAM beyond consumer payments."},
+  {rank:13,ticker:"LNG",name:"Cheniere Energy",weight:3.19,price:"$230",mktcap:"$53B",pe:"12.0",fwdpe:"10.5",sector:"Energy",desc:"Largest US LNG exporter. Sabine Pass and Corpus Christi terminals with long-term take-or-pay contracts. Stage 3 expansion adding capacity. Benefiting from European energy security demand post-Russia sanctions.",revenue:"$18B+",revGrowth:"+8% YoY",margin:"EBITDA margin ~55%",moat:"Long-term contracts, terminal infrastructure, permitting barriers, location",risks:"LNG price volatility, environmental regulation, contract renewal risk",outlook:"Middle East conflict driving European energy security premium. Stage 3 expansion adds 15%+ capacity through 2027. Shareholder returns via buybacks accelerating."},
+  {rank:14,ticker:"APP",name:"AppLovin",weight:3.13,price:"$479.49",mktcap:"$132B",pe:"33.9",fwdpe:"28.0",sector:"Technology",desc:"AI-powered mobile advertising and app monetization platform. AXON AI engine driving performance advertising. Software platform segment growing 70%+ YoY. E-commerce advertising expansion in early innings.",revenue:"$5.5B+",revGrowth:"+45% YoY",margin:"Adjusted EBITDA margin ~60%",moat:"AXON AI engine, first-party data, performance measurement, scale",risks:"Customer concentration, AI model risk, competitive response from Meta/Google",outlook:"E-commerce vertical expansion could double TAM. AXON 3.0 AI improvements driving higher ROAS for advertisers. One of fastest-growing ad tech platforms."},
+  {rank:15,ticker:"APO",name:"Apollo Global Mgmt",weight:3.09,price:"$165",mktcap:"$95B",pe:"18.0",fwdpe:"15.0",sector:"Financials",desc:"Alternative asset manager with $750B+ AUM. Athene retirement services platform drives permanent capital. Private credit leadership as banks retreat. Infrastructure and energy transition investments growing.",revenue:"$28B+",revGrowth:"+20% YoY",margin:"Fee-related earnings margin ~55%",moat:"Permanent capital base (Athene), origination capabilities, brand, scale",risks:"Credit cycle risk, regulatory, key-person risk, fee pressure",outlook:"Private credit boom as banks tighten. Insurance/retirement channel provides stable fee revenue. AI infrastructure financing partnerships (Broadcom) opening new verticals."},
+  {rank:16,ticker:"BX",name:"Blackstone",weight:3.06,price:"$185",mktcap:"$225B",pe:"35.0",fwdpe:"28.0",sector:"Financials",desc:"World's largest alternative asset manager with $1.1T+ AUM. Real estate, private equity, credit, and infrastructure platforms. BREIT and BCRED flagship retail products. Data center investments via QTS.",revenue:"$8B+ (fee revenue)",revGrowth:"+15% YoY",margin:"Distributable earnings margin ~55%",moat:"Brand, scale, distribution relationships, permanent capital vehicles",risks:"Real estate exposure, fee pressure, fundraising cycles, retail redemptions",outlook:"AI/data center infrastructure theme driving deployment. Retail alternatives channel expanding globally. Real estate recovery would unlock significant unrealized gains."},
+  {rank:17,ticker:"CME",name:"CME Group",weight:3.03,price:"$270",mktcap:"$97B",pe:"24.0",fwdpe:"22.0",sector:"Financials",desc:"World's largest derivatives exchange. Operates CME, CBOT, NYMEX, COMEX. Interest rate, equity index, commodities, and FX futures. FedWatch tool is industry standard. Record volumes in volatile markets.",revenue:"$6.2B+",revGrowth:"+10% YoY",margin:"Operating margin ~65%",moat:"Monopoly on key benchmarks, clearing house network effects, regulatory moat",risks:"Volume cyclicality, competition from crypto exchanges, regulatory changes",outlook:"Elevated volatility environment driving record volumes. Treasury futures benefiting from rate uncertainty. International expansion and micro-contract growth extending reach."},
+  {rank:18,ticker:"QXO",name:"QXO Inc",weight:2.61,price:"$18.50",mktcap:"$12B",pe:"N/A",fwdpe:"N/A",sector:"Industrials",desc:"Building products distribution platform founded by Brad Jacobs (XPO founder). Pursuing roll-up strategy in fragmented $800B building products market. Recently completed major acquisition to establish platform.",revenue:"Early stage",revGrowth:"Acquisition-driven",margin:"Building platform",moat:"Management track record, capital access, fragmented market opportunity",risks:"Execution risk, integration risk, cyclical end-market, unproven strategy",outlook:"Brad Jacobs' track record (XPO, United Rentals) provides credibility. $800B TAM in building products is highly fragmented. Expect aggressive M&A cadence."},
+  {rank:19,ticker:"CBOE",name:"Cboe Global Markets",weight:2.59,price:"$225",mktcap:"$23B",pe:"26.0",fwdpe:"22.0",sector:"Financials",desc:"Options exchange operator. VIX index and options franchise is proprietary. SPX options (0DTE) driving record volumes. Data and analytics revenue growing double digits.",revenue:"$2.1B+",revGrowth:"+8% YoY",margin:"Operating margin ~50%",moat:"VIX franchise, SPX options monopoly, data/analytics, regulatory barriers",risks:"0DTE systemic risk concerns, competition, regulatory",outlook:"0DTE options phenomenon driving structural volume growth. Proprietary data and analytics becoming larger revenue contributor. International expansion via Cboe Europe and Japan."},
+  {rank:20,ticker:"GE",name:"GE Aerospace",weight:2.26,price:"$220",mktcap:"$240B",pe:"38.0",fwdpe:"30.0",sector:"Industrials",desc:"Pure-play aerospace company after GE Vernova spin-off. Largest jet engine manufacturer globally (with Safran via CFM). LEAP engine powering 737 MAX and A320neo. Services/aftermarket is profit engine.",revenue:"$38B+",revGrowth:"+12% YoY",margin:"Operating margin ~22%",moat:"Installed engine base, certification barriers, aftermarket lock-in",risks:"Supply chain constraints, quality issues, 737 MAX program risks",outlook:"Aerospace aftermarket in multi-year upcycle. Engine shop visits increasing as fleet ages. Defense and next-gen propulsion programs provide long-term growth."},
+  {rank:21,ticker:"ROKU",name:"Roku",weight:2.25,price:"$115",mktcap:"$16B",pe:"85.0",fwdpe:"40.0",sector:"Communication Services",desc:"Leading TV streaming platform in the US. 85M+ active accounts. Platform revenue (advertising) growing 20%+ while device revenue is near break-even. Roku Channel expanding original content.",revenue:"$4.2B+",revGrowth:"+16% YoY",margin:"Platform gross margin ~55%",moat:"Installed user base, TV OEM partnerships, first-screen position",risks:"Competition from Amazon/Google, advertiser spending cyclicality, profitability path",outlook:"CTV ad spending secular growth. Roku's first-screen position in smart TVs provides durable advantage. Path to sustained profitability as platform revenue scales."},
+  {rank:22,ticker:"SHOP",name:"Shopify",weight:2.22,price:"$125",mktcap:"$160B",pe:"70.0",fwdpe:"45.0",sector:"Technology",desc:"Leading e-commerce platform powering 5M+ merchants globally. Shopify Payments processing ~60% of GMV. Plus (enterprise) growing 30%+. Fulfillment network improving delivery speeds.",revenue:"$9.5B+",revGrowth:"+25% YoY",margin:"Free cash flow margin ~18%",moat:"Merchant ecosystem, app marketplace, brand trust with SMBs, checkout conversion",risks:"Amazon competition, SMB churn in downturn, international expansion costs",outlook:"Enterprise (Plus) expansion and B2B commerce opening new verticals. Checkout improvements and Shop Pay driving conversion advantages. AI tools for merchants differentiating."},
+  {rank:23,ticker:"MSFT",name:"Microsoft",weight:2.18,price:"$520",mktcap:"$3.87T",pe:"36.0",fwdpe:"30.0",sector:"Technology",desc:"Enterprise software and cloud leader. Azure growing 30%+ with AI workloads accelerating. Copilot AI integration across Office 365, GitHub, and Dynamics. LinkedIn and gaming (Activision) diversifying revenue.",revenue:"$280B+",revGrowth:"+15% YoY",margin:"Operating margin ~45%",moat:"Enterprise ecosystem lock-in, Azure/OpenAI partnership, distribution, brand",risks:"AI investment ROI questions, competition (AWS, Google Cloud), regulatory",outlook:"AI Copilot monetization in early innings across 400M+ Office users. Azure AI services growing faster than overall cloud. Most diversified Big Tech revenue stream."},
+  {rank:24,ticker:"COST",name:"Costco",weight:2.16,price:"$1,050",mktcap:"$465B",pe:"55.0",fwdpe:"48.0",sector:"Consumer Staples",desc:"Membership warehouse retailer with 135M+ cardholders and 97%+ renewal rates. Kirkland Signature private label growing share. E-commerce and same-day delivery expanding. International growth (China, Japan) accelerating.",revenue:"$270B+",revGrowth:"+8% YoY",margin:"Operating margin ~3.5% (deliberate low-margin, high-volume model)",moat:"Membership model, buying power, Kirkland brand, customer loyalty",risks:"Premium valuation, membership fee sensitivity, competition, e-commerce transition",outlook:"Membership fee increase cycle supports earnings growth. International expansion in underpenetrated markets. Kirkland brand strength driving market share gains in consumables."},
+  {rank:25,ticker:"PANW",name:"Palo Alto Networks",weight:2.15,price:"$290.90",mktcap:"$237B",pe:"235.6",fwdpe:"55.0",sector:"Technology",desc:"Cybersecurity platform leader. Platformization strategy consolidating security tools. Prisma (cloud security) and Cortex (AI-driven SOC) growing 30%+. Annual Recurring Revenue $4.5B+.",revenue:"$8.5B+",revGrowth:"+15% YoY",margin:"Free cash flow margin ~38%",moat:"Platform breadth, customer switching costs, AI/ML threat detection, brand",risks:"Competitive intensity, platformization execution, premium valuation",outlook:"Cybersecurity spending resilient regardless of macro. Platformization driving vendor consolidation in Palo Alto's favor. AI-driven automation reducing customer SOC costs."},
+  {rank:26,ticker:"MRVL",name:"Marvell Technology",weight:1.85,price:"$88",mktcap:"$76B",pe:"45.0",fwdpe:"28.0",sector:"Technology",desc:"Custom silicon and data infrastructure semiconductor company. Leading supplier of custom AI accelerators to cloud hyperscalers. Data center revenue growing 80%+ YoY on AI demand.",revenue:"$6.5B+",revGrowth:"+30% YoY",margin:"Gross margin ~62%",moat:"Custom ASIC design capability, hyperscaler relationships, networking IP",risks:"Customer concentration, design win cyclicality, competition from Broadcom",outlook:"Custom AI chip demand from Amazon, Microsoft, and Google expanding rapidly. Networking silicon for AI clusters is a growing opportunity."},
+  {rank:27,ticker:"ABNB",name:"Airbnb",weight:1.75,price:"$165",mktcap:"$105B",pe:"30.0",fwdpe:"24.0",sector:"Consumer Discretionary",desc:"Global online travel marketplace connecting hosts and guests. 150M+ nights booked annually. Expanding into Experiences and luxury tier. Strong free cash flow generation.",revenue:"$11B+",revGrowth:"+14% YoY",margin:"Free cash flow margin ~40%",moat:"Two-sided marketplace network effects, brand trust, global supply",risks:"Regulatory pressure (city-level restrictions), competition, travel cyclicality",outlook:"International expansion and longer-stay bookings diversifying revenue. Experiences category opening new TAM. Capital-light model generates strong returns."},
+  {rank:28,ticker:"INTU",name:"Intuit",weight:1.65,price:"$720",mktcap:"$200B",pe:"38.0",fwdpe:"30.0",sector:"Technology",desc:"Financial software platform: TurboTax, QuickBooks, Credit Karma, Mailchimp. AI-powered tax and accounting solutions for consumers and SMBs. 100M+ customers across ecosystem.",revenue:"$17B+",revGrowth:"+12% YoY",margin:"Operating margin ~28%",moat:"Tax expertise, SMB ecosystem, data moat from Credit Karma, brand trust",risks:"IRS Free File competition, SMB economic sensitivity, acquisition integration",outlook:"AI assistant (Intuit Assist) transforming product experience. QuickBooks platform expansion into payments and payroll growing TAM."},
+  {rank:29,ticker:"SBUX",name:"Starbucks",weight:1.55,price:"$105",mktcap:"$120B",pe:"28.0",fwdpe:"24.0",sector:"Consumer Discretionary",desc:"Global coffee chain with 38,000+ stores. Loyalty program with 75M+ members. Turnaround strategy focusing on speed, quality, and store experience under new leadership.",revenue:"$36B+",revGrowth:"+4% YoY",margin:"Operating margin ~16%",moat:"Brand, store density, loyalty program, supply chain, morning habit",risks:"China recovery uncertainty, labor costs, consumer trade-down risk",outlook:"Back to Starbucks turnaround plan showing early signs of improvement. Mobile ordering optimization and premium innovation driving traffic recovery."},
+  {rank:30,ticker:"LULU",name:"Lululemon",weight:1.45,price:"$380",mktcap:"$47B",pe:"28.0",fwdpe:"23.0",sector:"Consumer Discretionary",desc:"Premium athletic apparel brand. Strong direct-to-consumer model with 700+ stores globally. International expansion (China, Europe) accelerating. Men's category growing faster than women's.",revenue:"$10.5B+",revGrowth:"+10% YoY",margin:"Gross margin ~58%",moat:"Brand loyalty, vertical integration, community-driven marketing, product innovation",risks:"Consumer discretionary spending sensitivity, fashion risk, competition intensifying",outlook:"International growth (esp. China +30% YoY) offsetting slower North America. Men's segment and footwear expansion extending addressable market."},
+  {rank:31,ticker:"NXPI",name:"NXP Semiconductors",weight:1.35,price:"$255",mktcap:"$65B",pe:"22.0",fwdpe:"18.0",sector:"Technology",desc:"Automotive and industrial semiconductor leader. #1 in auto chips globally. Benefiting from vehicle electrification, ADAS, and IoT connectivity. Strong exposure to secular auto tech trends.",revenue:"$13B+",revGrowth:"+8% YoY",margin:"Gross margin ~58%",moat:"Automotive qualification barriers, long design cycles, customer stickiness",risks:"Auto production cyclicality, China trade tension, inventory cycles",outlook:"EV and ADAS content per vehicle rising from $500 to $1,000+ over next 5 years. Industrial IoT recovery providing additional growth vector."},
+  {rank:32,ticker:"MNST",name:"Monster Beverage",weight:1.25,price:"$58",mktcap:"$56B",pe:"34.0",fwdpe:"28.0",sector:"Consumer Staples",desc:"Energy drink leader with Monster, Reign, and Bang brands. Distribution partnership with Coca-Cola provides global reach. Growing share in international markets. Innovation in alcohol segment.",revenue:"$8B+",revGrowth:"+9% YoY",margin:"Gross margin ~53%",moat:"Brand portfolio, Coca-Cola distribution network, innovation pipeline",risks:"Health concerns about energy drinks, input cost inflation, competition",outlook:"International penetration still low vs. US. Alcohol segment (The Beast Unleashed) expanding TAM. Pricing power demonstrated through multiple cycles."},
+  {rank:33,ticker:"TJX",name:"TJX Companies",weight:1.15,price:"$130",mktcap:"$148B",pe:"28.0",fwdpe:"24.0",sector:"Consumer Discretionary",desc:"Off-price retail leader (TJ Maxx, Marshalls, HomeGoods). Benefits from trade-down effect during inflationary periods. Treasure-hunt model drives repeat visits. 5,000+ stores globally.",revenue:"$56B+",revGrowth:"+5% YoY",margin:"Operating margin ~11%",moat:"Buyer network, off-price sourcing relationships, treasure-hunt model, scale",risks:"Inventory management, consumer spending shifts, e-commerce disruption",outlook:"Counter-cyclical positioning benefits from consumer trade-down. HomeGoods turnaround progressing. International expansion opportunity in Europe and Australia."},
+  {rank:34,ticker:"RCL",name:"Royal Caribbean",weight:1.10,price:"$240",mktcap:"$62B",pe:"18.0",fwdpe:"15.0",sector:"Consumer Discretionary",desc:"Cruise line operator with Royal Caribbean, Celebrity, and Silversea brands. Record bookings and pricing power. Fleet modernization with Icon-class mega-ships. Strong onboard revenue growth.",revenue:"$17B+",revGrowth:"+18% YoY",margin:"Operating margin ~22%",moat:"Fleet investment barriers, brand portfolio, yield management, loyalty programs",risks:"Oil prices, geopolitical disruption, weather events, leverage",outlook:"Cruise demand at all-time highs. Younger demographics discovering cruising. New ship deliveries driving capacity growth. Debt reduction accelerating."},
+  {rank:35,ticker:"DKNG",name:"DraftKings",weight:0.95,price:"$48",mktcap:"$22B",pe:"65.0",fwdpe:"35.0",sector:"Consumer Discretionary",desc:"Online sports betting and iGaming platform. #2 in US market behind FanDuel. State-by-state expansion continuing. Transitioning to profitability with improving unit economics.",revenue:"$5.5B+",revGrowth:"+28% YoY",margin:"Adjusted EBITDA turning positive",moat:"Brand recognition, state licenses, data/tech platform, user acquisition scale",risks:"Regulatory risk, customer acquisition costs, competition, addiction concerns",outlook:"US sports betting TAM expanding as more states legalize. iGaming (online casino) even higher margin opportunity. Path to sustainable profitability becoming clearer."},
+  {rank:36,ticker:"WYNN",name:"Wynn Resorts",weight:0.80,price:"$105",mktcap:"$12B",pe:"20.0",fwdpe:"16.0",sector:"Consumer Discretionary",desc:"Luxury resort and casino operator in Las Vegas and Macau. Wynn Palace and Wynn Macau benefiting from China reopening. UAE resort (Wynn Al Marjan Island) opening 2027. Premium brand positioning.",revenue:"$7.5B+",revGrowth:"+12% YoY",margin:"EBITDA margin ~32%",moat:"Luxury brand, premium real estate, gaming licenses (limited supply), loyalty program",risks:"Macau regulatory risk, China economic slowdown, high leverage, construction risk",outlook:"Macau recovery still in mid-innings. UAE resort opening in 2027 opens entirely new market. Las Vegas strip property benefits from convention/events demand."}
+];
+
+// Build table
+const tbody = document.querySelector('#holdingsTable tbody');
+holdings.forEach(h => {
+  const tr = document.createElement('tr');
+  tr.className = 'company-row';
+  tr.onclick = () => openModal(h);
+  tr.innerHTML = `<td style="color:var(--text-muted)">${h.rank}</td><td><span class="ticker-badge">${h.ticker}</span></td><td>${h.name}</td><td class="text-right font-mono" style="font-weight:600">${h.weight}%</td><td class="text-right font-mono">${h.price}</td><td class="text-right font-mono">${h.mktcap}</td><td class="text-right font-mono">${h.pe}</td><td><div class="weight-bar" style="width:${h.weight*10}px"></div></td>`;
+  tbody.appendChild(tr);
+});
+
+// Modal
+function openModal(h) {
+  document.getElementById('modalTicker').textContent = h.ticker;
+  document.getElementById('modalName').textContent = h.name;
+  const body = document.getElementById('modalBody');
+
+  // Generate a simple price chart SVG
+  const chartSvg = generatePriceChart(h.ticker);
+
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div class="ind-card"><div class="ind-card-title">Price</div><div class="ind-card-value">${h.price}</div></div>
+      <div class="ind-card"><div class="ind-card-title">Market Cap</div><div class="ind-card-value">${h.mktcap}</div></div>
+      <div class="ind-card"><div class="ind-card-title">P/E (TTM)</div><div class="ind-card-value">${h.pe}</div></div>
+      <div class="ind-card"><div class="ind-card-title">Fwd P/E</div><div class="ind-card-value">${h.fwdpe}</div></div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:6px;">1-Year Price Trend (Simulated)</div>
+    ${chartSvg}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px;">Company Overview</div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">${h.desc}</div>
+        <div style="margin-top:12px;">
+          <div style="font-size:12px;"><strong>Sector:</strong> ${h.sector}</div>
+          <div style="font-size:12px;margin-top:4px;"><strong>LOGO Weight:</strong> ${h.weight}%</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px;">Key Financials</div>
+        <table style="font-size:12px;">
+          <tr><td style="font-weight:600;padding:4px 10px 4px 0;">Revenue</td><td>${h.revenue}</td></tr>
+          <tr><td style="font-weight:600;padding:4px 10px 4px 0;">Revenue Growth</td><td class="${h.revGrowth.startsWith('+') ? 'up' : ''}">${h.revGrowth}</td></tr>
+          <tr><td style="font-weight:600;padding:4px 10px 4px 0;">Margins</td><td>${h.margin}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px;">Competitive Moat</div>
+      <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">${h.moat}</div>
+    </div>
+
+    <div style="margin-top:14px;">
+      <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:6px;">Key Risks</div>
+      <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">${h.risks}</div>
+    </div>
+
+    <div class="commentary" style="margin-top:14px;">
+      <strong>Outlook:</strong> ${h.outlook}
+    </div>
+  `;
+  document.getElementById('companyModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('companyModal').classList.remove('show');
+}
+
+document.getElementById('companyModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+});
+
+// Generate simulated price chart
+function generatePriceChart(ticker) {
+  const seed = ticker.split('').reduce((a,c) => a + c.charCodeAt(0), 0);
+  let rng = seed;
+  function random() { rng = (rng * 16807 + 0) % 2147483647; return rng / 2147483647; }
+
+  const points = [];
+  let price = 100;
+  for (let i = 0; i < 52; i++) {
+    price = price * (1 + (random() - 0.45) * 0.06);
+    points.push(price);
+  }
+
+  const min = Math.min(...points) * 0.95;
+  const max = Math.max(...points) * 1.05;
+  const w = 560, h = 140, pad = 45, right = 10;
+  const chartW = w - pad - right;
+
+  const pathPoints = points.map((p, i) => {
+    const x = pad + (i / (points.length - 1)) * chartW;
+    const y = h - 20 - ((p - min) / (max - min)) * (h - 40);
+    return `${x},${y}`;
+  }).join(' ');
+
+  const lastY = h - 20 - ((points[points.length-1] - min) / (max - min)) * (h - 40);
+  const firstY = h - 20 - ((points[0] - min) / (max - min)) * (h - 40);
+  const isUp = points[points.length-1] > points[0];
+  const color = isUp ? 'var(--green)' : 'var(--red)';
+  const gradId = 'pg_' + ticker;
+
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:${h}px;border:1px solid var(--border);border-radius:6px;background:#FAFBFC;">
+    <defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.12"/><stop offset="100%" stop-color="${color}" stop-opacity="0.02"/></linearGradient></defs>
+    <line x1="${pad}" y1="${h-20}" x2="${pad+chartW}" y2="${h-20}" stroke="#E2E6ED" stroke-width="0.5"/>
+    <line x1="${pad}" y1="${(h-40)/2+10}" x2="${pad+chartW}" y2="${(h-40)/2+10}" stroke="#E2E6ED" stroke-width="0.5"/>
+    <line x1="${pad}" y1="10" x2="${pad+chartW}" y2="10" stroke="#E2E6ED" stroke-width="0.5"/>
+    <polygon points="${pathPoints} ${pad+chartW},${h-20} ${pad},${h-20}" fill="url(#${gradId})"/>
+    <polyline points="${pathPoints}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>
+    <text x="${pad-4}" y="14" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">${max.toFixed(0)}</text>
+    <text x="${pad-4}" y="${h-16}" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">${min.toFixed(0)}</text>
+    <text x="${pad}" y="${h-4}" font-size="8" fill="#8D95A8" font-family="Inter">Jun 2025</text>
+    <text x="${pad+chartW}" y="${h-4}" font-size="8" fill="#8D95A8" text-anchor="end" font-family="Inter">Jun 2026</text>
+  </svg>`;
+}
+
+// ===== YIELD CHART WITH TOGGLE =====
+const yieldData = {
+  '10y': {
+    label: '10 Year',
+    // Monthly-ish data points 2016-2026
+    points: [
+      {yr:'2016',val:1.8},{yr:'',val:1.5},{yr:'',val:1.8},{yr:'',val:2.0},{yr:'2017',val:2.4},{yr:'',val:2.3},{yr:'',val:2.2},{yr:'',val:2.4},
+      {yr:'2018',val:2.9},{yr:'',val:2.8},{yr:'',val:3.0},{yr:'',val:3.2},{yr:'',val:2.7},{yr:'2019',val:2.7},{yr:'',val:2.1},{yr:'',val:1.5},{yr:'',val:1.8},{yr:'',val:1.9},
+      {yr:'2020',val:1.6},{yr:'',val:0.7},{yr:'',val:0.5},{yr:'',val:0.7},{yr:'',val:0.8},{yr:'',val:0.9},
+      {yr:'2021',val:1.1},{yr:'',val:1.6},{yr:'',val:1.3},{yr:'',val:1.5},{yr:'',val:1.5},{yr:'',val:1.5},
+      {yr:'2022',val:1.8},{yr:'',val:2.3},{yr:'',val:2.9},{yr:'',val:3.5},{yr:'',val:3.9},{yr:'',val:3.6},
+      {yr:'2023',val:3.5},{yr:'',val:3.8},{yr:'',val:3.5},{yr:'',val:4.6},{yr:'',val:4.9},{yr:'',val:3.9},
+      {yr:'2024',val:4.0},{yr:'',val:4.3},{yr:'',val:4.5},{yr:'',val:4.3},{yr:'',val:3.8},{yr:'',val:4.2},
+      {yr:'2025',val:4.5},{yr:'',val:4.3},{yr:'',val:4.5},{yr:'',val:4.0},{yr:'',val:4.2},{yr:'',val:4.5},
+      {yr:'2026',val:4.6},{yr:'',val:4.5},{yr:'',val:4.3},{yr:'',val:4.4},{yr:'',val:4.5},{yr:'Now',val:4.51}
+    ],
+    comment:'<strong>10-year view (2016–2026):</strong> Yields collapsed to 0.5% in mid-2020 (pandemic flight to safety), then staged a dramatic reversal. The 2022-2023 hiking cycle pushed yields above 4.9% (Oct 2023 peak). Currently at 4.51%, yields are stabilizing in the 4-5% range — a "new normal" after the zero-rate era.'
+  },
+  '20y': {
+    label: '20 Year',
+    points: [
+      {yr:'2006',val:4.8},{yr:'',val:5.0},{yr:'',val:5.1},{yr:'',val:4.6},{yr:'2007',val:4.7},{yr:'',val:4.9},{yr:'',val:5.0},{yr:'',val:4.0},
+      {yr:'2008',val:3.7},{yr:'',val:3.9},{yr:'',val:4.0},{yr:'',val:2.2},{yr:'2009',val:2.9},{yr:'',val:3.5},{yr:'',val:3.3},{yr:'',val:3.8},
+      {yr:'2010',val:3.7},{yr:'',val:3.2},{yr:'',val:2.6},{yr:'',val:3.3},{yr:'2011',val:3.4},{yr:'',val:3.0},{yr:'',val:2.2},{yr:'',val:1.9},
+      {yr:'2012',val:2.0},{yr:'',val:1.5},{yr:'',val:1.6},{yr:'',val:1.8},{yr:'2013',val:2.0},{yr:'',val:2.2},{yr:'',val:2.7},{yr:'',val:3.0},
+      {yr:'2014',val:2.8},{yr:'',val:2.6},{yr:'',val:2.4},{yr:'',val:2.2},{yr:'2015',val:1.9},{yr:'',val:2.4},{yr:'',val:2.3},{yr:'',val:2.3},
+      {yr:'2016',val:2.0},{yr:'',val:1.5},{yr:'',val:1.8},{yr:'',val:2.4},{yr:'2017',val:2.4},{yr:'',val:2.3},{yr:'',val:2.2},{yr:'',val:2.4},
+      {yr:'2018',val:2.9},{yr:'',val:2.8},{yr:'',val:3.0},{yr:'',val:2.7},{yr:'2019',val:2.7},{yr:'',val:2.1},{yr:'',val:1.5},{yr:'',val:1.9},
+      {yr:'2020',val:1.6},{yr:'',val:0.7},{yr:'',val:0.5},{yr:'',val:0.9},
+      {yr:'2021',val:1.1},{yr:'',val:1.6},{yr:'',val:1.3},{yr:'',val:1.5},
+      {yr:'2022',val:1.8},{yr:'',val:2.9},{yr:'',val:3.9},{yr:'',val:3.6},
+      {yr:'2023',val:3.5},{yr:'',val:3.8},{yr:'',val:4.9},{yr:'',val:3.9},
+      {yr:'2024',val:4.0},{yr:'',val:4.5},{yr:'',val:3.8},{yr:'',val:4.2},
+      {yr:'2025',val:4.5},{yr:'',val:4.5},{yr:'',val:4.2},{yr:'',val:4.5},
+      {yr:'2026',val:4.6},{yr:'',val:4.4},{yr:'Now',val:4.51}
+    ],
+    comment:'<strong>20-year view (2006–2026):</strong> Captures the full cycle: pre-GFC normalcy (4-5%), crisis plunge (2008), secular decline through 2020 (zero-rate era low of 0.5%), and the post-pandemic normalization. The 2006 yield level (~5%) is close to today\'s 4.51%, suggesting rates have returned to pre-GFC equilibrium.'
+  },
+  '30y': {
+    label: '30 Year',
+    points: [
+      {yr:'1996',val:6.4},{yr:'',val:6.7},{yr:'',val:6.0},{yr:'',val:6.4},
+      {yr:'1998',val:5.5},{yr:'',val:5.3},{yr:'',val:4.7},{yr:'',val:4.6},
+      {yr:'2000',val:6.4},{yr:'',val:6.0},{yr:'',val:5.8},{yr:'',val:5.0},
+      {yr:'2002',val:5.1},{yr:'',val:4.8},{yr:'',val:3.8},{yr:'',val:4.0},
+      {yr:'2004',val:4.0},{yr:'',val:4.7},{yr:'',val:4.2},{yr:'',val:4.4},
+      {yr:'2006',val:4.6},{yr:'',val:5.1},{yr:'',val:4.8},{yr:'',val:4.6},
+      {yr:'2008',val:3.7},{yr:'',val:3.9},{yr:'',val:2.2},{yr:'',val:3.8},
+      {yr:'2010',val:3.7},{yr:'',val:3.2},{yr:'',val:2.5},{yr:'',val:3.3},
+      {yr:'2012',val:1.9},{yr:'',val:1.5},{yr:'',val:1.8},{yr:'',val:2.0},
+      {yr:'2014',val:2.8},{yr:'',val:2.6},{yr:'',val:2.2},{yr:'',val:2.2},
+      {yr:'2016',val:2.0},{yr:'',val:1.5},{yr:'',val:1.8},{yr:'',val:2.4},
+      {yr:'2018',val:2.9},{yr:'',val:3.0},{yr:'',val:3.2},{yr:'',val:2.7},
+      {yr:'2020',val:1.6},{yr:'',val:0.5},{yr:'',val:0.9},{yr:'',val:0.9},
+      {yr:'2021',val:1.1},{yr:'',val:1.5},{yr:'',val:1.5},{yr:'',val:1.5},
+      {yr:'2022',val:1.8},{yr:'',val:2.9},{yr:'',val:3.9},{yr:'',val:3.6},
+      {yr:'2023',val:3.5},{yr:'',val:3.8},{yr:'',val:4.9},{yr:'',val:3.9},
+      {yr:'2024',val:4.0},{yr:'',val:4.5},{yr:'',val:3.8},{yr:'',val:4.2},
+      {yr:'2025',val:4.5},{yr:'',val:4.2},{yr:'',val:4.5},{yr:'',val:4.5},
+      {yr:'2026',val:4.6},{yr:'',val:4.4},{yr:'Now',val:4.51}
+    ],
+    comment:'<strong>30-year view (1996–2026):</strong> Three decades of declining yields from the Dot-Com era (6.4%) through the GFC and zero-rate policy, bottoming at 0.5% in 2020. The reversal since has been historic — the fastest rate rise since Volcker. At 4.51%, yields sit mid-range of the 30-year band.'
+  }
+};
+
+function setYieldRange(range) {
+  document.querySelectorAll('.yld-range-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[onclick="setYieldRange('${range}')"]`).classList.add('active');
+  renderYieldChart(range);
+}
+
+function renderYieldChart(range) {
+  const d = yieldData[range];
+  const svg = document.getElementById('yieldChart');
+  const pts = d.points;
+  const W = 1100, H = 240, pad = 50, right = 15, top = 15, bot = 30;
+  const chartW = W - pad - right;
+  const chartH = H - top - bot;
+
+  const vals = pts.map(p => p.val);
+  let yMin = Math.min(...vals);
+  let yMax = Math.max(...vals);
+  const yPad = (yMax - yMin) * 0.15;
+  yMin = Math.max(0, yMin - yPad);
+  yMax = yMax + yPad;
+
+  function toX(i) { return pad + (i / (pts.length - 1)) * chartW; }
+  function toY(v) { return top + chartH - ((v - yMin) / (yMax - yMin)) * chartH; }
+
+  // Grid lines
+  const gridCount = 5;
+  let gridLines = '';
+  for (let i = 0; i <= gridCount; i++) {
+    const v = yMin + (i / gridCount) * (yMax - yMin);
+    const y = toY(v);
+    gridLines += `<line x1="${pad}" y1="${y}" x2="${pad+chartW}" y2="${y}" stroke="#E2E6ED" stroke-width="0.5"/>`;
+    gridLines += `<text x="${pad-6}" y="${y+4}" font-size="9" fill="#8D95A8" text-anchor="end" font-family="Inter">${v.toFixed(1)}%</text>`;
+  }
+
+  // Path
+  const pathPts = pts.map((p, i) => `${toX(i)},${toY(p.val)}`).join(' ');
+  const fillPts = pathPts + ` ${toX(pts.length-1)},${toY(yMin)} ${toX(0)},${toY(yMin)}`;
+
+  // X labels (only where yr is set)
+  let xLabels = '';
+  pts.forEach((p, i) => {
+    if (p.yr && p.yr !== 'Now') {
+      xLabels += `<text x="${toX(i)}" y="${H-4}" font-size="8" fill="#8D95A8" text-anchor="middle" font-family="Inter">${p.yr}</text>`;
+    }
+  });
+
+  // Key annotations
+  const minIdx = vals.indexOf(Math.min(...vals));
+  const maxIdx = vals.indexOf(Math.max(...vals));
+  const lastIdx = pts.length - 1;
+  let annotations = '';
+  annotations += `<circle cx="${toX(maxIdx)}" cy="${toY(vals[maxIdx])}" r="3.5" fill="var(--red)"/>`;
+  annotations += `<text x="${toX(maxIdx)}" y="${toY(vals[maxIdx])-8}" font-size="10" fill="var(--red)" text-anchor="middle" font-weight="600" font-family="Inter">${vals[maxIdx]}%</text>`;
+  annotations += `<circle cx="${toX(minIdx)}" cy="${toY(vals[minIdx])}" r="3.5" fill="var(--green)"/>`;
+  annotations += `<text x="${toX(minIdx)}" y="${toY(vals[minIdx])+16}" font-size="10" fill="var(--green)" text-anchor="middle" font-weight="600" font-family="Inter">${vals[minIdx]}%</text>`;
+  annotations += `<circle cx="${toX(lastIdx)}" cy="${toY(vals[lastIdx])}" r="4" fill="var(--accent-blue)"/>`;
+  annotations += `<text x="${toX(lastIdx)-8}" y="${toY(vals[lastIdx])-10}" font-size="10" fill="var(--accent-blue)" text-anchor="end" font-weight="700" font-family="Inter">${vals[lastIdx]}%</text>`;
+
+  svg.innerHTML = `
+    <defs><linearGradient id="yldg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8873A" stop-opacity="0.18"/><stop offset="100%" stop-color="#E8873A" stop-opacity="0.02"/></linearGradient></defs>
+    ${gridLines}
+    <polygon points="${fillPts}" fill="url(#yldg)"/>
+    <polyline points="${pathPts}" fill="none" stroke="var(--accent-orange)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${xLabels}
+    ${annotations}
+  `;
+  document.getElementById('yieldCommentary').innerHTML = d.comment;
+}
+
+// Initialize with 10Y view
+setYieldRange('10y');
+
+// ===== MACRO FRAMEWORK ENGINE =====
+
+// Growth indicators: positive score = growth accelerating, negative = decelerating
+const growthIndicators = [
+  {name:"Real GDP Growth",value:"+1.6%",raw:1.6,threshold:2.5,prior:1.4,desc:"Annualized Q1 2026. Below trend (2.5%) and slowing from Q3'25 peak of 4.3%.",score:-1},
+  {name:"Nonfarm Payrolls",value:"+172K",raw:172,threshold:150,prior:179,desc:"May 2026. Above the ~150K breakeven for population growth. Beat estimates by 2x.",score:1},
+  {name:"ISM Manufacturing",value:"54.0",raw:54,threshold:50,prior:52.7,desc:"Above 50 = expansion. 5th straight month expanding, accelerating from 52.7.",score:2},
+  {name:"Retail Sales (MoM)",value:"+0.9%",raw:0.9,threshold:0.3,prior:0.4,desc:"Strong consumer spending beat. Gas station sales (+3.4%) inflated the number.",score:1},
+  {name:"Unemployment Rate",value:"4.3%",raw:4.3,threshold:4.5,prior:4.2,desc:"Still below long-run natural rate (~4.5%) but trending up from 3.4% cycle low.",score:0},
+  {name:"Housing Starts",value:"1.177M",raw:1.177,threshold:1.4,prior:1.392,desc:"Fell 15.4% MoM to lowest since May 2020. Mortgage rates crushing builder activity.",score:-2},
+  {name:"Leading Econ. Index",value:"99.3",raw:99.3,threshold:100,prior:99.1,desc:"Two consecutive positive readings after long decline. Recession signal fading but not cleared.",score:0},
+  {name:"Consumer Sentiment",value:"48.9",raw:48.9,threshold:65,prior:44.8,desc:"Near all-time lows. Bounced from May's record low of 44.8 but still deeply depressed.",score:-2},
+  {name:"Personal Savings Rate",value:"2.6%",raw:2.6,threshold:5.0,prior:3.2,desc:"Well below pre-pandemic ~7% avg. Consumers drawing down savings to maintain spending.",score:-1},
+  {name:"S&P 500 EPS Growth",value:"+21.3%",raw:21.3,threshold:10,prior:15,desc:"CY 2026 consensus estimate. Broad-based across tech, healthcare, financials.",score:2},
+];
+
+// Inflation indicators: positive score = inflation rising/hot, negative = cooling
+const inflationIndicators = [
+  {name:"CPI (Year-over-Year)",value:"4.2%",raw:4.2,threshold:3.0,prior:3.8,desc:"Surged to 4.2% in May from 2.6% mid-2025. Energy prices (+1.9% MoM) are the main driver.",score:2},
+  {name:"Core CPI (YoY)",value:"2.9%",raw:2.9,threshold:2.5,prior:2.8,desc:"Less alarming than headline but trending up. Services inflation remains sticky.",score:1},
+  {name:"Core PCE (YoY)",value:"3.3%",raw:3.3,threshold:2.0,prior:3.0,desc:"Fed's preferred gauge. Rose from 2.6% low to 3.3% — highest since late 2023. Moving wrong direction.",score:2},
+  {name:"Import Prices (MoM)",value:"+1.9%",raw:1.9,threshold:0.3,prior:0.4,desc:"Huge spike driven by oil/commodity costs from Middle East conflict. Leading indicator for future CPI.",score:2},
+  {name:"Wage Growth (YoY)",value:"+3.6%",raw:3.6,threshold:3.5,prior:3.7,desc:"Slightly above target but cooling. Now below CPI — negative real wages = consumer stress.",score:0},
+  {name:"1Y Inflation Expect.",value:"4.6%",raw:4.6,threshold:3.0,prior:4.8,desc:"Michigan survey. Edged down from 4.8% but still very elevated. Risk of expectations becoming unanchored.",score:1},
+  {name:"Fed Funds Rate",value:"3.50-3.75%",raw:3.625,threshold:3.0,prior:3.625,desc:"Held steady 4 meetings. 9/18 FOMC members projecting hikes. Market pricing ~52% chance of hike by Dec.",score:1},
+  {name:"10Y Treasury Yield",value:"4.51%",raw:4.51,threshold:4.0,prior:4.48,desc:"Elevated, reflecting inflation premium and fiscal deficit concerns. Above 5Y average of 3.5%.",score:1},
+  {name:"HY Credit Spread",value:"271 bps",raw:271,threshold:400,prior:280,desc:"Historically tight. Markets not pricing recession risk. Low spreads = complacency or confidence.",score:-1},
+  {name:"Oil / Energy Costs",value:"Elevated",raw:1,threshold:0,prior:0,desc:"Middle East conflict driving oil above $90. Gas prices weighing on consumers and pushing headline CPI higher.",score:2},
+];
+
+// Calculate composite scores
+function calcComposite(indicators) {
+  const sum = indicators.reduce((a, i) => a + i.score, 0);
+  const max = indicators.length * 2;
+  return sum / max; // normalized -1 to +1
+}
+
+const growthScore = calcComposite(growthIndicators);
+const inflationScore = calcComposite(inflationIndicators);
+
+// Determine regime
+function getRegime(g, i) {
+  if (g > 0.05 && i < -0.05) return {name:"Goldilocks",color:"#2EAE6D",desc:"Rising growth with falling inflation — the best environment for risk assets."};
+  if (g > 0.05 && i >= -0.05) return {name:"Reflation",color:"#E8873A",desc:"Growth and inflation both rising — commodity-sensitive and cyclical sectors benefit."};
+  if (g <= 0.05 && i >= 0.05) return {name:"Stagflationary",color:"#D94444",desc:"Slowing growth with rising inflation — the most challenging environment. Defensive positioning warranted."};
+  return {name:"Deflationary",color:"#2E7DD1",desc:"Growth and inflation both falling — bonds and quality/duration assets outperform."};
+}
+
+const regime = getRegime(growthScore, inflationScore);
+
+// Render scorecard tables
+function renderScoreTable(tableId, indicators) {
+  const tbody = document.querySelector(`#${tableId} tbody`);
+  indicators.forEach(ind => {
+    const tr = document.createElement('tr');
+    tr.className = 'has-tooltip';
+    const scoreColor = ind.score > 0 ? 'var(--green)' : ind.score < 0 ? 'var(--red)' : 'var(--text-muted)';
+    const dots = '●'.repeat(Math.abs(ind.score)) + '○'.repeat(2 - Math.abs(ind.score));
+    const arrow = ind.score > 0 ? '▲' : ind.score < 0 ? '▼' : '—';
+    const signalText = ind.score >= 2 ? 'Strong' : ind.score === 1 ? 'Moderate' : ind.score === 0 ? 'Neutral' : ind.score === -1 ? 'Moderate' : 'Strong';
+    const signalDir = tableId === 'growthTable' ? (ind.score > 0 ? '↑ Growth' : ind.score < 0 ? '↓ Growth' : 'Neutral') : (ind.score > 0 ? '↑ Hotter' : ind.score < 0 ? '↓ Cooler' : 'Neutral');
+    tr.innerHTML = `<td style="font-weight:500;font-size:12px;">${ind.name}<div class="tooltip">${ind.desc}</div></td><td class="text-right font-mono" style="font-size:11px;">${ind.value}</td><td class="text-center" style="font-size:10px;color:${scoreColor};font-weight:500;">${signalDir}</td><td class="text-center" style="font-size:16px;color:${scoreColor};letter-spacing:2px;">${arrow} ${Math.abs(ind.score)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+renderScoreTable('growthTable', growthIndicators);
+renderScoreTable('inflationTable', inflationIndicators);
+
+// Score labels
+const gSum = growthIndicators.reduce((a,i)=>a+i.score,0);
+const iSum = inflationIndicators.reduce((a,i)=>a+i.score,0);
+const gMax = growthIndicators.length * 2;
+const iMax = inflationIndicators.length * 2;
+document.getElementById('growthScoreLabel').innerHTML = `<span style="color:${gSum>=0?'var(--green)':'var(--red)'};font-weight:700;">${gSum>=0?'+':''}${gSum} / ${gMax}</span>`;
+document.getElementById('inflationScoreLabel').innerHTML = `<span style="color:${iSum>0?'var(--red)':'var(--green)'};font-weight:700;">${iSum>=0?'+':''}${iSum} / ${iMax}</span>`;
+
+// Render quadrant SVG
+function renderQuadrant() {
+  const S = 520, pad = 60, chartS = S - pad*2;
+  const cx = pad + chartS/2, cy = pad + chartS/2;
+
+  // Map scores (-1 to +1) to pixel position
+  const dotX = cx + growthScore * (chartS/2) * 0.85;
+  const dotY = cy - inflationScore * (chartS/2) * 0.85;
+
+  const svg = document.getElementById('quadrantSvg');
+  svg.innerHTML = `
+    <!-- Quadrant backgrounds -->
+    <rect x="${pad}" y="${pad}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#FDE8E8" opacity="0.5"/>
+    <rect x="${cx}" y="${pad}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#FFF3E0" opacity="0.5"/>
+    <rect x="${pad}" y="${cy}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#E3F2FD" opacity="0.5"/>
+    <rect x="${cx}" y="${cy}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#E8F5EE" opacity="0.5"/>
+
+    <!-- Quadrant labels -->
+    <text x="${pad + chartS/4}" y="${pad + 28}" font-size="14" fill="#B52A2A" text-anchor="middle" font-weight="700" font-family="Inter">STAGFLATION</text>
+    <text x="${pad + chartS/4}" y="${pad + 46}" font-size="10" fill="#B52A2A" text-anchor="middle" font-family="Inter" opacity="0.7">Growth ↓ Inflation ↑</text>
+    <text x="${pad + chartS/4}" y="${pad + 62}" font-size="9" fill="#B52A2A" text-anchor="middle" font-family="Inter" opacity="0.5">Cash, Gold, Utilities, Healthcare</text>
+
+    <text x="${cx + chartS/4}" y="${pad + 28}" font-size="14" fill="#C67030" text-anchor="middle" font-weight="700" font-family="Inter">REFLATION</text>
+    <text x="${cx + chartS/4}" y="${pad + 46}" font-size="10" fill="#C67030" text-anchor="middle" font-family="Inter" opacity="0.7">Growth ↑ Inflation ↑</text>
+    <text x="${cx + chartS/4}" y="${pad + 62}" font-size="9" fill="#C67030" text-anchor="middle" font-family="Inter" opacity="0.5">Energy, Materials, Industrials</text>
+
+    <text x="${pad + chartS/4}" y="${cy + chartS/2 - 30}" font-size="14" fill="#1565C0" text-anchor="middle" font-weight="700" font-family="Inter">DEFLATION</text>
+    <text x="${pad + chartS/4}" y="${cy + chartS/2 - 14}" font-size="10" fill="#1565C0" text-anchor="middle" font-family="Inter" opacity="0.7">Growth ↓ Inflation ↓</text>
+    <text x="${pad + chartS/4}" y="${cy + chartS/2 - 0}" font-size="9" fill="#1565C0" text-anchor="middle" font-family="Inter" opacity="0.5">Long Bonds, Quality, Duration</text>
+
+    <text x="${cx + chartS/4}" y="${cy + chartS/2 - 30}" font-size="14" fill="#1A7A47" text-anchor="middle" font-weight="700" font-family="Inter">GOLDILOCKS</text>
+    <text x="${cx + chartS/4}" y="${cy + chartS/2 - 14}" font-size="10" fill="#1A7A47" text-anchor="middle" font-family="Inter" opacity="0.7">Growth ↑ Inflation ↓</text>
+    <text x="${cx + chartS/4}" y="${cy + chartS/2 - 0}" font-size="9" fill="#1A7A47" text-anchor="middle" font-family="Inter" opacity="0.5">Tech, Growth, Equities Broadly</text>
+
+    <!-- Axes -->
+    <line x1="${cx}" y1="${pad}" x2="${cx}" y2="${pad+chartS}" stroke="var(--navy)" stroke-width="1.5" opacity="0.3"/>
+    <line x1="${pad}" y1="${cy}" x2="${pad+chartS}" y2="${cy}" stroke="var(--navy)" stroke-width="1.5" opacity="0.3"/>
+
+    <!-- Axis labels -->
+    <text x="${pad + chartS + 5}" y="${cy + 4}" font-size="11" fill="var(--navy)" font-weight="600" font-family="Inter">Growth →</text>
+    <text x="${pad - 5}" y="${cy + 4}" font-size="11" fill="var(--navy)" font-weight="600" font-family="Inter" text-anchor="end">← Contraction</text>
+    <text x="${cx}" y="${pad - 10}" font-size="11" fill="var(--navy)" font-weight="600" font-family="Inter" text-anchor="middle">↑ Inflation Rising</text>
+    <text x="${cx}" y="${pad + chartS + 18}" font-size="11" fill="var(--navy)" font-weight="600" font-family="Inter" text-anchor="middle">Inflation Falling ↓</text>
+
+    <!-- Current position dot with pulse -->
+    <circle cx="${dotX}" cy="${dotY}" r="18" fill="${regime.color}" opacity="0.12">
+      <animate attributeName="r" values="18;24;18" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.12;0.05;0.12" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="${dotX}" cy="${dotY}" r="10" fill="${regime.color}" opacity="0.25"/>
+    <circle cx="${dotX}" cy="${dotY}" r="6" fill="${regime.color}" stroke="white" stroke-width="2"/>
+    <text x="${dotX}" y="${dotY - 16}" font-size="11" fill="${regime.color}" text-anchor="middle" font-weight="700" font-family="Inter">WE ARE HERE</text>
+
+    <!-- Score readout -->
+    <text x="${pad}" y="${S - 8}" font-size="10" fill="var(--text-muted)" font-family="Inter">Growth Score: ${growthScore.toFixed(2)} | Inflation Score: ${inflationScore.toFixed(2)}</text>
+  `;
+}
+
+renderQuadrant();
+document.getElementById('regimeLabel').textContent = regime.name;
+document.getElementById('regimeLabel').style.background = regime.color + '20';
+document.getElementById('regimeLabel').style.color = regime.color;
+
+// Regime description
+const regimeDescriptions = {
+  'Stagflationary': `
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px;">
+      <span style="font-size:24px;font-weight:700;color:var(--red);">Stagflationary Pressure</span>
+    </div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+      The economy is showing the <strong>most challenging macro combination</strong>: growth is decelerating while inflation is re-accelerating. Key signals:
+    </div>
+    <ul style="font-size:12px;color:var(--text-secondary);padding-left:16px;line-height:1.8;margin-top:8px;">
+      <li><strong>Growth slowing:</strong> GDP decelerated from 4.3% (Q3'25) to 1.6% (Q1'26). Housing starts collapsed -15%. Consumer sentiment near all-time lows. Savings rate at crisis levels (2.6%).</li>
+      <li><strong>Inflation re-accelerating:</strong> CPI jumped to 4.2%, Core PCE rising to 3.3%, import prices surging +1.9% MoM on Middle East energy disruption. All moving away from the Fed's 2% target.</li>
+      <li><strong>Mixed signals:</strong> Labor market (172K jobs, ISM 54) and corporate earnings (+21%) remain resilient, preventing a full stagflation diagnosis. This is why the dot sits near the axis — we're in the <em>transition zone</em>.</li>
+    </ul>
+    <div class="commentary" style="margin-top:12px;"><strong>Bottom line:</strong> The economy is in a late-cycle squeeze. Growth is below trend but not recessionary, while inflation is meaningfully above target and accelerating. The Fed is boxed in — unable to cut (inflation too hot) or hike aggressively (growth too fragile). This creates a "higher for longer" rate environment that pressures rate-sensitive sectors and consumer spending.</div>
+  `,
+  'Goldilocks': `<div style="font-size:20px;font-weight:700;color:var(--green);margin-bottom:8px;">Goldilocks</div><div style="font-size:13px;color:var(--text-secondary);">Growth accelerating with cooling inflation. The ideal environment for equities and risk assets broadly.</div>`,
+  'Reflation': `<div style="font-size:20px;font-weight:700;color:var(--accent-orange);margin-bottom:8px;">Reflation</div><div style="font-size:13px;color:var(--text-secondary);">Both growth and inflation rising. Favors real assets, commodities, and cyclicals.</div>`,
+  'Deflationary': `<div style="font-size:20px;font-weight:700;color:var(--accent-blue);margin-bottom:8px;">Deflationary</div><div style="font-size:13px;color:var(--text-secondary);">Both growth and inflation falling. Flight to quality and duration assets.</div>`,
+};
+
+document.getElementById('regimeDesc').innerHTML = regimeDescriptions[regime.name] || regimeDescriptions['Stagflationary'];
+
+// Sector recommendations
+const sectorRecsHTML = `
+  <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;">Based on current stagflationary positioning:</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px;">FAVORED SECTORS</div>
+      <div style="font-size:12px;line-height:1.8;color:var(--text-secondary);">
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f2f5;"><span><strong>Energy</strong></span><span style="color:var(--green);font-weight:600;">Strong</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f2f5;"><span><strong>Healthcare</strong></span><span style="color:var(--green);font-weight:600;">Strong</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f2f5;"><span><strong>Consumer Staples</strong></span><span style="color:var(--green);font-weight:600;">Strong</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f2f5;"><span><strong>Utilities</strong></span><span style="color:var(--green);font-weight:600;">Moderate</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;"><span><strong>Materials</strong></span><span style="color:var(--green);font-weight:500;">Moderate</span></div>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Pricing power, real assets, and defensive cash flows perform best when inflation is high and growth is slowing.</div>
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:6px;">VULNERABLE SECTORS</div>
+      <div style="font-size:12px;line-height:1.8;color:var(--text-secondary);">
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f2f5;"><span><strong>Real Estate</strong></span><span style="color:var(--red);font-weight:600;">Weak</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f2f5;"><span><strong>Consumer Discretionary</strong></span><span style="color:var(--red);font-weight:600;">Weak</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f2f5;"><span><strong>High-Multiple Tech</strong></span><span style="color:var(--red);font-weight:600;">Weak</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f2f5;"><span><strong>Homebuilders / Housing</strong></span><span style="color:var(--red);font-weight:600;">Weak</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;"><span><strong>Small Caps (leverage)</strong></span><span style="color:var(--red);font-weight:500;">Moderate</span></div>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Rate-sensitive, leveraged, and discretionary-dependent sectors face headwinds from both higher rates and weaker consumer.</div>
+    </div>
+  </div>
+  <div class="commentary" style="margin-top:14px;">
+    <strong>Nuance:</strong> This is <em>not</em> a classic deep stagflation (like 1974). Corporate earnings are strong (+21%), AI capex is booming, and the labor market is resilient. Profitable large-cap tech with pricing power (MSFT, AAPL, GOOGL) may hold up better than the sector label suggests. The risk is concentrated in unprofitable growth, housing, and consumer-facing businesses where inflation erodes real demand.
+  </div>
+`;
+
+document.getElementById('sectorRecs').innerHTML = sectorRecsHTML;
+
+// What would change
+document.getElementById('regimeRisks').innerHTML = `
+  <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <span style="font-size:16px;">→</span>
+      <div><strong style="color:var(--green);">Shift to Goldilocks:</strong> Oil prices decline (ceasefire / de-escalation), Core PCE drops below 2.8%, GDP re-accelerates above 2.5%. <em>Probability: Low near-term.</em></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <span style="font-size:16px;">→</span>
+      <div><strong style="color:var(--accent-orange);">Shift to Reflation:</strong> GDP accelerates while inflation stays hot. Would require a consumer spending revival or fiscal stimulus. <em>Probability: Moderate if energy stabilizes and labor holds.</em></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <span style="font-size:16px;">→</span>
+      <div><strong style="color:var(--accent-blue);">Shift to Deflation:</strong> Recession materializes — payrolls turn negative, ISM drops below 50, credit spreads blow out. Fed forced into emergency cuts. <em>Probability: Low but rising if housing continues to collapse.</em></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <span style="font-size:16px;">→</span>
+      <div><strong style="color:var(--red);">Deeper Stagflation:</strong> Middle East conflict escalates further, oil spikes above $120, inflation expectations become unanchored, Fed forced to hike into weakness. <em>Probability: Moderate — the tail risk to watch.</em></div>
+    </div>
+  </div>
+`;
+
+// Composite gauge bars
+function renderGauge(containerId, score, maxScore, label, goodDir) {
+  const pct = ((score + maxScore) / (maxScore * 2)) * 100;
+  const container = document.getElementById(containerId);
+  const barColor = containerId === 'growthGauge'
+    ? (score > 0 ? 'var(--green)' : 'var(--red)')
+    : (score > 0 ? 'var(--red)' : 'var(--green)');
+  const labelText = containerId === 'growthGauge'
+    ? (score > 2 ? 'Strong Expansion' : score > 0 ? 'Modest Growth' : score > -3 ? 'Decelerating' : 'Contracting')
+    : (score > 4 ? 'Overheating' : score > 1 ? 'Rising / Hot' : score > -1 ? 'Stable' : 'Cooling');
+
+  container.innerHTML = `
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+      <span style="font-size:12px;font-weight:600;color:var(--navy);">${labelText}</span>
+      <span style="font-size:12px;font-weight:700;color:${barColor};">${score >= 0 ? '+' : ''}${score} / ${maxScore}</span>
+    </div>
+    <div style="position:relative;height:24px;background:#EEF0F4;border-radius:12px;overflow:hidden;">
+      <div style="position:absolute;left:50%;top:0;width:2px;height:100%;background:var(--navy);opacity:0.2;"></div>
+      <div style="position:absolute;left:${Math.min(pct, 50)}%;width:${Math.abs(pct - 50)}%;top:2px;height:20px;background:${barColor};border-radius:10px;opacity:0.7;transition:width 0.5s;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:4px;">
+      <span style="font-size:9px;color:var(--text-muted);">${containerId === 'growthGauge' ? 'Contraction' : 'Deflation'}</span>
+      <span style="font-size:9px;color:var(--text-muted);">Neutral</span>
+      <span style="font-size:9px;color:var(--text-muted);">${containerId === 'growthGauge' ? 'Strong Growth' : 'Overheating'}</span>
+    </div>
+  `;
+}
+
+renderGauge('growthGauge', gSum, gMax);
+renderGauge('inflationGauge', iSum, iMax);
+{% endraw %}
+</script>
+
+</body>
+</html>
+
+</body>
+</html>

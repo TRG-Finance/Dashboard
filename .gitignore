@@ -1,0 +1,5 @@
+.env
+__pycache__/
+*.pyc
+.claude/
+index_static_backup.html
