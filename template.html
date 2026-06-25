@@ -504,6 +504,10 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
 <div id="tab-indicators" class="tab-content">
 <div class="container">
 
+  <div class="section-label">Macro Risk Indicators</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Auto-scored from live FRED and Yahoo Finance data. Green = favorable, red = elevated risk.</div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:28px;" id="macroGauges"></div>
+
   <div class="section-label">Key Indicators at a Glance</div>
 
   <!-- Top indicator cards -->
@@ -2454,6 +2458,96 @@ function initIndicatorCharts() {
   renderIndicatorChart('pceChart', 'PCE_HIST', 'var(--accent-orange)', '%', 2.0, 60);
 }
 initIndicatorCharts();
+
+// ===== MACRO RISK GAUGE METERS =====
+(function buildMacroGauges() {
+  function gaugeScore(val, greenLow, greenHigh, redLow, redHigh, invert) {
+    if (val == null) return 50;
+    let score;
+    if (!invert) {
+      if (val <= greenLow) score = 10;
+      else if (val <= greenHigh) score = 25;
+      else if (val <= redLow) score = 50;
+      else if (val <= redHigh) score = 75;
+      else score = 90;
+    } else {
+      if (val >= greenHigh) score = 10;
+      else if (val >= greenLow) score = 25;
+      else if (val >= redHigh) score = 50;
+      else if (val >= redLow) score = 75;
+      else score = 90;
+    }
+    return Math.max(5, Math.min(95, score));
+  }
+
+  const gdp = LIVE_DATA.GDP ? LIVE_DATA.GDP.latest : null;
+  const unemp = LIVE_DATA.UNRATE ? LIVE_DATA.UNRATE.latest : null;
+  const sent = LIVE_DATA.UMCSENT ? LIVE_DATA.UMCSENT.latest : null;
+  const ff = LIVE_DATA.FEDFUNDS ? LIVE_DATA.FEDFUNDS.latest : null;
+  const ust10 = LIVE_DATA.UST_10Y ? LIVE_DATA.UST_10Y.latest : null;
+  const cpi = _lastHist('CPI_HIST');
+  const hyOas = LIVE_DATA.HY_OAS ? LIVE_DATA.HY_OAS.latest * 100 : null;
+  const fwdPE = LIVE_META.sp500_fwd_pe;
+  const vix = (LIVE_COMMODITIES && LIVE_COMMODITIES.VIX) ? LIVE_COMMODITIES.VIX.price : null;
+  const spxEG = LIVE_META.sp500_earnings_growth;
+  const egNum = spxEG ? parseFloat(spxEG.replace(/[+%]/g,'')) : null;
+
+  const sp500Hist = (typeof LIVE_KPI_HIST !== 'undefined' && LIVE_KPI_HIST.SP500_HIST) ? LIVE_KPI_HIST.SP500_HIST : [];
+  let above10mma = null;
+  if (sp500Hist.length >= 44) {
+    const last = sp500Hist[sp500Hist.length-1].close;
+    const ma10 = sp500Hist.slice(-44).reduce((s,d) => s + d.close, 0) / 44;
+    above10mma = ((last / ma10) - 1) * 100;
+  }
+
+  const gauges = [
+    {title:'Economic Growth', sub:'GDP & Labor Markets', score:gaugeScore(gdp, 0, 1.5, 2.5, 3.5, true), val:gdp != null ? gdp.toFixed(1)+'%' : '--'},
+    {title:'Corporate Earnings', sub:'Fundamentals', score:gaugeScore(egNum, -5, 5, 15, 25, true), val:egNum != null ? (egNum>=0?'+':'')+egNum.toFixed(1)+'%' : '--'},
+    {title:'Investor Sentiment', sub:'Contrarian Signal', score:gaugeScore(sent, 45, 55, 75, 90, false), val:sent != null ? sent.toFixed(0) : '--'},
+    {title:'Central Bank Policy', sub:'Accommodative / Restrictive', score:gaugeScore(ff, 1, 2, 4, 5, false), val:ff != null ? ff.toFixed(2)+'%' : '--'},
+    {title:'Technical Price Levels', sub:'10-Month Moving Average', score:above10mma != null ? gaugeScore(above10mma, -10, -2, 5, 15, true) : 50, val:above10mma != null ? (above10mma>=0?'+':'')+above10mma.toFixed(1)+'%' : '--'},
+    {title:'Interest Rates', sub:'Trajectory', score:gaugeScore(ust10, 2.5, 3.5, 4.5, 5.0, false), val:ust10 != null ? ust10.toFixed(2)+'%' : '--'},
+    {title:'Inflation', sub:'ROC Matters', score:gaugeScore(cpi, 1, 2, 3.5, 5, false), val:cpi != null ? cpi.toFixed(1)+'%' : '--'},
+    {title:'Equity Valuations', sub:'Extremes', score:gaugeScore(fwdPE, 12, 16, 20, 25, false), val:fwdPE != null ? fwdPE.toFixed(1)+'x' : '--'},
+    {title:'Cross-Asset Volatility', sub:'Warning Signs', score:gaugeScore(vix, 10, 15, 22, 30, false), val:vix != null ? vix.toFixed(1) : '--'},
+    {title:'Credit Spreads', sub:'Widening Matters', score:gaugeScore(hyOas, 200, 300, 450, 600, false), val:hyOas != null ? Math.round(hyOas)+' bps' : '--'},
+  ];
+
+  function renderGaugeSvg(score) {
+    const angle = (score / 100) * 180;
+    const needleAngle = -90 + angle;
+    const r = 52, cx = 70, cy = 65;
+    function arcPath(startDeg, endDeg, radius) {
+      const s = (startDeg - 90) * Math.PI / 180;
+      const e = (endDeg - 90) * Math.PI / 180;
+      const x1 = cx + radius * Math.cos(s), y1 = cy + radius * Math.sin(s);
+      const x2 = cx + radius * Math.cos(e), y2 = cy + radius * Math.sin(e);
+      const large = (endDeg - startDeg) > 180 ? 1 : 0;
+      return `M ${x1} ${y1} A ${radius} ${radius} 0 ${large} 1 ${x2} ${y2}`;
+    }
+    const nx = cx + (r - 12) * Math.cos((needleAngle) * Math.PI / 180);
+    const ny = cy + (r - 12) * Math.sin((needleAngle) * Math.PI / 180);
+    return `<svg viewBox="0 0 140 80" style="width:100%;height:auto;">
+      <path d="${arcPath(-90, -45, r)}" fill="none" stroke="#2EAE6D" stroke-width="10" stroke-linecap="round"/>
+      <path d="${arcPath(-43, 0, r)}" fill="none" stroke="#8BC34A" stroke-width="10" stroke-linecap="round"/>
+      <path d="${arcPath(2, 45, r)}" fill="none" stroke="#FFC107" stroke-width="10" stroke-linecap="round"/>
+      <path d="${arcPath(47, 90, r)}" fill="none" stroke="#D94444" stroke-width="10" stroke-linecap="round"/>
+      <line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="var(--navy)" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="${cx}" cy="${cy}" r="5" fill="var(--navy)"/>
+    </svg>`;
+  }
+
+  const container = document.getElementById('macroGauges');
+  if (!container) return;
+  container.innerHTML = gauges.map(g => `
+    <div style="text-align:center;">
+      <div style="font-size:10px;font-weight:700;color:var(--accent-blue);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">${g.sub}</div>
+      ${renderGaugeSvg(g.score)}
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-top:-4px;">${g.title}</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${g.val}</div>
+    </div>
+  `).join('');
+})();
 
 // ===== INDICATOR DETAIL MODAL =====
 const indicatorMeta = {
