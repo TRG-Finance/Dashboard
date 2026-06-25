@@ -3603,17 +3603,7 @@ document.getElementById('regime2Shifts').innerHTML = `
 
 // Transition probabilities removed
 
-// Highlight current regime column in asset returns table
-const regimeColMap = {'Goldilocks':1,'Reflation':2,'Stagflationary':3,'Deflationary':4};
-const colIdx = regimeColMap[regime2.name];
-if (colIdx) {
-  document.querySelectorAll('#tab-framework2 table')[3].querySelectorAll('tbody tr').forEach(tr => {
-    const td = tr.querySelectorAll('td')[colIdx];
-    if (td) td.style.background = regime2.color + '15';
-  });
-  const thCell = document.querySelectorAll('#tab-framework2 table')[3].querySelectorAll('thead th')[colIdx];
-  if (thCell) { thCell.style.background = regime2.color + '20'; thCell.style.borderBottom = '3px solid ' + regime2.color; }
-}
+// Asset returns table removed
 
 // ===== FACTOR ATTRIBUTION ENGINE =====
 (function buildFactorAttribution() {
