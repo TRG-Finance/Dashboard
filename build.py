@@ -151,10 +151,10 @@ def fetch_fred_data():
         print(f"  WARN: Failed to fetch corporate profits: {e}")
         data["CORP_PROFITS_HIST"] = []
 
-    # ----- Credit spread histories (10 years) -----
+    # ----- Credit spread histories (30 years) -----
     for label, sid in [("HY_HIST", "BAMLH0A0HYM2"), ("IG_HIST", "BAMLC0A0CM"), ("BBB_HIST", "BAMLC0A4CBBB"), ("T10Y2Y_HIST", "T10Y2Y")]:
         try:
-            s = fred.get_series(sid, observation_start=start_10y)
+            s = fred.get_series(sid, observation_start=start_30y)
             s = s.dropna().resample("MS").last().dropna()
             data[label] = [
                 {"date": d.strftime("%Y-%m"), "val": round(float(v), 2)}
@@ -188,7 +188,7 @@ def fetch_fred_data():
 
     # ----- Quarterly GDP history -----
     try:
-        gdp = fred.get_series("A191RL1Q225SBEA", observation_start=start_5y)
+        gdp = fred.get_series("A191RL1Q225SBEA", observation_start=start_30y)
         gdp = gdp.dropna()
         data["GDP_HIST"] = [
             {"date": d.strftime("%Y-Q") + str((d.month - 1) // 3 + 1), "val": round(float(v), 1)}
@@ -218,7 +218,7 @@ def fetch_fred_data():
     ]
     for label, sid in indicator_hist_series:
         try:
-            s = fred.get_series(sid, observation_start=start_10y)
+            s = fred.get_series(sid, observation_start=start_30y)
             s = s.dropna()
             if label == "WAGE_HIST":
                 s_yoy = s.pct_change(periods=12) * 100
