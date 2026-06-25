@@ -1415,13 +1415,18 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
         <table id="factorTable">
           <thead>
             <tr>
-              <th>Ticker</th><th>Company</th><th class="text-right">Weight</th>
-              <th class="text-right sortable" data-col="3" style="cursor:pointer;">Momentum ⇅</th>
+              <th>Ticker</th><th>Company</th><th class="text-right">Wt</th>
+              <th class="text-right sortable" data-col="3" style="cursor:pointer;">Mom ⇅</th>
               <th class="text-right sortable" data-col="4" style="cursor:pointer;">Growth ⇅</th>
               <th class="text-right sortable" data-col="5" style="cursor:pointer;">Value ⇅</th>
               <th class="text-right sortable" data-col="6" style="cursor:pointer;">Quality ⇅</th>
               <th class="text-right sortable" data-col="7" style="cursor:pointer;">Size ⇅</th>
-              <th class="text-right sortable" data-col="8" style="cursor:pointer;">Volatility ⇅</th>
+              <th class="text-right sortable" data-col="8" style="cursor:pointer;">Vol ⇅</th>
+              <th class="text-right sortable" data-col="9" style="cursor:pointer;">ROE ⇅</th>
+              <th class="text-right sortable" data-col="10" style="cursor:pointer;">Leverage ⇅</th>
+              <th class="text-right sortable" data-col="11" style="cursor:pointer;">Div Yld ⇅</th>
+              <th class="text-right sortable" data-col="12" style="cursor:pointer;">Short% ⇅</th>
+              <th class="text-right sortable" data-col="13" style="cursor:pointer;">Insider ⇅</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -1439,12 +1444,17 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
     <div class="card">
       <div class="card-header"><div class="card-title">Factor Definitions</div></div>
       <div class="card-body" style="padding:16px 20px;font-size:12px;color:var(--text-secondary);line-height:1.8;">
-        <div><strong style="color:var(--navy);">Momentum</strong> — YTD price return. High = trending up.</div>
-        <div><strong style="color:var(--navy);">Growth</strong> — Earnings + revenue growth. High = fast grower.</div>
+        <div><strong style="color:var(--navy);">Momentum</strong> — 6-month price return.</div>
+        <div><strong style="color:var(--navy);">Growth</strong> — Earnings + revenue growth combined.</div>
         <div><strong style="color:var(--navy);">Value</strong> — Inverse of forward P/E. High = cheap.</div>
-        <div><strong style="color:var(--navy);">Quality</strong> — Profit margin × operating margin. High = profitable.</div>
+        <div><strong style="color:var(--navy);">Quality</strong> — Profit + operating margin combined.</div>
         <div><strong style="color:var(--navy);">Size</strong> — Log market cap. High = mega-cap.</div>
-        <div><strong style="color:var(--navy);">Volatility</strong> — Beta. High = more volatile than market.</div>
+        <div><strong style="color:var(--navy);">Volatility</strong> — Beta vs market.</div>
+        <div><strong style="color:var(--navy);">Profitability (ROE)</strong> — Return on equity. Fama-French 5th factor.</div>
+        <div><strong style="color:var(--navy);">Leverage</strong> — Debt-to-equity ratio. Higher = more financial risk.</div>
+        <div><strong style="color:var(--navy);">Dividend Yield</strong> — Annual dividend / price. Income orientation.</div>
+        <div><strong style="color:var(--navy);">Short Interest</strong> — % of float sold short. Sentiment/contrarian signal.</div>
+        <div><strong style="color:var(--navy);">Insider Ownership</strong> — % held by insiders. Management alignment.</div>
       </div>
     </div>
   </div>
@@ -3659,6 +3669,11 @@ document.getElementById('regime2Shifts').innerHTML = `
     const mc = allMC[i];
     const size = mc != null ? Math.log10(mc) : null;
     const beta = allBeta[i];
+    const roe = h.roe != null ? Math.round(h.roe * 1000) / 10 : null;
+    const leverage = h.debt_to_equity;
+    const divYld = h.dividend_yield != null ? Math.round(h.dividend_yield * 10000) / 100 : null;
+    const shortPct = h.short_pct != null ? Math.round(h.short_pct * 1000) / 10 : null;
+    const insiderPct = h.insider_pct != null ? Math.round(h.insider_pct * 1000) / 10 : null;
     return {
       ticker: h.ticker, name: h.name, weight: h.weight,
       momentum: mom != null ? Math.round(mom * 10) / 10 : null,
@@ -3666,7 +3681,12 @@ document.getElementById('regime2Shifts').innerHTML = `
       value: value != null ? Math.round(value) : null,
       quality: quality != null ? Math.round(quality * 10) / 10 : null,
       size: size != null ? Math.round(size * 10) / 10 : null,
-      volatility: beta
+      volatility: beta,
+      roe: roe,
+      leverage: leverage,
+      divYield: divYld,
+      shortPct: shortPct,
+      insiderPct: insiderPct,
     };
   });
 
@@ -3679,15 +3699,15 @@ document.getElementById('regime2Shifts').innerHTML = `
       const cls = colorize ? (val > 0 ? 'up' : val < 0 ? 'down' : '') : '';
       return `<td class="text-right font-mono ${cls}">${val > 0 && colorize ? '+' : ''}${val}${suffix}</td>`;
     }
-    tr.innerHTML = `<td><span class="ticker-badge">${s.ticker}</span></td><td style="font-size:11px;">${s.name}</td><td class="text-right font-mono" style="font-weight:600;">${s.weight}%</td>${fmtCell(s.momentum,'%',true)}${fmtCell(s.growth,'%',true)}${fmtCell(s.value,'',false)}${fmtCell(s.quality,'%',false)}${fmtCell(s.size,'',false)}${fmtCell(s.volatility,'x',false)}`;
+    tr.innerHTML = `<td><span class="ticker-badge">${s.ticker}</span></td><td style="font-size:11px;">${s.name}</td><td class="text-right font-mono" style="font-weight:600;">${s.weight}%</td>${fmtCell(s.momentum,'%',true)}${fmtCell(s.growth,'%',true)}${fmtCell(s.value,'',false)}${fmtCell(s.quality,'%',false)}${fmtCell(s.size,'',false)}${fmtCell(s.volatility,'x',false)}${fmtCell(s.roe,'%',false)}${fmtCell(s.leverage,'',false)}${fmtCell(s.divYield,'%',false)}${fmtCell(s.shortPct,'%',false)}${fmtCell(s.insiderPct,'%',false)}`;
     tbody.appendChild(tr);
   });
 
   // Calculate weighted portfolio factor exposures
   const totalW = scored.reduce((s,h) => s + h.weight, 0);
-  const factors = ['momentum','growth','value','quality','size','volatility'];
-  const factorLabels = {momentum:'Momentum',growth:'Growth',value:'Value',quality:'Quality',size:'Size',volatility:'Volatility'};
-  const factorColors = {momentum:'var(--accent-blue)',growth:'var(--green)',value:'var(--accent-orange)',quality:'#8B5CF6',size:'var(--navy)',volatility:'var(--red)'};
+  const factors = ['momentum','growth','value','quality','size','volatility','roe','leverage','divYield','shortPct','insiderPct'];
+  const factorLabels = {momentum:'Momentum',growth:'Growth',value:'Value',quality:'Quality',size:'Size',volatility:'Volatility',roe:'Profitability (ROE)',leverage:'Leverage',divYield:'Dividend Yield',shortPct:'Short Interest',insiderPct:'Insider Ownership'};
+  const factorColors = {momentum:'var(--accent-blue)',growth:'var(--green)',value:'var(--accent-orange)',quality:'#8B5CF6',size:'var(--navy)',volatility:'var(--red)',roe:'#2EAE6D',leverage:'#D94444',divYield:'#E8873A',shortPct:'#1565C0',insiderPct:'#7C3AED'};
 
   const weighted = {};
   factors.forEach(f => {
@@ -3715,7 +3735,8 @@ document.getElementById('regime2Shifts').innerHTML = `
     barsSvg += `<text x="${barPad-8}" y="${y+barH/2+5}" font-size="12" fill="var(--navy)" text-anchor="end" font-weight="600" font-family="Inter">${factorLabels[f]}</text>`;
     barsSvg += `<line x1="${center}" y1="${y}" x2="${center}" y2="${y+barH}" stroke="var(--border)" stroke-width="1"/>`;
     barsSvg += `<rect x="${x}" y="${y+4}" width="${w}" height="${barH-8}" rx="4" fill="${color}" opacity="0.75"/>`;
-    barsSvg += `<text x="${val>=0 ? x+w+6 : x-6}" y="${y+barH/2+5}" font-size="11" fill="${color}" font-weight="700" font-family="Inter" ${val<0?'text-anchor="end"':''}>${val>=0?'+':''}${val.toFixed(1)}${f==='volatility'?'x':f==='value'?'':f==='size'?'':'%'}</text>`;
+    const sfx = (f==='volatility'?'x':f==='value'||f==='size'||f==='leverage'?'':'%');
+    barsSvg += `<text x="${val>=0 ? x+w+6 : x-6}" y="${y+barH/2+5}" font-size="11" fill="${color}" font-weight="700" font-family="Inter" ${val<0?'text-anchor="end"':''}>${val>=0?'+':''}${val.toFixed(1)}${sfx}</text>`;
   });
   barsEl.innerHTML = `<svg viewBox="0 0 ${barPad+barW+60} ${svgH}" style="width:100%;height:${svgH}px;">${barsSvg}</svg>`;
 

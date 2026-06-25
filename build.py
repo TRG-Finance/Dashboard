@@ -497,6 +497,10 @@ def fetch_yf_data():
                 "high_52wk": safe_round(info.get("fiftyTwoWeekHigh"), 2),
                 "low_52wk": safe_round(info.get("fiftyTwoWeekLow"), 2),
                 "avg_volume": info.get("averageVolume", 0),
+                "roe": safe_round(info.get("returnOnEquity"), 3),
+                "debt_to_equity": safe_round(info.get("debtToEquity"), 1),
+                "short_pct": safe_round(info.get("shortPercentOfFloat"), 3),
+                "insider_pct": safe_round(info.get("heldPercentInsiders"), 3),
                 "description": info.get("longBusinessSummary", ""),
             }
             # Fetch multi-period price history for charts
