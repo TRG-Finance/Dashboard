@@ -1210,41 +1210,17 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
 <div id="tab-framework2" class="tab-content">
 <div class="container">
 
-  <div class="section-label">Surprise-Based Regime Framework</div>
-  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Scores based on rate-of-change vs trend (surprise proxy), not absolute levels.</div>
-
-  <div class="grid-2">
-    <!-- Regime Quadrant -->
-    <div class="card">
-      <div class="card-header"><div class="card-title">Surprise-Based Regime Map</div><span class="card-badge badge-live" id="regime2Label">Loading...</span></div>
-      <div class="card-body" style="padding:16px;">
-        <svg id="quadrant2Svg" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:520px;"></svg>
-      </div>
-    </div>
-
-    <!-- Regime Description -->
-    <div style="display:flex;flex-direction:column;gap:16px;">
-      <div class="card">
-        <div class="card-header"><div class="card-title">Current Regime Assessment</div><span class="card-badge badge-updated">Surprise-Based</span></div>
-        <div class="card-body" id="regime2Desc"></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">What Would Change the Regime</div></div>
-        <div class="card-body" id="regime2Shifts"></div>
-      </div>
-    </div>
-  </div>
-
   <!-- Surprise Scorecard -->
-  <div class="section-label">Surprise Scorecard</div>
+  <div class="section-label">Growth & Inflation Surprise Signals</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Each indicator scored by rate-of-change vs its 6-month trend. Positive = surprising above trend. Negative = disappointing.</div>
   <div class="full-width">
     <div class="card">
-      <div class="card-header"><div class="card-title">Growth & Inflation Surprise Signals</div><span class="card-badge badge-updated">Rate of change vs 6-month trend</span></div>
+      <div class="card-header"><div class="card-title">Surprise Scorecard</div><span class="card-badge badge-updated">Auto-scored from FRED</span></div>
       <div class="card-body" style="padding:10px 16px;">
         <div class="grid-2" style="margin-bottom:0;">
           <div>
             <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
-              <span>Growth Surprise Signals</span>
+              <span>Growth Signals</span>
               <span id="growth2ScoreLabel" style="font-size:14px;"></span>
             </div>
             <table id="growth2Table">
@@ -1254,7 +1230,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
           </div>
           <div>
             <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
-              <span>Inflation Surprise Signals</span>
+              <span>Inflation Signals</span>
               <span id="inflation2ScoreLabel" style="font-size:14px;"></span>
             </div>
             <table id="inflation2Table">
@@ -1267,10 +1243,9 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
     </div>
   </div>
 
-  <!-- Market-Implied Signals -->
-  <!-- Custom Weighted Regime -->
-  <div class="section-label">Custom Weighted Regime</div>
-  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Adjust indicator weights (0-5) to see how the regime shifts. Default is equal-weighted (all 1).</div>
+  <!-- Regime Map + Custom Weights -->
+  <div class="section-label">Regime Classification</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Adjust indicator weights (0-5) to emphasize what matters most. Click Generate Analysis for a full regime breakdown.</div>
   <div class="grid-2">
     <div class="card">
       <div class="card-header"><div class="card-title">Your Weighted Regime Map</div><span class="card-badge badge-updated" id="regime2WtLabel">--</span></div>
@@ -3600,63 +3575,10 @@ function renderQuadrant2() {
     <text x="${pad}" y="${S - 8}" font-size="10" fill="var(--text-muted)" font-family="Inter">Growth Surprise: ${gs2.toFixed(2)} | Inflation Surprise: ${is2.toFixed(2)}</text>
   `;
 }
-renderQuadrant2();
-
-document.getElementById('regime2Label').textContent = regime2.name;
-document.getElementById('regime2Label').style.background = regime2.color + '20';
-document.getElementById('regime2Label').style.color = regime2.color;
-
-// Regime description
-document.getElementById('regime2Desc').innerHTML = `
-  <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
-    <span style="font-size:22px;font-weight:700;color:${regime2.color};">${regime2.name}</span>
-  </div>
-  <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">${regime2.desc}</div>
-  <div style="margin-top:12px;padding:10px;background:#F4F6F9;border-radius:6px;">
-    <div style="font-size:11px;font-weight:600;color:var(--navy);margin-bottom:4px;">Score Summary</div>
-    <div style="font-size:12px;color:var(--text-secondary);">Growth surprise composite: <strong style="color:${gs2>=0?'var(--green)':'var(--red)'}">${gs2>=0?'+':''}${gs2.toFixed(2)}</strong> | Inflation surprise composite: <strong style="color:${is2>0?'var(--red)':'var(--green)'}">${is2>=0?'+':''}${is2.toFixed(2)}</strong></div>
-    <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Composite range: -1.0 (strong negative surprise) to +1.0 (strong positive surprise)</div>
-  </div>
-`;
-
-// What would change the regime
-const regimeShifts = {
-  Stagflationary: [
-    {to:'Goldilocks',color:'#2EAE6D',text:'Oil prices decline (ceasefire / de-escalation), Core PCE drops below trend, GDP re-accelerates. Growth surprises turn positive while inflation surprises turn negative.'},
-    {to:'Reflation',color:'#E8873A',text:'GDP accelerates while inflation stays hot. Would require a consumer spending revival or fiscal stimulus while energy costs remain elevated.'},
-    {to:'Deflation',color:'#2E7DD1',text:'Recession materializes — payrolls turn negative, credit spreads blow out, consumer sentiment collapses further. Fed forced into emergency cuts.'},
-    {to:'Deeper Stagflation',color:'#D94444',text:'Energy crisis escalates, oil spikes above $120, inflation expectations become unanchored, Fed forced to hike into weakness. The tail risk to watch.'},
-  ],
-  Goldilocks: [
-    {to:'Reflation',color:'#E8873A',text:'Inflation re-accelerates while growth stays strong — commodity or wage driven. Watch CPI and import prices for early signs.'},
-    {to:'Stagflation',color:'#D94444',text:'Supply shock hits (energy, trade war) pushing inflation up while growth decelerates. Oil price spikes are the most common trigger.'},
-    {to:'Deflation',color:'#2E7DD1',text:'Growth rolls over — leading indicators weaken, earnings disappoint, credit tightens. Watch jobless claims and ISM for early warnings.'},
-  ],
-  Reflation: [
-    {to:'Goldilocks',color:'#2EAE6D',text:'Inflation cools while growth holds — supply-side improvement, energy price decline, productivity gains absorb demand.'},
-    {to:'Stagflation',color:'#D94444',text:'Growth disappoints while inflation stays hot — margin squeeze, consumer pullback from high prices. The most dangerous transition.'},
-    {to:'Deflation',color:'#2E7DD1',text:'Both growth and inflation roll over simultaneously — typically triggered by aggressive central bank tightening or a credit event.'},
-  ],
-  Deflationary: [
-    {to:'Goldilocks',color:'#2EAE6D',text:'Growth stabilizes and inflects upward while inflation stays contained — fiscal stimulus, credit easing, or external demand pickup.'},
-    {to:'Reflation',color:'#E8873A',text:'Aggressive stimulus reflates both growth and prices — large fiscal packages, QE, supply chain normalization.'},
-    {to:'Stagflation',color:'#D94444',text:'Inflation re-accelerates from supply shocks while growth stays weak — the worst-case scenario from a deflationary starting point.'},
-  ],
-};
-
-const shifts = regimeShifts[regime2.name] || regimeShifts.Stagflationary;
-document.getElementById('regime2Shifts').innerHTML = `
-  <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">
-    ${shifts.map(s => `<div style="display:flex;gap:8px;margin-bottom:10px;">
-      <span style="font-size:16px;">→</span>
-      <div><strong style="color:${s.color};">Shift to ${s.to}:</strong> ${s.text}</div>
-    </div>`).join('')}
-  </div>
-`;
-
-// Transition probabilities removed
-
-// Asset returns table removed
+// Equal-weighted quadrant removed — regime analysis is in the Generate Analysis button
+if (document.getElementById('quadrant2Svg')) renderQuadrant2();
+const r2lbl = document.getElementById('regime2Label');
+if (r2lbl) { r2lbl.textContent = regime2.name; r2lbl.style.background = regime2.color+'20'; r2lbl.style.color = regime2.color; }
 
 // ===== FACTOR ATTRIBUTION ENGINE =====
 (function buildFactorAttribution() {
