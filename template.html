@@ -1657,6 +1657,46 @@ function hydrate() {
     fillCommodityKpi('kpiDxy', LIVE_COMMODITIES.DXY, '');
   }
 
+  // Auto-hydrate economic indicator table rows from LIVE_DATA
+  const indMap = {
+    'GDP Growth (Annualized)': {key:'GDP', fmt:v=>(v>=0?'+':'')+v.toFixed(1)+'%', period:d=>'Q'+(Math.ceil((new Date(d).getMonth()+1)/3))+' '+new Date(d).getFullYear()},
+    'Monthly Jobs Added': {key:'PAYEMS', fmt:(v,p)=>{const diff=Math.round(v-p);return (diff>=0?'+':'')+diff+'K';}, useDiff:true, period:d=>{const dt=new Date(d);return dt.toLocaleDateString('en-US',{month:'short',year:'numeric'});}},
+    'Unemployment Rate': {key:'UNRATE', fmt:v=>v.toFixed(1)+'%', period:d=>{const dt=new Date(d);return dt.toLocaleDateString('en-US',{month:'short',year:'numeric'});}},
+    '10-Year Treasury Yield': {key:'UST_10Y', fmt:v=>v.toFixed(2)+'%', period:d=>d},
+    'Consumer Sentiment': {key:'UMCSENT', fmt:v=>v.toFixed(1), period:d=>{const dt=new Date(d);return dt.toLocaleDateString('en-US',{month:'short',year:'numeric'});}},
+    'Personal Savings Rate': {key:'PERSONAL_SAVING', fmt:v=>v.toFixed(1)+'%', period:d=>{const dt=new Date(d);return dt.toLocaleDateString('en-US',{month:'short',year:'numeric'});}},
+  };
+  const indTable = document.querySelector('#indicatorTable tbody') || document.querySelector('#tab-indicators table tbody');
+  if (indTable) {
+    indTable.querySelectorAll('tr').forEach(tr => {
+      const nameTd = tr.querySelector('td.has-tooltip') || tr.querySelectorAll('td')[1];
+      if (!nameTd) return;
+      const clone = nameTd.cloneNode(true);
+      const tt = clone.querySelector('.tooltip');
+      if (tt) tt.remove();
+      const name = clone.textContent.trim();
+      const mapping = indMap[name];
+      if (!mapping || !LIVE_DATA[mapping.key]) return;
+      const d = LIVE_DATA[mapping.key];
+      if (!d.latest) return;
+      const cells = tr.querySelectorAll('td');
+      if (cells.length < 5) return;
+      const val = mapping.useDiff ? mapping.fmt(d.latest, d.prior) : mapping.fmt(d.latest);
+      cells[2].textContent = val;
+      if (d.date) cells[3].textContent = mapping.period(d.date);
+      if (d.prior != null) {
+        const priorVal = mapping.useDiff ? '' : (mapping.fmt ? mapping.fmt(d.prior) : d.prior);
+        if (priorVal) cells[4].textContent = priorVal;
+      }
+    });
+  }
+
+  // Auto-hydrate GDP headline
+  if (LIVE_DATA.GDP && LIVE_DATA.GDP.latest != null) {
+    const gdpEl = document.querySelector('#tab-macro .card-body span[style*="font-size:32px"]');
+    if (gdpEl) gdpEl.textContent = (LIVE_DATA.GDP.latest >= 0 ? '+' : '') + LIVE_DATA.GDP.latest.toFixed(1) + '%';
+  }
+
 }
 
 // Merge LIVE_HOLDINGS data into a holdings array — called before table build
@@ -2022,20 +2062,31 @@ function openModal(h) {
       </div>
     </div>
 
-    <!-- Brand Thesis (Accuvest perspective — always shows static text) -->
-    ${h.brandThesis ? `<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
-      <div style="font-size:13px;font-weight:600;color:var(--accent-orange);margin-bottom:6px;">Why This Brand Matters</div>
-      <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">${h.brandThesis}</div>
-    </div>` : ''}
-
-    <!-- Company Description (from Yahoo Finance when available, fallback to static) -->
-    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px;">Company Overview</div>
-      <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">${desc}</div>
+    <!-- Brand Investment Case (auto-generated from data) -->
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="font-size:13px;font-weight:600;color:var(--accent-orange);margin-bottom:6px;">Why This Brand Outperforms</div>
+      <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">
+        ${(() => {
+          const parts = [];
+          const mcStr = h.mktcap || '--';
+          const sec = h.sector || 'its sector';
+          parts.push(`<strong>${h.name}</strong> (${h.ticker}) is a ${mcStr.includes('T') ? 'mega-cap' : mcStr.includes('B') && parseFloat(mcStr.replace(/[$B]/g,'')) > 100 ? 'large-cap' : 'mid-cap'} ${sec.toLowerCase()} brand with ${h.weight}% weight in LOGO.`);
+          if (gm !== 'N/A' && parseFloat(gm) > 40) parts.push(`Gross margins of ${gm} demonstrate strong pricing power — the hallmark of an iconic brand.`);
+          else if (gm !== 'N/A') parts.push(`Gross margins at ${gm} reflect the competitive dynamics of its industry.`);
+          if (eg !== 'N/A' && parseFloat(eg) > 0) parts.push(`Earnings are growing at ${eg}, signaling accelerating fundamental strength.`);
+          if (rg !== 'N/A' && rg !== '' && parseFloat(rg) > 0) parts.push(`Revenue growth of ${rg.replace(' YoY','')} confirms genuine demand expansion, not just margin optimization.`);
+          if (tgt !== 'N/A' && upside !== 'N/A' && parseFloat(upside) > 0) parts.push(`${nAnalysts} analysts cover the stock with a mean target of ${tgt} (${upside} upside), reflecting consensus confidence.`);
+          if (recKey && recKey !== '--' && recKey !== '') parts.push(`Analyst consensus: <strong>${recKey.replace('_',' ')}</strong>.`);
+          return parts.join(' ');
+        })()}
+      </div>
     </div>
 
-    ${h.moat ? `<div style="margin-top:14px;"><div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px;">Competitive Moat</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">${h.moat}</div></div>` : ''}
-    ${h.risks ? `<div style="margin-top:14px;"><div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:6px;">Key Risks</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">${h.risks}</div></div>` : ''}
+    <!-- Company Description (from Yahoo Finance) -->
+    ${desc ? `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px;">Company Overview</div>
+      <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">${desc}</div>
+    </div>` : ''}
     ${h.outlook ? `<div class="commentary" style="margin-top:14px;"><strong>Outlook:</strong> ${h.outlook}</div>` : ''}
   `;
   document.getElementById('companyModal').classList.add('show');
