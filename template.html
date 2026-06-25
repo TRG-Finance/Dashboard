@@ -2463,7 +2463,7 @@ initIndicatorCharts();
 // ===== MACRO RISK GAUGE METERS =====
 (function buildMacroGauges() {
   function gaugeScore(val, greenLow, greenHigh, redLow, redHigh, invert) {
-    if (val == null) return 50;
+    if (val == null || isNaN(val)) return 50;
     let score;
     if (!invert) {
       if (val <= greenLow) score = 10;
@@ -2526,8 +2526,9 @@ initIndicatorCharts();
       const large = (endDeg - startDeg) > 180 ? 1 : 0;
       return `M ${x1} ${y1} A ${radius} ${radius} 0 ${large} 1 ${x2} ${y2}`;
     }
-    const nx = cx + (r - 12) * Math.cos((needleAngle) * Math.PI / 180);
-    const ny = cy + (r - 12) * Math.sin((needleAngle) * Math.PI / 180);
+    const needleRad = (needleAngle - 90) * Math.PI / 180;
+    const nx = cx + (r - 12) * Math.cos(needleRad);
+    const ny = cy + (r - 12) * Math.sin(needleRad);
     return `<svg viewBox="0 0 140 80" style="width:100%;height:auto;">
       <path d="${arcPath(-90, -45, r)}" fill="none" stroke="#2EAE6D" stroke-width="10" stroke-linecap="round"/>
       <path d="${arcPath(-43, 0, r)}" fill="none" stroke="#8BC34A" stroke-width="10" stroke-linecap="round"/>
