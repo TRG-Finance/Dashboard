@@ -3760,7 +3760,7 @@ function calcWeightedComposite(containerId, indicators) {
   let weightedSum = 0, totalWeight = 0;
   sliders.forEach((s, i) => {
     const w = parseInt(s.value);
-    if (w > 0 && i < indicators.length) {
+    if (w > 0 && i < indicators.length && indicators[i].score !== 0) {
       weightedSum += indicators[i].score * w;
       totalWeight += 2 * w;
     }
