@@ -1657,65 +1657,44 @@ function switchTab(tab) {
 const now = new Date();
 document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
-// Holdings data — matches actual LOGO ETF as of 06/24/2026
-const holdings = [
-  {rank:1,ticker:"AAPL",name:"Apple",weight:5.01,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Technology"},
-  {rank:2,ticker:"AVGO",name:"Broadcom",weight:4.27,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Technology"},
-  {rank:3,ticker:"TSM",name:"Taiwan Semiconductor",weight:4.24,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Technology"},
-  {rank:4,ticker:"NVDA",name:"NVIDIA",weight:4.19,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Technology"},
-  {rank:5,ticker:"LLY",name:"Eli Lilly",weight:4.13,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Healthcare"},
-  {rank:6,ticker:"NFLX",name:"Netflix",weight:3.37,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Communication Services"},
-  {rank:7,ticker:"LNG",name:"Cheniere Energy",weight:3.16,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Energy"},
-  {rank:8,ticker:"PANW",name:"Palo Alto Networks",weight:3.14,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Technology"},
-  {rank:9,ticker:"APP",name:"AppLovin",weight:3.05,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Technology"},
-  {rank:10,ticker:"V",name:"Visa",weight:3.03,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Financials"},
-  {rank:11,ticker:"AMZN",name:"Amazon.com",weight:2.99,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Consumer Discretionary"},
-  {rank:12,ticker:"MELI",name:"MercadoLibre",weight:2.96,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Consumer Discretionary"},
-  {rank:13,ticker:"GOOGL",name:"Alphabet",weight:2.92,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Communication Services"},
-  {rank:14,ticker:"APO",name:"Apollo Global Mgmt",weight:2.87,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Financials"},
-  {rank:15,ticker:"BX",name:"Blackstone",weight:2.44,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Financials"},
-  {rank:16,ticker:"ABBV",name:"AbbVie",weight:2.21,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Healthcare"},
-  {rank:17,ticker:"AZN",name:"AstraZeneca",weight:2.12,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Healthcare"},
-  {rank:18,ticker:"CBRE",name:"CBRE Group",weight:2.06,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Real Estate"},
-  {rank:19,ticker:"COST",name:"Costco",weight:2.05,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Consumer Staples"},
-  {rank:20,ticker:"GE",name:"GE Aerospace",weight:2.03,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Industrials"},
-  {rank:21,ticker:"HEI",name:"HEICO Corp",weight:2.01,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Industrials"},
-  {rank:22,ticker:"TDG",name:"TransDigm Group",weight:2.00,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Industrials"},
-  {rank:23,ticker:"UBER",name:"Uber Technologies",weight:1.98,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Technology"},
-  {rank:24,ticker:"ADDYY",name:"adidas AG",weight:1.97,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Consumer Discretionary"},
-  {rank:25,ticker:"QXO",name:"QXO Inc",weight:1.93,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Industrials"},
-  {rank:26,ticker:"TLN",name:"Talen Energy",weight:1.91,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Utilities"},
-  {rank:27,ticker:"GEV",name:"GE Vernova",weight:1.89,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Utilities"},
-  {rank:28,ticker:"VST",name:"Vistra Corp",weight:1.51,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Utilities"},
-  {rank:29,ticker:"DASH",name:"DoorDash",weight:1.39,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Technology"},
-  {rank:30,ticker:"AXON",name:"Axon Enterprise",weight:1.06,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Industrials"},
-  {rank:31,ticker:"VIK",name:"Viking Holdings",weight:1.05,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Consumer Discretionary"},
-  {rank:32,ticker:"CTVA",name:"Corteva",weight:1.04,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Materials"},
-  {rank:33,ticker:"TTWO",name:"Take-Two Interactive",weight:1.04,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Communication Services"},
-  {rank:34,ticker:"JPM",name:"JPMorgan Chase",weight:1.03,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Financials"},
-  {rank:35,ticker:"DE",name:"Deere & Co",weight:1.02,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Industrials"},
-  {rank:36,ticker:"PWR",name:"Quanta Services",weight:1.02,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Industrials"},
-  {rank:37,ticker:"RTX",name:"RTX Corp",weight:1.02,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Industrials"},
-  {rank:38,ticker:"CAT",name:"Caterpillar",weight:1.01,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Industrials"},
-  {rank:39,ticker:"MS",name:"Morgan Stanley",weight:1.01,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Financials"},
-  {rank:40,ticker:"SPOT",name:"Spotify",weight:1.01,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Communication Services"},
-  {rank:41,ticker:"TJX",name:"TJX Companies",weight:1.01,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Consumer Discretionary"},
-  {rank:42,ticker:"LHX",name:"L3Harris Technologies",weight:1.00,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Industrials"},
-  {rank:43,ticker:"FWONA",name:"Liberty Media / F1",weight:1.00,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Communication Services"},
-  {rank:44,ticker:"HLT",name:"Hilton Worldwide",weight:0.99,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Consumer Discretionary"},
-  {rank:45,ticker:"TT",name:"Trane Technologies",weight:0.99,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Industrials"},
-  {rank:46,ticker:"COF",name:"Capital One",weight:0.99,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Financials"},
-  {rank:47,ticker:"MAR",name:"Marriott International",weight:0.98,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Consumer Discretionary"},
-  {rank:48,ticker:"ETN",name:"Eaton Corp",weight:0.98,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Industrials"},
-  {rank:49,ticker:"ASML",name:"ASML Holding",weight:0.94,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Technology"},
-  {rank:50,ticker:"AVAV",name:"AeroVironment",weight:0.92,price:"--",mktcap:"--",pe:"--",fwdpe:"--",sector:"Industrials"},
-];
-
-const brandTheses = {};
-holdings.forEach(h => { if (brandTheses[h.ticker]) h.brandThesis = brandTheses[h.ticker]; });
-
-// Merge live data into holdings BEFORE building the table
-mergeHoldings(holdings);
+// Holdings data — auto-populated from LOGO ETF CSV + Yahoo Finance
+const holdings = LIVE_HOLDINGS.map((lh, i) => {
+  const mc = lh.mktcap;
+  return {
+    rank: lh.rank || (i + 1),
+    ticker: lh.ticker,
+    name: lh.name || lh.ticker,
+    weight: lh.weight || 0,
+    price: lh.price ? '$' + Number(lh.price).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : '--',
+    pe: lh.pe ? String(lh.pe) : '--',
+    fwdpe: lh.fwdpe ? String(lh.fwdpe) : '--',
+    mktcap: mc ? (mc >= 1e12 ? '$'+(mc/1e12).toFixed(2)+'T' : mc >= 1e9 ? '$'+Math.round(mc/1e9)+'B' : '$'+Math.round(mc/1e6)+'M') : '--',
+    sector: lh.sector || '',
+    industry: lh.industry || '',
+    desc: lh.description || '',
+    ev_ebitda: lh.ev_ebitda ? String(lh.ev_ebitda) : null,
+    ev_ebitda_fmt: lh.ev_ebitda_fmt || null,
+    target_price: lh.target_price, target_price_fmt: lh.target_price_fmt || null,
+    target_low: lh.target_low, target_high: lh.target_high,
+    upside_fmt: lh.upside_fmt || null, upside: lh.upside || 0,
+    num_analysts: lh.num_analysts || 0, recommendation: lh.recommendation || '',
+    recommendation_score: lh.recommendation_score || null,
+    gross_margin: lh.gross_margin, gross_margin_fmt: lh.gross_margin_fmt || null,
+    ebitda_margin: lh.ebitda_margin, ebitda_margin_fmt: lh.ebitda_margin_fmt || null,
+    operating_margin: lh.operating_margin, operating_margin_fmt: lh.operating_margin_fmt || null,
+    profit_margin: lh.profit_margin, profit_margin_fmt: lh.profit_margin_fmt || null,
+    earnings_growth: lh.earnings_growth, earnings_growth_fmt: lh.earnings_growth_fmt || null,
+    revenue_growth: lh.revenue_growth, revenue_growth_fmt: lh.revenue_growth_fmt || null,
+    total_revenue: lh.total_revenue, total_revenue_fmt: lh.total_revenue_fmt || null,
+    ebitda: lh.ebitda, ebitda_fmt: lh.ebitda_fmt || null,
+    beta: lh.beta, dividend_yield: lh.dividend_yield,
+    high_52wk: lh.high_52wk, low_52wk: lh.low_52wk, avg_volume: lh.avg_volume,
+    _liveHistory: lh.price_history || [],
+    _liveHistories: lh.price_histories || {},
+    revGrowth: lh.revenue_growth ? (lh.revenue_growth*100).toFixed(1)+'% YoY' : '',
+    margin: lh.profit_margin ? 'Profit margin '+(lh.profit_margin*100).toFixed(1)+'%' : '',
+  };
+});
 
 // Build table
 const tbody = document.querySelector('#holdingsTable tbody');

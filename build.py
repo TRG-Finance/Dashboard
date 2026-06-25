@@ -7,6 +7,9 @@ Run manually or via GitHub Actions on a daily schedule.
 import os
 import json
 import datetime
+import csv
+import io
+import requests
 from fredapi import Fred
 import yfinance as yf
 from jinja2 import Template
@@ -267,13 +270,42 @@ def fetch_fred_data():
 # 2. YAHOO FINANCE DATA
 # ---------------------------------------------------------------------------
 
-LOGO_TICKERS = [
+LOGO_CSV_URL = "https://logoetf.com/wp-content/uploads/data/TidalFG_Holdings_LOGO.csv"
+
+def fetch_logo_holdings_csv():
+    """Download LOGO ETF holdings CSV and parse tickers + weights."""
+    try:
+        resp = requests.get(LOGO_CSV_URL, timeout=30)
+        resp.raise_for_status()
+        reader = csv.DictReader(io.StringIO(resp.text))
+        holdings = []
+        for i, row in enumerate(reader):
+            ticker = row.get("StockTicker", "").strip()
+            name = row.get("SecurityName", "").strip()
+            weight_str = row.get("Weightings", "0").replace("%", "").strip()
+            if not ticker or ticker == "Cash&Other":
+                continue
+            try:
+                weight = float(weight_str)
+            except ValueError:
+                weight = 0
+            holdings.append({
+                "ticker": ticker,
+                "csv_name": name,
+                "weight": weight,
+                "rank": i + 1,
+            })
+        print(f"  Fetched {len(holdings)} holdings from LOGO CSV")
+        return holdings
+    except Exception as e:
+        print(f"  WARN: Failed to fetch LOGO CSV: {e}")
+        return []
+
+LOGO_CSV_HOLDINGS = fetch_logo_holdings_csv()
+LOGO_TICKERS = [h["ticker"] for h in LOGO_CSV_HOLDINGS] if LOGO_CSV_HOLDINGS else [
     "AAPL", "AVGO", "TSM", "NVDA", "LLY", "NFLX", "LNG", "PANW", "APP",
     "V", "AMZN", "MELI", "GOOGL", "APO", "BX", "ABBV", "AZN", "CBRE",
-    "COST", "GE", "HEI", "TDG", "UBER", "ADDYY", "QXO", "TLN", "GEV",
-    "VST", "DASH", "AXON", "VIK", "CTVA", "TTWO", "JPM", "DE", "PWR",
-    "RTX", "CAT", "MS", "SPOT", "TJX", "LHX", "FWONA", "HLT", "TT",
-    "COF", "MAR", "ETN", "ASML", "AVAV",
+    "COST", "GE", "HEI", "TDG", "UBER", "QXO",
 ]
 
 INDEX_TICKERS = ["^GSPC", "^IXIC", "^RUA"]
@@ -508,6 +540,18 @@ def fetch_yf_data():
                 "high_52wk": None, "low_52wk": None,
                 "avg_volume": 0, "description": "", "price_history": [],
             })
+
+    # Merge CSV weights and ranks into holdings
+    if LOGO_CSV_HOLDINGS:
+        csv_map = {h["ticker"]: h for h in LOGO_CSV_HOLDINGS}
+        for h in holdings:
+            csv_data = csv_map.get(h["ticker"])
+            if csv_data:
+                h["weight"] = csv_data["weight"]
+                h["rank"] = csv_data["rank"]
+                if not h.get("name") or h["name"] == h["ticker"]:
+                    h["name"] = csv_data["csv_name"]
+        holdings.sort(key=lambda x: x.get("rank", 999))
 
     data["holdings"] = holdings
 
