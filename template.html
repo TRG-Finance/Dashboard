@@ -1757,6 +1757,7 @@ holdings.forEach(h => {
 
 // ===== LOGO PORTFOLIO PERFORMANCE =====
 (function buildLogoPerformance() {
+  try {
   const periods = [
     {key:'1wk',label:'1W'},{key:'1mo',label:'1M'},{key:'6mo',label:'6M'},
     {key:'1y',label:'1Y'}
@@ -1821,9 +1822,11 @@ holdings.forEach(h => {
       return;
     }
     const w = 700, h = 200, pad = 50;
-    const vals = series.map(d => d.val);
+    const vals = series.map(d => d.val).filter(v => isFinite(v));
     const dates = series.map(d => d.date);
+    if (vals.length < 2) { svg.innerHTML = '<text x="350" y="110" text-anchor="middle" font-size="12" fill="#8D95A8" font-family="Inter">Insufficient data for chart.</text>'; return; }
     const ticks = niceGridTicks(Math.min(...vals, 0), Math.max(...vals, 0), 6);
+    if (!ticks || ticks.length === 0) { svg.innerHTML = ''; return; }
     const min = ticks[0].val, max = ticks[ticks.length-1].val;
     const range = max - min || 1;
     const top = 15, bot = 25, right = 10;
@@ -1862,6 +1865,7 @@ holdings.forEach(h => {
   ).join('');
   window._renderLogoChart = renderLogoChart;
   renderLogoChart('1y');
+  } catch(e) { console.warn('LOGO performance chart:', e.message); }
 })();
 
 // Build sector allocation pie chart
