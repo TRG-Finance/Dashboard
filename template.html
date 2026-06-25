@@ -1210,10 +1210,6 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
 <div id="tab-framework2" class="tab-content">
 <div class="container">
 
-  <div class="section-label">Macro Risk Indicators</div>
-  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Auto-scored from live data. Green = favorable, red = elevated risk.</div>
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;" id="macroGauges"></div>
-
   <div class="section-label">Surprise-Based Regime Framework</div>
   <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Scores based on rate-of-change vs trend (surprise proxy), not absolute levels.</div>
 
@@ -2496,8 +2492,10 @@ function initIndicatorCharts() {
 }
 initIndicatorCharts();
 
-// ===== MACRO RISK GAUGE METERS =====
+// ===== MACRO RISK GAUGE METERS (moved to surprise scorecard) =====
 (function buildMacroGauges() {
+  const container = document.getElementById('macroGauges');
+  if (!container) return;
   function gaugeScore(val, greenLow, greenHigh, redLow, redHigh, invert) {
     if (val == null || isNaN(val)) return 50;
     let score;
@@ -3409,6 +3407,21 @@ const growthSurprises = [
    desc:'Copper price vs 6M avg. Used in construction, manufacturing, electronics — its price tracks global growth.'},
   {name:"Savings Rate", current:_savCur, avg:_savAvg6, unit:'%', score:_surpriseScore(_savCur, _savAvg6),
    desc:'Personal savings rate vs 6M avg. Rising = healthier consumer balance sheet.'},
+  (() => {
+    const sp500H = (typeof LIVE_KPI_HIST !== 'undefined' && LIVE_KPI_HIST.SP500_HIST) ? LIVE_KPI_HIST.SP500_HIST : [];
+    if (sp500H.length < 44) return {name:"S&P 500 Technical",current:null,avg:null,unit:'%',score:0,desc:'S&P 500 vs 10-month moving average.'};
+    const last = sp500H[sp500H.length-1].close;
+    const ma = sp500H.slice(-44).reduce((s,d) => s + d.close, 0) / 44;
+    const pctAbove = ((last/ma)-1)*100;
+    const sc = pctAbove > 5 ? 2 : pctAbove > 2 ? 1 : pctAbove > -2 ? 0 : pctAbove > -5 ? -1 : -2;
+    return {name:"S&P 500 Technical",current:Math.round(pctAbove*10)/10,avg:0,unit:'%',score:sc,desc:'S&P 500 price vs 10-month moving average. Above = bullish momentum.'};
+  })(),
+  (() => {
+    const vixCur = (LIVE_COMMODITIES && LIVE_COMMODITIES.VIX) ? LIVE_COMMODITIES.VIX.price : null;
+    const vixH = (typeof LIVE_KPI_HIST !== 'undefined' && LIVE_KPI_HIST.VIX_HIST) ? LIVE_KPI_HIST.VIX_HIST : [];
+    const vixAvg = vixH.length >= 26 ? vixH.slice(-26).reduce((s,d) => s + d.close, 0) / 26 : null;
+    return {name:"VIX",current:vixCur,avg:vixAvg,unit:'',score:_surpriseScoreTightInv(vixCur, vixAvg),desc:'VIX vs 6M avg. Lower than trend = markets calmer = positive growth signal.'};
+  })(),
 ];
 
 // Inflation surprise indicators
@@ -3448,6 +3461,12 @@ const inflationSurprises = [
    desc:'Gold vs 6M avg. Rising gold = market pricing higher inflation or uncertainty. Classic inflation hedge.'},
   {name:"Oil (WTI) Trend", current:_oilP, avg:null, unit:'$', score:_oilP != null ? (_oilP > 90 ? 2 : _oilP > 80 ? 1 : _oilP > 65 ? 0 : -1) : 0,
    desc:'Oil above $90 = inflationary pressure. Energy costs feed directly into CPI and producer costs.'},
+  (() => {
+    const hyC = LIVE_DATA.HY_OAS ? LIVE_DATA.HY_OAS.latest * 100 : null;
+    const hyH = LIVE_DATA.HY_HIST;
+    const hyAvg = (hyH && hyH.length >= 6) ? hyH.slice(-6).reduce((s,d) => s + d.val, 0) / 6 * 100 : null;
+    return {name:"Credit Spreads (HY)", current:hyC, avg:hyAvg, unit:'bps', score:_surpriseScore(hyC, hyAvg), desc:'HY OAS vs 6M avg. Widening = markets pricing more risk/stress. Tightening = complacency.'};
+  })(),
 ];
 
 // Composite scores
