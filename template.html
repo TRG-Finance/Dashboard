@@ -3601,38 +3601,7 @@ document.getElementById('regime2Shifts').innerHTML = `
   </div>
 `;
 
-// Transition probabilities (heuristic based on leading indicators)
-const transGold = Math.max(5, Math.round((1 + gs2) * (1 - is2) * 25));
-const transRefl = Math.max(5, Math.round((1 + gs2) * (1 + is2) * 25));
-const transStag = Math.max(5, Math.round((1 - gs2) * (1 + is2) * 25));
-const transDefl = Math.max(5, Math.round((1 - gs2) * (1 - is2) * 25));
-const transTotal = transGold + transRefl + transStag + transDefl;
-const tG = Math.round(transGold/transTotal*100);
-const tR = Math.round(transRefl/transTotal*100);
-const tS = Math.round(transStag/transTotal*100);
-const tD = 100 - tG - tR - tS;
-
-document.getElementById('regime2Trans').innerHTML = `
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-    <div style="padding:10px;background:#E8F5EE;border-radius:6px;text-align:center;">
-      <div style="font-size:11px;font-weight:600;color:#1A7A47;">Goldilocks</div>
-      <div style="font-size:24px;font-weight:700;color:#1A7A47;">${tG}%</div>
-    </div>
-    <div style="padding:10px;background:#FFF3E0;border-radius:6px;text-align:center;">
-      <div style="font-size:11px;font-weight:600;color:#C67030;">Reflation</div>
-      <div style="font-size:24px;font-weight:700;color:#C67030;">${tR}%</div>
-    </div>
-    <div style="padding:10px;background:#FDE8E8;border-radius:6px;text-align:center;">
-      <div style="font-size:11px;font-weight:600;color:#B52A2A;">Stagflation</div>
-      <div style="font-size:24px;font-weight:700;color:#B52A2A;">${tS}%</div>
-    </div>
-    <div style="padding:10px;background:#E3F2FD;border-radius:6px;text-align:center;">
-      <div style="font-size:11px;font-weight:600;color:#1565C0;">Deflation</div>
-      <div style="font-size:24px;font-weight:700;color:#1565C0;">${tD}%</div>
-    </div>
-  </div>
-  <div style="font-size:10px;color:var(--text-muted);margin-top:8px;">Estimated from current surprise composites. Not a forecast — reflects the direction of current momentum.</div>
-`;
+// Transition probabilities removed
 
 // Highlight current regime column in asset returns table
 const regimeColMap = {'Goldilocks':1,'Reflation':2,'Stagflationary':3,'Deflationary':4};
