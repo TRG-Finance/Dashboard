@@ -2078,7 +2078,13 @@ document.getElementById('companyModal').addEventListener('click', function(e) {
 
 // Generate price chart — uses real Yahoo Finance history if available, falls back to simulated
 // Helper: compute nice Y-axis grid ticks for any chart
+function safeNum(v, dec, fallback) {
+  if (v == null || isNaN(v) || !isFinite(v)) return fallback || '--';
+  return v.toFixed(dec != null ? dec : 1);
+}
+
 function niceGridTicks(dataMin, dataMax, targetCount) {
+  if (isNaN(dataMin) || isNaN(dataMax) || !isFinite(dataMin) || !isFinite(dataMax)) return [{val:0}];
   const range = dataMax - dataMin;
   if (range === 0) return [{val: dataMin}];
   const rawStep = range / (targetCount || 5);
@@ -2562,13 +2568,13 @@ initIndicatorCharts();
   }
 
   const gauges = [
-    {title:'Corporate Earnings', sub:'Fundamentals', score:gaugeScore(egNum, -5, 5, 15, 25, true), val:egNum != null ? (egNum>=0?'+':'')+egNum.toFixed(1)+'%' : '--'},
-    {title:'Central Bank Policy', sub:'Accommodative / Restrictive', score:gaugeScore(ff, 1, 2, 4, 5, false), val:ff != null ? ff.toFixed(2)+'%' : '--'},
-    {title:'Technical Levels', sub:'S&P vs 10-Month MA', score:above10mma != null ? gaugeScore(above10mma, -10, -2, 5, 15, true) : 50, val:above10mma != null ? (above10mma>=0?'+':'')+above10mma.toFixed(1)+'%' : '--'},
-    {title:'Interest Rates', sub:'10Y Yield Level', score:gaugeScore(ust10, 2.5, 3.5, 4.5, 5.0, false), val:ust10 != null ? ust10.toFixed(2)+'%' : '--'},
-    {title:'Equity Valuations', sub:'Forward P/E', score:gaugeScore(fwdPE, 12, 16, 20, 25, false), val:fwdPE != null ? fwdPE.toFixed(1)+'x' : '--'},
-    {title:'Volatility', sub:'VIX Level', score:gaugeScore(vix, 10, 15, 22, 30, false), val:vix != null ? vix.toFixed(1) : '--'},
-    {title:'Credit Spreads', sub:'HY OAS Width', score:gaugeScore(hyOas, 200, 300, 450, 600, false), val:hyOas != null ? Math.round(hyOas)+' bps' : '--'},
+    {title:'Corporate Earnings', sub:'Fundamentals', score:gaugeScore(egNum, -5, 5, 15, 25, true), val:safeNum(egNum,1)!=='--' ? (egNum>=0?'+':'')+safeNum(egNum,1)+'%' : '--'},
+    {title:'Central Bank Policy', sub:'Accommodative / Restrictive', score:gaugeScore(ff, 1, 2, 4, 5, false), val:safeNum(ff,2)!=='--' ? safeNum(ff,2)+'%' : '--'},
+    {title:'Technical Levels', sub:'S&P vs 10-Month MA', score:above10mma != null && !isNaN(above10mma) ? gaugeScore(above10mma, -10, -2, 5, 15, true) : 50, val:safeNum(above10mma,1)!=='--' ? (above10mma>=0?'+':'')+safeNum(above10mma,1)+'%' : '--'},
+    {title:'Interest Rates', sub:'10Y Yield Level', score:gaugeScore(ust10, 2.5, 3.5, 4.5, 5.0, false), val:safeNum(ust10,2)!=='--' ? safeNum(ust10,2)+'%' : '--'},
+    {title:'Equity Valuations', sub:'Forward P/E', score:gaugeScore(fwdPE, 12, 16, 20, 25, false), val:safeNum(fwdPE,1)!=='--' ? safeNum(fwdPE,1)+'x' : '--'},
+    {title:'Volatility', sub:'VIX Level', score:gaugeScore(vix, 10, 15, 22, 30, false), val:safeNum(vix,1)},
+    {title:'Credit Spreads', sub:'HY OAS Width', score:gaugeScore(hyOas, 200, 300, 450, 600, false), val:hyOas != null && !isNaN(hyOas) ? Math.round(hyOas)+' bps' : '--'},
   ];
 
   function renderGaugeSvg(score) {
