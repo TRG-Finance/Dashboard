@@ -2516,7 +2516,8 @@ initIndicatorCharts();
   const fwdPE = LIVE_META.sp500_fwd_pe;
   const vix = (LIVE_COMMODITIES && LIVE_COMMODITIES.VIX) ? LIVE_COMMODITIES.VIX.price : null;
   const spxEG = LIVE_META.sp500_earnings_growth;
-  const egNum = spxEG ? parseFloat(spxEG.replace(/[+%]/g,'')) : null;
+  const egRaw = (spxEG && spxEG !== 'N/A') ? parseFloat(spxEG.replace(/[+%]/g,'')) : null;
+  const egNum = (egRaw != null && !isNaN(egRaw)) ? egRaw : null;
 
   const sp500Hist = (typeof LIVE_KPI_HIST !== 'undefined' && LIVE_KPI_HIST.SP500_HIST) ? LIVE_KPI_HIST.SP500_HIST : [];
   let above10mma = null;
