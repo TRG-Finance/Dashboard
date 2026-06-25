@@ -3276,6 +3276,15 @@ function _surpriseScore(current, avg) {
 function _surpriseScoreInv(current, avg) {
   return -_surpriseScore(current, avg);
 }
+function _surpriseScoreTight(current, avg) {
+  if (current == null || avg == null || avg === 0) return 0;
+  const pctDev = ((current - avg) / Math.abs(avg)) * 100;
+  if (pctDev > 5) return 2; if (pctDev > 1.5) return 1;
+  if (pctDev > -1.5) return 0; if (pctDev > -5) return -1; return -2;
+}
+function _surpriseScoreTightInv(current, avg) {
+  return -_surpriseScoreTight(current, avg);
+}
 
 // Growth surprise indicators
 const _gdpCur = LIVE_DATA.GDP ? LIVE_DATA.GDP.latest : null;
@@ -3325,9 +3334,9 @@ const growthSurprises = [
    desc:'Current quarter vs prior quarter GDP — measures acceleration/deceleration.'},
   {name:"Employment Level", current:_nfpCur, avg:_nfpAvg, unit:'K', score:_surpriseScore(_nfpCur, _nfpAvg),
    desc:'Nonfarm payrolls level vs 6-month average.'},
-  {name:"Unemployment Rate", current:_unempCur, avg:_unempAvg6, unit:'%', score:_surpriseScoreInv(_unempCur, _unempAvg6),
-   desc:'Unemployment vs 6M avg. Lower than avg = positive growth surprise.'},
-  {name:"Initial Jobless Claims", current:_icsaCur, avg:_icsaAvg, unit:'K', score:_surpriseScoreInv(_icsaCur, _icsaAvg),
+  {name:"Unemployment Rate", current:_unempCur, avg:_unempAvg6, unit:'%', score:_surpriseScoreTightInv(_unempCur, _unempAvg6),
+   desc:'Unemployment vs 6M avg. Lower = positive growth surprise. Uses tight thresholds (±1.5%) since small moves matter.'},
+  {name:"Initial Jobless Claims", current:_icsaCur, avg:_icsaAvg, unit:'K', score:_surpriseScoreTightInv(_icsaCur, _icsaAvg),
    desc:'Weekly initial claims vs 6M avg. Lower = fewer layoffs = positive growth signal. Most timely labor indicator.'},
   {name:"Job Openings (JOLTS)", current:_joltsCur ? _joltsCur/1000 : null, avg:_joltsAvg ? _joltsAvg/1000 : null, unit:'M', score:_surpriseScore(_joltsCur, _joltsAvg),
    desc:'Job openings vs 6M avg. Higher = stronger labor demand. Falling openings precede rising unemployment.'},
