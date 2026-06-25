@@ -2650,7 +2650,10 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { clo
 document.querySelectorAll('#tab-indicators table tbody tr').forEach(tr => {
   const nameTd = tr.querySelector('td.has-tooltip') || tr.querySelectorAll('td')[1];
   if (!nameTd) return;
-  const name = nameTd.textContent.trim();
+  const clone = nameTd.cloneNode(true);
+  const tooltip = clone.querySelector('.tooltip');
+  if (tooltip) tooltip.remove();
+  const name = clone.textContent.trim();
   if (!indicatorMeta[name]) return;
   tr.style.cursor = 'pointer';
   tr.classList.add('company-row');
