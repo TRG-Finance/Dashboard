@@ -1210,18 +1210,32 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
 <div id="tab-framework2" class="tab-content">
 <div class="container">
 
-  <!-- How to Use This Framework -->
-  <div class="full-width" style="margin-bottom:20px;">
-    <div class="card" style="border-left:4px solid var(--accent-blue);">
-      <div class="card-body" style="padding:14px 20px;font-size:12px;color:var(--text-secondary);line-height:1.8;">
-        <strong style="color:var(--navy);font-size:13px;">How to read this framework:</strong> Each indicator below is scored by comparing its current value to its 6-month average — a proxy for whether the data is <em>surprising</em> relative to its recent trend. A positive score means the indicator is running above trend; negative means below. The quadrant map plots the composite growth surprise against the composite inflation surprise to classify the current macro regime. Adjust the weights to reflect your conviction about which indicators matter most, then click <strong>Generate Analysis</strong> for a full breakdown of what the regime means for sectors and positioning.
+  <!-- THE ENVIRONMENT — Static quadrant (fixed thresholds) -->
+  <div class="section-label">The Environment</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Where are we? GDP vs long-run trend (2.5%) and inflation vs Fed target (2%). This is the standard macro regime classification used by JPMorgan, Fidelity, and most strategy teams.</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Current Macro Regime</div><span class="card-badge badge-live" id="staticRegimeLabel">--</span></div>
+      <div class="card-body" style="padding:16px;">
+        <svg id="staticQuadrantSvg" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:520px;"></svg>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Regime Assessment</div></div>
+        <div class="card-body" id="staticRegimeDesc"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Key Readings</div></div>
+        <div class="card-body" id="staticKeyReadings"></div>
       </div>
     </div>
   </div>
 
-  <!-- Surprise Scorecard -->
-  <div class="section-label">Growth & Inflation Surprise Signals</div>
-  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Each indicator scored by rate-of-change vs its 6-month trend. Positive = surprising above trend. Negative = disappointing.</div>
+  <!-- WHAT'S CHANGING — Surprise scorecard -->
+  <div class="section-label">What's Changing</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Is the data surprising to the upside or downside vs recent trend? This tells you where the regime is <em>heading</em>, not just where it is. Adjust weights below to emphasize what matters most to you.</div>
   <div class="full-width">
     <div class="card">
       <div class="card-header"><div class="card-title">Surprise Scorecard</div><span class="card-badge badge-updated">Auto-scored from FRED</span></div>
@@ -3590,10 +3604,85 @@ function renderQuadrant2() {
     <text x="${pad}" y="${S - 8}" font-size="10" fill="var(--text-muted)" font-family="Inter">Growth Surprise: ${gs2.toFixed(2)} | Inflation Surprise: ${is2.toFixed(2)}</text>
   `;
 }
-// Equal-weighted quadrant removed — regime analysis is in the Generate Analysis button
-if (document.getElementById('quadrant2Svg')) renderQuadrant2();
-const r2lbl = document.getElementById('regime2Label');
-if (r2lbl) { r2lbl.textContent = regime2.name; r2lbl.style.background = regime2.color+'20'; r2lbl.style.color = regime2.color; }
+// ===== STATIC QUADRANT — "The Environment" =====
+(function renderStaticQuadrant() {
+  const gdp = LIVE_DATA.GDP ? LIVE_DATA.GDP.latest : null;
+  const cpi = _lastHist('CPI_HIST');
+  if (gdp == null && cpi == null) return;
+
+  const gdpThreshold = 2.5, inflThreshold = 2.0;
+  const gNorm = gdp != null ? (gdp - gdpThreshold) / 3 : 0;
+  const iNorm = cpi != null ? (cpi - inflThreshold) / 3 : 0;
+
+  const regime = gNorm > 0 && iNorm < 0 ? {name:'Goldilocks',color:'#2EAE6D'} :
+                 gNorm > 0 && iNorm >= 0 ? {name:'Reflation',color:'#E8873A'} :
+                 gNorm <= 0 && iNorm >= 0 ? {name:'Stagflation',color:'#D94444'} :
+                 {name:'Deflation',color:'#2E7DD1'};
+
+  const S=520,pad=60,chartS=S-pad*2,cx=pad+chartS/2,cy=pad+chartS/2;
+  const dotX = cx + Math.max(-1,Math.min(1,gNorm)) * (chartS/2) * 0.85;
+  const dotY = cy - Math.max(-1,Math.min(1,iNorm)) * (chartS/2) * 0.85;
+
+  const svg = document.getElementById('staticQuadrantSvg');
+  if (!svg) return;
+  svg.innerHTML = `
+    <rect x="${pad}" y="${pad}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#FDE8E8" opacity="0.5"/>
+    <rect x="${cx}" y="${pad}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#FFF3E0" opacity="0.5"/>
+    <rect x="${pad}" y="${cy}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#E3F2FD" opacity="0.5"/>
+    <rect x="${cx}" y="${cy}" width="${chartS/2}" height="${chartS/2}" rx="8" fill="#E8F5EE" opacity="0.5"/>
+    <text x="${pad+chartS/4}" y="${pad+28}" font-size="14" fill="#B52A2A" text-anchor="middle" font-weight="700" font-family="Inter">STAGFLATION</text>
+    <text x="${pad+chartS/4}" y="${pad+46}" font-size="10" fill="#B52A2A" text-anchor="middle" font-family="Inter" opacity="0.7">GDP &lt; 2.5% · Inflation &gt; 2%</text>
+    <text x="${cx+chartS/4}" y="${pad+28}" font-size="14" fill="#C67030" text-anchor="middle" font-weight="700" font-family="Inter">REFLATION</text>
+    <text x="${cx+chartS/4}" y="${pad+46}" font-size="10" fill="#C67030" text-anchor="middle" font-family="Inter" opacity="0.7">GDP &gt; 2.5% · Inflation &gt; 2%</text>
+    <text x="${pad+chartS/4}" y="${cy+chartS/2-30}" font-size="14" fill="#1565C0" text-anchor="middle" font-weight="700" font-family="Inter">DEFLATION</text>
+    <text x="${pad+chartS/4}" y="${cy+chartS/2-14}" font-size="10" fill="#1565C0" text-anchor="middle" font-family="Inter" opacity="0.7">GDP &lt; 2.5% · Inflation &lt; 2%</text>
+    <text x="${cx+chartS/4}" y="${cy+chartS/2-30}" font-size="14" fill="#1A7A47" text-anchor="middle" font-weight="700" font-family="Inter">GOLDILOCKS</text>
+    <text x="${cx+chartS/4}" y="${cy+chartS/2-14}" font-size="10" fill="#1A7A47" text-anchor="middle" font-family="Inter" opacity="0.7">GDP &gt; 2.5% · Inflation &lt; 2%</text>
+    <line x1="${cx}" y1="${pad}" x2="${cx}" y2="${pad+chartS}" stroke="var(--navy)" stroke-width="1.5" opacity="0.3"/>
+    <line x1="${pad}" y1="${cy}" x2="${pad+chartS}" y2="${cy}" stroke="var(--navy)" stroke-width="1.5" opacity="0.3"/>
+    <text x="${pad+chartS+5}" y="${cy+4}" font-size="11" fill="var(--navy)" font-weight="600" font-family="Inter">Growth →</text>
+    <text x="${pad-5}" y="${cy+4}" font-size="11" fill="var(--navy)" font-weight="600" font-family="Inter" text-anchor="end">← Contraction</text>
+    <text x="${cx}" y="${pad-10}" font-size="11" fill="var(--navy)" font-weight="600" font-family="Inter" text-anchor="middle">↑ Inflation Above Target</text>
+    <text x="${cx}" y="${pad+chartS+18}" font-size="11" fill="var(--navy)" font-weight="600" font-family="Inter" text-anchor="middle">Inflation Below Target ↓</text>
+    <circle cx="${dotX}" cy="${dotY}" r="18" fill="${regime.color}" opacity="0.12"><animate attributeName="r" values="18;24;18" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.12;0.05;0.12" dur="2s" repeatCount="indefinite"/></circle>
+    <circle cx="${dotX}" cy="${dotY}" r="10" fill="${regime.color}" opacity="0.25"/>
+    <circle cx="${dotX}" cy="${dotY}" r="6" fill="${regime.color}" stroke="white" stroke-width="2"/>
+    <text x="${dotX}" y="${dotY-16}" font-size="11" fill="${regime.color}" text-anchor="middle" font-weight="700" font-family="Inter">WE ARE HERE</text>
+    <text x="${pad}" y="${S-8}" font-size="10" fill="var(--text-muted)" font-family="Inter">GDP: ${safeNum(gdp,1)}% (threshold: 2.5%) | CPI: ${safeNum(cpi,1)}% (threshold: 2.0%)</text>
+  `;
+
+  const lbl = document.getElementById('staticRegimeLabel');
+  if (lbl) { lbl.textContent = regime.name; lbl.style.background = regime.color+'20'; lbl.style.color = regime.color; }
+
+  const descEl = document.getElementById('staticRegimeDesc');
+  if (descEl) {
+    const descs = {
+      Stagflation: 'Growth is below the 2.5% long-run trend while inflation is above the Fed\'s 2% target. This is the most challenging macro environment — the Fed is constrained (can\'t cut rates without fueling inflation, can\'t hike without crushing growth). Defensive positioning and real assets historically outperform.',
+      Goldilocks: 'Growth is above trend and inflation is below target — the ideal environment for risk assets. Equities, credit, and growth stocks tend to outperform. The Fed has room to stay accommodative.',
+      Reflation: 'Both growth and inflation are running above their targets. Cyclicals, commodities, and real assets tend to outperform. The risk is that the Fed tightens too aggressively to contain inflation.',
+      Deflation: 'Both growth and inflation are below target. Long-duration bonds and quality assets outperform. The Fed is likely cutting rates or easing policy to stimulate the economy.',
+    };
+    descEl.innerHTML = `
+      <div style="font-size:20px;font-weight:700;color:${regime.color};margin-bottom:8px;">${regime.name}</div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">${descs[regime.name]}</div>
+    `;
+  }
+
+  const readEl = document.getElementById('staticKeyReadings');
+  if (readEl) {
+    const ff = LIVE_DATA.FEDFUNDS ? LIVE_DATA.FEDFUNDS.latest : null;
+    const unemp = LIVE_DATA.UNRATE ? LIVE_DATA.UNRATE.latest : null;
+    const ust10 = LIVE_DATA.UST_10Y ? LIVE_DATA.UST_10Y.latest : null;
+    readEl.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="ind-card"><div class="ind-card-title">GDP Growth</div><div class="ind-card-value">${safeNum(gdp,1)}%</div><div class="ind-card-sub">Trend: 2.5%</div></div>
+        <div class="ind-card"><div class="ind-card-title">CPI Inflation</div><div class="ind-card-value">${safeNum(cpi,1)}%</div><div class="ind-card-sub">Target: 2.0%</div></div>
+        <div class="ind-card"><div class="ind-card-title">Fed Funds</div><div class="ind-card-value">${safeNum(ff,2)}%</div><div class="ind-card-sub">Neutral: ~2.5%</div></div>
+        <div class="ind-card"><div class="ind-card-title">Unemployment</div><div class="ind-card-value">${safeNum(unemp,1)}%</div><div class="ind-card-sub">Natural: ~4.5%</div></div>
+      </div>
+    `;
+  }
+})();
 
 // ===== FACTOR ATTRIBUTION ENGINE =====
 (function buildFactorAttribution() {
