@@ -188,8 +188,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
   <button class="tab-btn" onclick="switchTab('indicators')">Economic Indicators</button>
   <button class="tab-btn" onclick="switchTab('alpha')">Alpha Brands (LOGO)</button>
   <button class="tab-btn" onclick="switchTab('forces')">Structural Forces</button>
-  <button class="tab-btn" onclick="switchTab('framework')">Static Framework</button>
-  <button class="tab-btn" onclick="switchTab('framework2')">Surprise Framework</button>
+  <button class="tab-btn" onclick="switchTab('framework2')">Macro Framework</button>
   <button class="tab-btn" onclick="switchTab('factors')">Factor Attribution</button>
 </div>
 
@@ -1305,7 +1304,86 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
     </div>
   </div>
 
+  <!-- ===== RISK RADAR ===== -->
+  <div class="section-label">Risk Radar</div>
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Tail Risks & Scenario Monitoring</div><span class="card-badge badge-live">Active Watch</span></div>
+      <div class="card-body" style="padding:10px 16px;">
+        <table>
+          <thead><tr><th style="width:25%">Risk</th><th class="text-center" style="width:10%">Likelihood</th><th class="text-center" style="width:10%">Impact</th><th style="width:15%">Attention</th><th>If Triggered &rarr; Market Impact</th></tr></thead>
+          <tbody>
+            <tr style="background:#FDE8E810;">
+              <td style="font-weight:600;color:var(--red);">ME Escalation / Hormuz Closure</td>
+              <td class="text-center"><span style="background:#FDE8E8;color:var(--red);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">HIGH</span></td>
+              <td class="text-center"><span style="background:#FDE8E8;color:var(--red);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">SEVERE</span></td>
+              <td><div style="height:6px;background:#eee;border-radius:3px;"><div style="width:90%;height:100%;background:var(--red);border-radius:3px;"></div></div></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Oil to $120+, deep stagflation, S&P -15-20%, flight to Treasuries. Energy stocks surge, everything else sells.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">Fed Policy Error (Hike into Weakness)</td>
+              <td class="text-center"><span style="background:#FFF3E0;color:var(--accent-orange);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">MED</span></td>
+              <td class="text-center"><span style="background:#FDE8E8;color:var(--red);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">HIGH</span></td>
+              <td><div style="height:6px;background:#eee;border-radius:3px;"><div style="width:55%;height:100%;background:var(--accent-orange);border-radius:3px;"></div></div></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Yield curve re-inverts, housing collapse accelerates, credit spreads blow out 200+ bps. Recession within 6-9 months.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">AI Capex Disappointment</td>
+              <td class="text-center"><span style="background:#FFF3E0;color:var(--accent-orange);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">MED</span></td>
+              <td class="text-center"><span style="background:#FFF3E0;color:var(--accent-orange);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">MED</span></td>
+              <td><div style="height:6px;background:#eee;border-radius:3px;"><div style="width:40%;height:100%;background:var(--accent-orange);border-radius:3px;"></div></div></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Semis correct 30-40%, Nasdaq -10-15%. Hyperscalers guide down capex. Rotation to value/defensives.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">China Slowdown / Taiwan Escalation</td>
+              <td class="text-center"><span style="background:#EBF2FB;color:var(--accent-blue);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">LOW</span></td>
+              <td class="text-center"><span style="background:#FDE8E8;color:var(--red);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">SEVERE</span></td>
+              <td><div style="height:6px;background:#eee;border-radius:3px;"><div style="width:30%;height:100%;background:var(--accent-blue);border-radius:3px;"></div></div></td>
+              <td style="font-size:11px;color:var(--text-secondary);">Global semiconductor supply chain catastrophe. TSM = 90% of advanced chips. AAPL China revenue at risk.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">Credit Event / HY Repricing</td>
+              <td class="text-center"><span style="background:#EBF2FB;color:var(--accent-blue);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">LOW</span></td>
+              <td class="text-center"><span style="background:#FFF3E0;color:var(--accent-orange);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">MED</span></td>
+              <td><div style="height:6px;background:#eee;border-radius:3px;"><div style="width:20%;height:100%;background:var(--accent-blue);border-radius:3px;"></div></div></td>
+              <td style="font-size:11px;color:var(--text-secondary);">HY spreads to 500+ bps. Leveraged firms crushed. Small caps (-20%). Banks tighten lending.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">Inflation Expectations Unanchor</td>
+              <td class="text-center"><span style="background:#FFF3E0;color:var(--accent-orange);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">MED</span></td>
+              <td class="text-center"><span style="background:#FDE8E8;color:var(--red);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">HIGH</span></td>
+              <td><div style="height:6px;background:#eee;border-radius:3px;"><div style="width:50%;height:100%;background:var(--accent-orange);border-radius:3px;"></div></div></td>
+              <td style="font-size:11px;color:var(--text-secondary);">If 1Y expectations breach 5%, Fed forced into aggressive hikes regardless of growth. Replay of 2022.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
+  <!-- ===== SECTOR SYNTHESIS ===== -->
+  <div class="section-label">Integrated Sector Positioning</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Combining cyclical regime + structural themes + risk exposure into an overall sector view.</div>
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Sector Positioning</div><span class="card-badge badge-live">All Layers Combined</span></div>
+      <div class="card-body" style="padding:10px 16px;">
+        <table>
+          <thead><tr><th>Sector</th><th class="text-center">Cyclical Signal</th><th class="text-center">Structural Theme</th><th class="text-center">Risk Exposure</th><th class="text-center" style="width:15%;">Net Signal</th><th>Rationale</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:700;">Energy</td><td class="text-center"><span style="color:var(--green);font-weight:600;">Favored</span></td><td class="text-center"><span style="color:var(--green);font-weight:600;">ME Crisis +</span></td><td class="text-center"><span style="color:var(--accent-orange);">Geopolitical</span></td><td class="text-center"><span style="background:#E8F5EE;color:var(--green);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">FAVORABLE</span></td><td style="font-size:11px;color:var(--text-secondary);">Stagflation hedge + ME crisis beneficiary. LNG positioned as structural winner.</td></tr>
+            <tr><td style="font-weight:700;">Healthcare</td><td class="text-center"><span style="color:var(--green);font-weight:600;">Favored</span></td><td class="text-center"><span style="color:var(--green);font-weight:700;">GLP-1 +++</span></td><td class="text-center"><span style="color:var(--green);">Low</span></td><td class="text-center"><span style="background:#E8F5EE;color:var(--green);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">FAVORABLE</span></td><td style="font-size:11px;color:var(--text-secondary);">Defensive in stagflation + GLP-1 secular megatrend. LLY, ABBV, AZN.</td></tr>
+            <tr><td style="font-weight:700;">Technology</td><td class="text-center"><span style="color:var(--red);font-weight:600;">Vulnerable</span></td><td class="text-center"><span style="color:var(--green);font-weight:700;">AI Capex +++</span></td><td class="text-center"><span style="color:var(--accent-orange);">ROI risk</span></td><td class="text-center"><span style="background:#FFF3E0;color:var(--accent-orange);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">SELECTIVE</span></td><td style="font-size:11px;color:var(--text-secondary);">AI capex cycle overrides macro for profitable names (NVDA, AVGO, PANW). Avoid unprofitable growth.</td></tr>
+            <tr><td style="font-weight:700;">Industrials</td><td class="text-center"><span style="color:var(--text-muted);">Neutral</span></td><td class="text-center"><span style="color:var(--green);font-weight:600;">Reshoring +</span></td><td class="text-center"><span style="color:var(--green);">Low</span></td><td class="text-center"><span style="background:#EBF2FB;color:var(--accent-blue);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">FAVORABLE</span></td><td style="font-size:11px;color:var(--text-secondary);">Aero aftermarket (HEI, TDG, GE) + reshoring/defense spending (RTX, LHX, DE).</td></tr>
+            <tr><td style="font-weight:700;">Financials</td><td class="text-center"><span style="color:var(--green);font-weight:600;">Favored</span></td><td class="text-center"><span style="color:var(--green);font-weight:600;">Alt Mgrs +</span></td><td class="text-center"><span style="color:var(--accent-orange);">Credit risk</span></td><td class="text-center"><span style="background:#EBF2FB;color:var(--accent-blue);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">FAVORABLE</span></td><td style="font-size:11px;color:var(--text-secondary);">Alt managers (APO, BX) benefit from private credit. JPM, MS, COF from higher rates.</td></tr>
+            <tr><td style="font-weight:700;">Utilities</td><td class="text-center"><span style="color:var(--green);font-weight:600;">Favored</span></td><td class="text-center"><span style="color:var(--green);font-weight:600;">AI Power +</span></td><td class="text-center"><span style="color:var(--green);">Low</span></td><td class="text-center"><span style="background:#E8F5EE;color:var(--green);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">FAVORABLE</span></td><td style="font-size:11px;color:var(--text-secondary);">Defensive + AI data center power demand. TLN, GEV, VST all benefit.</td></tr>
+            <tr><td style="font-weight:700;">Cons. Discretionary</td><td class="text-center"><span style="color:var(--red);font-weight:600;">Weak</span></td><td class="text-center"><span style="color:var(--red);font-weight:600;">Bifurcation -</span></td><td class="text-center"><span style="color:var(--accent-orange);">Consumer stress</span></td><td class="text-center"><span style="background:#FDE8E8;color:var(--red);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">HEADWINDS</span></td><td style="font-size:11px;color:var(--text-secondary);">Squeezed consumer. Exception: AMZN (share gains), TJX (trade-down), VIK/HLT/MAR (experiential).</td></tr>
+            <tr><td style="font-weight:700;">Comm. Services</td><td class="text-center"><span style="color:var(--red);font-weight:600;">Weak</span></td><td class="text-center"><span style="color:var(--green);font-weight:600;">AI/Ads +</span></td><td class="text-center"><span style="color:var(--accent-orange);">Ad cycle</span></td><td class="text-center"><span style="background:#FFF3E0;color:var(--accent-orange);padding:3px 12px;border-radius:10px;font-weight:700;font-size:11px;">SELECTIVE</span></td><td style="font-size:11px;color:var(--text-secondary);">GOOGL and NFLX have AI/subscriber tailwinds. SPOT growing. TTWO gaming resilient.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
 </div>
 </div>
