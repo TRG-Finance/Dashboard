@@ -2571,8 +2571,6 @@ initIndicatorCharts();
     </svg>`;
   }
 
-  const container = document.getElementById('macroGauges');
-  if (!container) return;
   container.innerHTML = gauges.map(g => `
     <div style="text-align:center;">
       <div style="font-size:10px;font-weight:700;color:var(--accent-blue);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">${g.sub}</div>
