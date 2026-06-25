@@ -1233,6 +1233,10 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
         <div class="card-header"><div class="card-title">Current Regime Assessment</div><span class="card-badge badge-updated">Surprise-Based</span></div>
         <div class="card-body" id="regime2Desc"></div>
       </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">What Would Change the Regime</div></div>
+        <div class="card-body" id="regime2Shifts"></div>
+      </div>
     </div>
   </div>
 
@@ -3490,6 +3494,41 @@ document.getElementById('regime2Desc').innerHTML = `
     <div style="font-size:11px;font-weight:600;color:var(--navy);margin-bottom:4px;">Score Summary</div>
     <div style="font-size:12px;color:var(--text-secondary);">Growth surprise composite: <strong style="color:${gs2>=0?'var(--green)':'var(--red)'}">${gs2>=0?'+':''}${gs2.toFixed(2)}</strong> | Inflation surprise composite: <strong style="color:${is2>0?'var(--red)':'var(--green)'}">${is2>=0?'+':''}${is2.toFixed(2)}</strong></div>
     <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Composite range: -1.0 (strong negative surprise) to +1.0 (strong positive surprise)</div>
+  </div>
+`;
+
+// What would change the regime
+const regimeShifts = {
+  Stagflationary: [
+    {to:'Goldilocks',color:'#2EAE6D',text:'Oil prices decline (ceasefire / de-escalation), Core PCE drops below trend, GDP re-accelerates. Growth surprises turn positive while inflation surprises turn negative.'},
+    {to:'Reflation',color:'#E8873A',text:'GDP accelerates while inflation stays hot. Would require a consumer spending revival or fiscal stimulus while energy costs remain elevated.'},
+    {to:'Deflation',color:'#2E7DD1',text:'Recession materializes — payrolls turn negative, credit spreads blow out, consumer sentiment collapses further. Fed forced into emergency cuts.'},
+    {to:'Deeper Stagflation',color:'#D94444',text:'Energy crisis escalates, oil spikes above $120, inflation expectations become unanchored, Fed forced to hike into weakness. The tail risk to watch.'},
+  ],
+  Goldilocks: [
+    {to:'Reflation',color:'#E8873A',text:'Inflation re-accelerates while growth stays strong — commodity or wage driven. Watch CPI and import prices for early signs.'},
+    {to:'Stagflation',color:'#D94444',text:'Supply shock hits (energy, trade war) pushing inflation up while growth decelerates. Oil price spikes are the most common trigger.'},
+    {to:'Deflation',color:'#2E7DD1',text:'Growth rolls over — leading indicators weaken, earnings disappoint, credit tightens. Watch jobless claims and ISM for early warnings.'},
+  ],
+  Reflation: [
+    {to:'Goldilocks',color:'#2EAE6D',text:'Inflation cools while growth holds — supply-side improvement, energy price decline, productivity gains absorb demand.'},
+    {to:'Stagflation',color:'#D94444',text:'Growth disappoints while inflation stays hot — margin squeeze, consumer pullback from high prices. The most dangerous transition.'},
+    {to:'Deflation',color:'#2E7DD1',text:'Both growth and inflation roll over simultaneously — typically triggered by aggressive central bank tightening or a credit event.'},
+  ],
+  Deflationary: [
+    {to:'Goldilocks',color:'#2EAE6D',text:'Growth stabilizes and inflects upward while inflation stays contained — fiscal stimulus, credit easing, or external demand pickup.'},
+    {to:'Reflation',color:'#E8873A',text:'Aggressive stimulus reflates both growth and prices — large fiscal packages, QE, supply chain normalization.'},
+    {to:'Stagflation',color:'#D94444',text:'Inflation re-accelerates from supply shocks while growth stays weak — the worst-case scenario from a deflationary starting point.'},
+  ],
+};
+
+const shifts = regimeShifts[regime2.name] || regimeShifts.Stagflationary;
+document.getElementById('regime2Shifts').innerHTML = `
+  <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">
+    ${shifts.map(s => `<div style="display:flex;gap:8px;margin-bottom:10px;">
+      <span style="font-size:16px;">→</span>
+      <div><strong style="color:${s.color};">Shift to ${s.to}:</strong> ${s.text}</div>
+    </div>`).join('')}
   </div>
 `;
 
