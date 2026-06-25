@@ -3509,16 +3509,7 @@ const marketSignals = [
    growth:0, inflation:_oilP != null ? (_oilP > 90 ? 1 : _oilP > 70 ? 0 : -1) : 0},
 ];
 
-const mktTbody = document.querySelector('#marketSignals2Table tbody');
-marketSignals.forEach(sig => {
-  const tr = document.createElement('tr');
-  const gColor = sig.growth > 0 ? 'var(--green)' : sig.growth < 0 ? 'var(--red)' : 'var(--text-muted)';
-  const iColor = sig.inflation > 0 ? 'var(--red)' : sig.inflation < 0 ? 'var(--green)' : 'var(--text-muted)';
-  const gArrow = sig.growth > 0 ? '▲' : sig.growth < 0 ? '▼' : '—';
-  const iArrow = sig.inflation > 0 ? '▲' : sig.inflation < 0 ? '▼' : '—';
-  tr.innerHTML = `<td style="font-weight:600;font-size:12px;">${sig.name}</td><td class="text-right font-mono" style="font-size:11px;">${sig.value}</td><td style="font-size:11px;color:var(--text-secondary);">${sig.interp}</td><td class="text-center" style="color:${gColor};font-weight:600;">${gArrow}</td><td class="text-center" style="color:${iColor};font-weight:600;">${iArrow}</td>`;
-  mktTbody.appendChild(tr);
-});
+// Market signals table removed — data captured in scorecard
 
 // Render quadrant
 function renderQuadrant2() {
