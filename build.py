@@ -164,10 +164,10 @@ def fetch_fred_data():
             print(f"  WARN: Failed to fetch {label}: {e}")
             data[label] = []
 
-    # ----- CPI / Core PCE / Unemployment histories (5 years) -----
+    # ----- CPI / Core PCE / Unemployment histories (30 years) -----
     for label, sid in [("CPI_HIST", "CPIAUCSL"), ("PCE_HIST", "PCEPILFE"), ("UNEMP_HIST", "UNRATE"), ("SAVINGS_HIST", "PSAVERT"), ("UMCSENT_HIST", "UMCSENT")]:
         try:
-            s = fred.get_series(sid, observation_start=start_5y)
+            s = fred.get_series(sid, observation_start=start_30y)
             s = s.dropna()
             if label in ("CPI_HIST", "PCE_HIST"):
                 # Convert index level to YoY %
