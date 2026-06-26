@@ -1241,18 +1241,29 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
     </div>
   </div>
 
-  <!-- Regime Map + Custom Weights -->
+  <!-- Regime Map + Custom Weights + Scenario Mode -->
   <div class="section-label">Regime Classification</div>
-  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Adjust indicator weights (0-5) to emphasize what matters most. Click Generate Analysis for a full regime breakdown.</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Adjust weights and forecasts to see how the regime shifts. Toggle <strong>Scenario Mode</strong> to plug in your own numbers.</div>
   <div class="grid-2">
     <div class="card">
-      <div class="card-header"><div class="card-title">Your Weighted Regime Map</div><span class="card-badge badge-updated" id="regime2WtLabel">--</span></div>
+      <div class="card-header"><div class="card-title">Weighted Regime Map</div><span class="card-badge badge-updated" id="regime2WtLabel">--</span></div>
       <div class="card-body" style="padding:16px;">
-        <svg id="quadrant2WtSvg" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:520px;"></svg>
+        <div style="display:flex;justify-content:center;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:8px;background:#F4F6F9;padding:4px 12px;border-radius:20px;">
+            <span style="font-size:11px;font-weight:600;color:var(--text-secondary);">Live Data</span>
+            <label style="position:relative;display:inline-block;width:40px;height:22px;cursor:pointer;">
+              <input type="checkbox" id="scenarioToggle" style="opacity:0;width:0;height:0;">
+              <span style="position:absolute;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:22px;transition:0.3s;"></span>
+              <span id="scenarioSlider" style="position:absolute;top:2px;left:2px;width:18px;height:18px;background:white;border-radius:50%;transition:0.3s;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span>
+            </label>
+            <span style="font-size:11px;font-weight:600;color:var(--text-secondary);">Scenario Mode</span>
+          </div>
+        </div>
+        <svg id="quadrant2WtSvg" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:480px;"></svg>
       </div>
     </div>
     <div class="card">
-      <div class="card-header"><div class="card-title">Indicator Weights</div><span class="card-badge badge-live">Drag to adjust</span></div>
+      <div class="card-header"><div class="card-title">Weights & Forecasts</div><span class="card-badge badge-live">Drag to adjust</span></div>
       <div class="card-body" style="padding:10px 16px;max-height:520px;overflow-y:auto;">
         <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:6px;">Growth Signals</div>
         <div id="fw2GrowthWeights"></div>
@@ -3838,29 +3849,85 @@ function buildWeightControls(containerId, indicators, onChange) {
   const el = document.getElementById(containerId);
   let html = '';
   indicators.forEach((ind, i) => {
+    const rawVal = ind.raw != null && !isNaN(ind.raw) ? ind.raw : '';
     html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-      <input type="range" min="0" max="5" value="1" data-idx="${i}" style="width:60px;height:4px;cursor:pointer;" oninput="this.nextElementSibling.textContent=this.value;window._wtOnChange_${containerId}()">
+      <input type="range" min="0" max="5" value="1" data-idx="${i}" style="width:50px;height:4px;cursor:pointer;" oninput="this.nextElementSibling.textContent=this.value;window._wtOnChange_${containerId}()">
       <span style="font-size:10px;font-weight:700;color:var(--navy);width:12px;text-align:center;">1</span>
       <span style="font-size:11px;color:var(--text-secondary);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ind.name}</span>
-      <span style="font-size:10px;font-weight:600;color:${ind.score>0?'var(--green)':ind.score<0?'var(--red)':'var(--text-muted)'};">${ind.score>=0?'+':''}${ind.score}</span>
+      <input type="number" class="scenario-input" data-idx="${i}" value="${rawVal}" step="0.1" style="display:none;width:55px;font-size:10px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;text-align:right;font-family:'SF Mono',monospace;" oninput="window._wtOnChange_${containerId}()">
+      <span class="live-score" style="font-size:10px;font-weight:600;color:${ind.score>0?'var(--green)':ind.score<0?'var(--red)':'var(--text-muted)'};">${ind.score>=0?'+':''}${ind.score}</span>
     </div>`;
   });
   el.innerHTML = html;
   window['_wtOnChange_'+containerId] = onChange;
 }
 
-function calcWeightedComposite(containerId, indicators) {
+// Scoring functions for scenario mode
+function scoreGrowthIndicator(idx, val) {
+  const rules = [
+    (v) => _scoreUp(v, 3.0, 2.0, 1.0, 0),
+    (v) => _scoreUp(v, 250, 150, 100, 50),
+    (v) => _scoreDown(v, 3.5, 4.0, 4.5, 5.0),
+    (v) => _scoreUp(v, 0.6, 0.3, 0, -0.3),
+    (v) => _scoreUp(v, 1.5, 1.3, 1.1, 0.9),
+    (v) => _scoreUp(v, 80, 65, 55, 45),
+    (v) => _scoreUp(v, 7.0, 5.0, 4.0, 3.0),
+  ];
+  return idx < rules.length ? rules[idx](val) : 0;
+}
+function scoreInflationIndicator(idx, val) {
+  const rules = [
+    (v) => _scoreUp(v, 4.0, 3.0, 2.5, 2.0),
+    (v) => _scoreUp(v, 3.5, 2.5, 2.0, 1.5),
+    (v) => _scoreUp(v, 1.0, 0.5, 0, -0.5),
+    (v) => _scoreUp(v, 4.5, 4.0, 3.5, 3.0),
+    (v) => _scoreUp(v, 5.0, 4.0, 3.0, 2.0),
+    (v) => _scoreUp(v, 5.0, 4.5, 4.0, 3.5),
+    (v) => _scoreDown(v, 200, 300, 400, 500),
+    (v) => _scoreUp(v, 100, 90, 80, 65),
+  ];
+  return idx < rules.length ? rules[idx](val) : 0;
+}
+
+function calcWeightedComposite(containerId, indicators, isGrowth) {
   const sliders = document.querySelectorAll(`#${containerId} input[type="range"]`);
+  const scenarioOn = document.getElementById('scenarioToggle') && document.getElementById('scenarioToggle').checked;
+  const scenarioInputs = document.querySelectorAll(`#${containerId} .scenario-input`);
   let weightedSum = 0, totalWeight = 0;
   sliders.forEach((s, i) => {
     const w = parseInt(s.value);
-    if (w > 0 && i < indicators.length && indicators[i].score !== 0) {
-      weightedSum += indicators[i].score * w;
-      totalWeight += 2 * w;
+    if (w > 0 && i < indicators.length) {
+      let score = indicators[i].score;
+      if (scenarioOn && scenarioInputs[i]) {
+        const forecastVal = parseFloat(scenarioInputs[i].value);
+        if (!isNaN(forecastVal)) {
+          score = isGrowth ? scoreGrowthIndicator(i, forecastVal) : scoreInflationIndicator(i, forecastVal);
+          const scoreEl = scenarioInputs[i].parentElement.querySelector('.live-score');
+          if (scoreEl) {
+            scoreEl.textContent = (score>=0?'+':'') + score;
+            scoreEl.style.color = score>0?'var(--green)':score<0?'var(--red)':'var(--text-muted)';
+          }
+        }
+      }
+      if (score !== 0) {
+        weightedSum += score * w;
+        totalWeight += 2 * w;
+      }
     }
   });
   return totalWeight > 0 ? weightedSum / totalWeight : 0;
 }
+
+// Scenario toggle logic
+document.getElementById('scenarioToggle').addEventListener('change', function() {
+  const on = this.checked;
+  const slider = document.getElementById('scenarioSlider');
+  slider.style.left = on ? '20px' : '2px';
+  this.previousElementSibling.style.background = on ? 'var(--accent-blue)' : '#ccc';
+  document.querySelectorAll('.scenario-input').forEach(el => el.style.display = on ? 'block' : 'none');
+  document.querySelectorAll('.live-score').forEach(el => el.style.display = on ? 'inline' : 'inline');
+  recalcFw2();
+});
 
 // Framework 1 weights
 function recalcFw1() {
@@ -3874,8 +3941,8 @@ recalcFw1();
 
 // Framework 2 weights
 function recalcFw2() {
-  const gw = calcWeightedComposite('fw2GrowthWeights', growthIndicators);
-  const iw = calcWeightedComposite('fw2InflationWeights', inflationIndicators);
+  const gw = calcWeightedComposite('fw2GrowthWeights', growthIndicators, true);
+  const iw = calcWeightedComposite('fw2InflationWeights', inflationIndicators, false);
   renderWeightedQuadrant('quadrant2WtSvg', gw, iw, 'regime2WtLabel');
 }
 buildWeightControls('fw2GrowthWeights', growthIndicators, recalcFw2);
