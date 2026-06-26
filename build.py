@@ -307,7 +307,10 @@ LOGO_CSV_HOLDINGS = fetch_logo_holdings_csv()
 LOGO_TICKERS = [h["ticker"] for h in LOGO_CSV_HOLDINGS] if LOGO_CSV_HOLDINGS else [
     "AAPL", "AVGO", "TSM", "NVDA", "LLY", "NFLX", "LNG", "PANW", "APP",
     "V", "AMZN", "MELI", "GOOGL", "APO", "BX", "ABBV", "AZN", "CBRE",
-    "COST", "GE", "HEI", "TDG", "UBER", "QXO",
+    "COST", "GE", "HEI", "TDG", "UBER", "QXO", "TLN", "GEV",
+    "VST", "DASH", "AXON", "VIK", "CTVA", "TTWO", "JPM", "DE", "PWR",
+    "RTX", "CAT", "MS", "SPOT", "TJX", "LHX", "FWONA", "HLT", "TT",
+    "COF", "MAR", "ETN", "ASML", "AVAV",
 ]
 
 INDEX_TICKERS = ["^GSPC", "^IXIC", "^RUA"]
