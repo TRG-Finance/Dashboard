@@ -692,7 +692,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
         <div style="display:flex;gap:3px;" id="logoPerformBtns"></div>
       </div>
       <div class="card-body" style="padding:12px 16px;">
-        <div id="logoPerformStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;"></div>
+        <div id="logoPerformStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;"></div>
         <svg id="logoPerformChart" viewBox="0 0 700 220" style="width:100%;height:220px;"></svg>
       </div>
     </div>
@@ -1419,12 +1419,13 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
     <div class="card">
       <div class="card-header"><div class="card-title">Factor Definitions</div></div>
       <div class="card-body" style="padding:16px 20px;font-size:12px;color:var(--text-secondary);line-height:1.8;">
-        <div><strong style="color:var(--navy);">Momentum</strong> — 6-month price return.</div>
-        <div><strong style="color:var(--navy);">Growth</strong> — Earnings + revenue growth combined.</div>
-        <div><strong style="color:var(--navy);">Value</strong> — Inverse of forward P/E. High = cheap.</div>
-        <div><strong style="color:var(--navy);">Quality</strong> — Profit + operating margin combined.</div>
-        <div><strong style="color:var(--navy);">Size</strong> — Log market cap. High = mega-cap.</div>
-        <div><strong style="color:var(--navy);">Volatility</strong> — Beta vs market.</div>
+        <div style="margin-bottom:8px;"><strong style="color:var(--accent-blue);">All scores are percentile ranks (0-100) relative to the LOGO portfolio.</strong> 50th = median. Higher = more exposure to that factor.</div>
+        <div><strong style="color:var(--navy);">Momentum</strong> — 6-month price return. High = strong price trend.</div>
+        <div><strong style="color:var(--navy);">Growth</strong> — Earnings + revenue growth. High = fast grower.</div>
+        <div><strong style="color:var(--navy);">Value</strong> — Inverse of forward P/E. High = cheaper valuation.</div>
+        <div><strong style="color:var(--navy);">Quality</strong> — Profit + operating margin. High = more profitable.</div>
+        <div><strong style="color:var(--navy);">Size</strong> — Market cap. High = larger company.</div>
+        <div><strong style="color:var(--navy);">Volatility</strong> — Beta. High = more volatile than market.</div>
       </div>
     </div>
   </div>
@@ -1780,8 +1781,7 @@ holdings.forEach(h => {
 (function buildLogoPerformance() {
   try {
   const periods = [
-    {key:'1wk',label:'1W'},{key:'1mo',label:'1M'},{key:'6mo',label:'6M'},
-    {key:'1y',label:'1Y'}
+    {key:'6mo',label:'6M'},{key:'1y',label:'1Y'},{key:'5y',label:'5Y'}
   ];
   const totalWeight = holdings.reduce((s,h) => s + h.weight, 0);
 
@@ -3711,27 +3711,33 @@ function renderQuadrant2() {
     return null;
   });
 
-  const scored = holdings.map((h, i) => {
+  // Compute raw values then convert to percentile ranks (0-100)
+  const rawScores = holdings.map((h, i) => {
     const mom = allMom[i];
     const eg = allEG[i] != null ? allEG[i] * 100 : null;
     const rg = allRG[i] != null ? allRG[i] * 100 : null;
     const growth = (eg != null || rg != null) ? ((eg || 0) + (rg || 0)) / (eg != null && rg != null ? 2 : 1) : null;
     const fpe = allFwdPE[i];
-    const value = fpe != null && fpe > 0 ? 100 - percentile(allFwdPE.filter(v=>v!=null), fpe) : null;
     const pm = allPM[i] != null ? allPM[i] * 100 : null;
     const om = allOM[i] != null ? allOM[i] * 100 : null;
     const quality = (pm != null || om != null) ? ((pm || 0) + (om || 0)) / (pm != null && om != null ? 2 : 1) : null;
     const mc = allMC[i];
     const size = mc != null ? Math.log10(mc) : null;
     const beta = allBeta[i];
+    return {mom, growth, fpe, quality, size, beta};
+  });
+
+  const pctAll = (arr) => arr.filter(v => v != null);
+  const scored = holdings.map((h, i) => {
+    const r = rawScores[i];
     return {
       ticker: h.ticker, name: h.name, weight: h.weight,
-      momentum: mom != null ? Math.round(mom * 10) / 10 : null,
-      growth: growth != null ? Math.round(growth * 10) / 10 : null,
-      value: value != null ? Math.round(value) : null,
-      quality: quality != null ? Math.round(quality * 10) / 10 : null,
-      size: size != null ? Math.round(size * 10) / 10 : null,
-      volatility: beta,
+      momentum: percentile(pctAll(rawScores.map(x=>x.mom)), r.mom),
+      growth: percentile(pctAll(rawScores.map(x=>x.growth)), r.growth),
+      value: r.fpe != null ? 100 - percentile(pctAll(rawScores.map(x=>x.fpe)), r.fpe) : null,
+      quality: percentile(pctAll(rawScores.map(x=>x.quality)), r.quality),
+      size: percentile(pctAll(rawScores.map(x=>x.size)), r.size),
+      volatility: percentile(pctAll(rawScores.map(x=>x.beta)), r.beta),
     };
   });
 
@@ -3744,7 +3750,7 @@ function renderQuadrant2() {
       const cls = colorize ? (val > 0 ? 'up' : val < 0 ? 'down' : '') : '';
       return `<td class="text-right font-mono ${cls}">${val > 0 && colorize ? '+' : ''}${val}${suffix}</td>`;
     }
-    tr.innerHTML = `<td><span class="ticker-badge">${s.ticker}</span></td><td style="font-size:11px;">${s.name}</td><td class="text-right font-mono" style="font-weight:600;">${s.weight}%</td>${fmtCell(s.momentum,'%',true)}${fmtCell(s.growth,'%',true)}${fmtCell(s.value,'',false)}${fmtCell(s.quality,'%',false)}${fmtCell(s.size,'',false)}${fmtCell(s.volatility,'x',false)}`;
+    tr.innerHTML = `<td><span class="ticker-badge">${s.ticker}</span></td><td style="font-size:11px;">${s.name}</td><td class="text-right font-mono" style="font-weight:600;">${s.weight != null && !isNaN(s.weight) ? s.weight.toFixed(2) : '--'}%</td>${fmtCell(s.momentum,'',false)}${fmtCell(s.growth,'',false)}${fmtCell(s.value,'',false)}${fmtCell(s.quality,'',false)}${fmtCell(s.size,'',false)}${fmtCell(s.volatility,'',false)}`;
     tbody.appendChild(tr);
   });
 
@@ -3780,8 +3786,7 @@ function renderQuadrant2() {
     barsSvg += `<text x="${barPad-8}" y="${y+barH/2+5}" font-size="12" fill="var(--navy)" text-anchor="end" font-weight="600" font-family="Inter">${factorLabels[f]}</text>`;
     barsSvg += `<line x1="${center}" y1="${y}" x2="${center}" y2="${y+barH}" stroke="var(--border)" stroke-width="1"/>`;
     barsSvg += `<rect x="${x}" y="${y+4}" width="${w}" height="${barH-8}" rx="4" fill="${color}" opacity="0.75"/>`;
-    const sfx = (f==='volatility'?'x':f==='value'||f==='size'?'':'%');
-    barsSvg += `<text x="${val>=0 ? x+w+6 : x-6}" y="${y+barH/2+5}" font-size="11" fill="${color}" font-weight="700" font-family="Inter" ${val<0?'text-anchor="end"':''}>${val>=0?'+':''}${val.toFixed(1)}${sfx}</text>`;
+    barsSvg += `<text x="${val>=0 ? x+w+6 : x-6}" y="${y+barH/2+5}" font-size="11" fill="${color}" font-weight="700" font-family="Inter" ${val<0?'text-anchor="end"':''}>${Math.round(val)}th pctl</text>`;
   });
   barsEl.innerHTML = `<svg viewBox="0 0 ${barPad+barW+60} ${svgH}" style="width:100%;height:${svgH}px;">${barsSvg}</svg>`;
 
