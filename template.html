@@ -1763,14 +1763,16 @@ holdings.forEach(h => {
   const tr = document.createElement('tr');
   tr.className = 'company-row';
   tr.onclick = () => openModal(h);
-  const tgt = h.target_price_fmt || h.target_price || 'N/A';
-  const eveb = h.ev_ebitda_fmt || h.ev_ebitda || 'N/A';
-  const fpe = h.fwdpe_fmt || h.fwdpe || 'N/A';
-  const upside = h.upside_fmt || 'N/A';
+  const s = (v) => (v == null || v === '' || v === '--' || (typeof v === 'number' && isNaN(v))) ? 'N/A' : v;
+  const tgt = s(h.target_price_fmt || h.target_price);
+  const eveb = s(h.ev_ebitda_fmt || h.ev_ebitda);
+  const fpe = s(h.fwdpe_fmt || h.fwdpe);
+  const upside = s(h.upside_fmt);
   const upsideClass = h.upside > 0 ? 'up' : h.upside < 0 ? 'down' : '';
-  const epsGr = h.earnings_growth_fmt || (h.earnings_growth ? (h.earnings_growth*100).toFixed(1)+'%' : 'N/A');
+  const epsGr = s(h.earnings_growth_fmt || (h.earnings_growth != null && !isNaN(h.earnings_growth) ? (h.earnings_growth*100).toFixed(1)+'%' : null));
   const epsGrClass = h.earnings_growth > 0 ? 'up' : h.earnings_growth < 0 ? 'down' : '';
-  tr.innerHTML = `<td style="color:var(--text-muted)">${h.rank}</td><td><span class="ticker-badge">${h.ticker}</span></td><td>${h.name}</td><td class="text-right font-mono" style="font-weight:600">${h.weight}%</td><td class="text-right font-mono">${h.price}</td><td class="text-right font-mono">${h.mktcap}</td><td class="text-right font-mono">${h.pe}</td><td class="text-right font-mono">${fpe}</td><td class="text-right font-mono">${eveb}</td><td class="text-right font-mono">${tgt}</td><td class="text-right font-mono ${upsideClass}" style="font-weight:600">${upside}</td><td class="text-right font-mono ${epsGrClass}">${epsGr}</td>`;
+  const wt = h.weight != null && !isNaN(h.weight) ? h.weight.toFixed(2) : '--';
+  tr.innerHTML = `<td style="color:var(--text-muted)">${h.rank || ''}</td><td><span class="ticker-badge">${h.ticker}</span></td><td>${h.name}</td><td class="text-right font-mono" style="font-weight:600">${wt}%</td><td class="text-right font-mono">${s(h.price)}</td><td class="text-right font-mono">${s(h.mktcap)}</td><td class="text-right font-mono">${s(h.pe)}</td><td class="text-right font-mono">${fpe}</td><td class="text-right font-mono">${eveb}</td><td class="text-right font-mono">${tgt}</td><td class="text-right font-mono ${upsideClass}" style="font-weight:600">${upside}</td><td class="text-right font-mono ${epsGrClass}">${epsGr}</td>`;
   tbody.appendChild(tr);
 });
 
