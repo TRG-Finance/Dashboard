@@ -1209,8 +1209,19 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
   </div>
 
   <!-- Indicator Scorecard -->
-  <div class="section-label">Indicator Scorecard</div>
-  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Each indicator scored -2 to +2 based on its current level vs key thresholds. Growth scores: positive = stronger growth. Inflation scores: positive = hotter inflation.</div>
+  <div class="section-label" style="display:flex;justify-content:space-between;align-items:center;">
+    <span>Indicator Scorecard</span>
+    <div style="display:flex;align-items:center;gap:8px;background:#F4F6F9;padding:4px 12px;border-radius:20px;">
+      <span style="font-size:10px;font-weight:600;color:var(--text-secondary);text-transform:none;letter-spacing:0;">Live</span>
+      <label style="position:relative;display:inline-block;width:36px;height:20px;cursor:pointer;">
+        <input type="checkbox" id="scenarioToggle" style="opacity:0;width:0;height:0;">
+        <span style="position:absolute;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:20px;transition:0.3s;"></span>
+        <span id="scenarioSlider" style="position:absolute;top:2px;left:2px;width:16px;height:16px;background:white;border-radius:50%;transition:0.3s;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span>
+      </label>
+      <span style="font-size:10px;font-weight:600;color:var(--text-secondary);text-transform:none;letter-spacing:0;">Scenario</span>
+    </div>
+  </div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Each indicator scored -2 to +2 based on its current level vs key thresholds. Toggle <strong>Scenario</strong> to input your own forecast numbers.</div>
   <div class="full-width">
     <div class="card">
       <div class="card-header"><div class="card-title">Growth & Inflation Signal Scoring</div><span class="card-badge badge-updated">Auto-scored from FRED</span></div>
@@ -1248,18 +1259,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
     <div class="card">
       <div class="card-header"><div class="card-title">Weighted Regime Map</div><span class="card-badge badge-updated" id="regime2WtLabel">--</span></div>
       <div class="card-body" style="padding:16px;">
-        <div style="display:flex;justify-content:center;margin-bottom:10px;">
-          <div style="display:flex;align-items:center;gap:8px;background:#F4F6F9;padding:4px 12px;border-radius:20px;">
-            <span style="font-size:11px;font-weight:600;color:var(--text-secondary);">Live Data</span>
-            <label style="position:relative;display:inline-block;width:40px;height:22px;cursor:pointer;">
-              <input type="checkbox" id="scenarioToggle" style="opacity:0;width:0;height:0;">
-              <span style="position:absolute;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:22px;transition:0.3s;"></span>
-              <span id="scenarioSlider" style="position:absolute;top:2px;left:2px;width:18px;height:18px;background:white;border-radius:50%;transition:0.3s;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span>
-            </label>
-            <span style="font-size:11px;font-weight:600;color:var(--text-secondary);">Scenario Mode</span>
-          </div>
-        </div>
-        <svg id="quadrant2WtSvg" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:480px;"></svg>
+        <svg id="quadrant2WtSvg" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:520px;"></svg>
       </div>
     </div>
     <div class="card">
@@ -3094,15 +3094,15 @@ const regime = getRegime(growthScore, inflationScore);
 // Render scorecard tables
 function renderScoreTable(tableId, indicators) {
   const tbody = document.querySelector(`#${tableId} tbody`);
-  indicators.forEach(ind => {
+  const isGrowth = tableId.includes('growth') || tableId === 'growthTable';
+  indicators.forEach((ind, idx) => {
     const tr = document.createElement('tr');
     tr.className = 'has-tooltip';
     const scoreColor = ind.score > 0 ? 'var(--green)' : ind.score < 0 ? 'var(--red)' : 'var(--text-muted)';
-    const dots = '●'.repeat(Math.abs(ind.score)) + '○'.repeat(2 - Math.abs(ind.score));
     const arrow = ind.score > 0 ? '▲' : ind.score < 0 ? '▼' : '—';
-    const signalText = ind.score >= 2 ? 'Strong' : ind.score === 1 ? 'Moderate' : ind.score === 0 ? 'Neutral' : ind.score === -1 ? 'Moderate' : 'Strong';
-    const signalDir = tableId === 'growthTable' ? (ind.score > 0 ? '↑ Growth' : ind.score < 0 ? '↓ Growth' : 'Neutral') : (ind.score > 0 ? '↑ Hotter' : ind.score < 0 ? '↓ Cooler' : 'Neutral');
-    tr.innerHTML = `<td style="font-weight:500;font-size:12px;">${ind.name}<div class="tooltip">${ind.desc}</div></td><td class="text-right font-mono" style="font-size:11px;">${ind.value}</td><td class="text-center" style="font-size:10px;color:${scoreColor};font-weight:500;">${signalDir}</td><td class="text-center" style="font-size:16px;color:${scoreColor};letter-spacing:2px;">${arrow} ${Math.abs(ind.score)}</td>`;
+    const signalDir = isGrowth ? (ind.score > 0 ? '↑ Growth' : ind.score < 0 ? '↓ Growth' : 'Neutral') : (ind.score > 0 ? '↑ Hotter' : ind.score < 0 ? '↓ Cooler' : 'Neutral');
+    const rawVal = ind.raw != null && !isNaN(ind.raw) ? ind.raw : '';
+    tr.innerHTML = `<td style="font-weight:500;font-size:12px;">${ind.name}<div class="tooltip">${ind.desc}</div></td><td class="text-right font-mono" style="font-size:11px;"><span class="live-val">${ind.value}</span><input type="number" class="scenario-input" data-table="${tableId}" data-idx="${idx}" value="${rawVal}" step="0.1" style="display:none;width:65px;font-size:11px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;text-align:right;font-family:'SF Mono',monospace;" oninput="window._recalcScenario('${tableId}',${idx},this)"></td><td class="text-center score-signal" style="font-size:10px;color:${scoreColor};font-weight:500;">${signalDir}</td><td class="text-center score-display" style="font-size:16px;color:${scoreColor};letter-spacing:2px;">${arrow} ${Math.abs(ind.score)}</td>`;
     tbody.appendChild(tr);
   });
 }
@@ -3892,22 +3892,15 @@ function scoreInflationIndicator(idx, val) {
 function calcWeightedComposite(containerId, indicators, isGrowth) {
   const sliders = document.querySelectorAll(`#${containerId} input[type="range"]`);
   const scenarioOn = document.getElementById('scenarioToggle') && document.getElementById('scenarioToggle').checked;
-  const scenarioInputs = document.querySelectorAll(`#${containerId} .scenario-input`);
+  const scoreTableId = isGrowth ? 'growth2Table' : 'inflation2Table';
+  const scenarioInputs = document.querySelectorAll(`#${scoreTableId} .scenario-input`);
   let weightedSum = 0, totalWeight = 0;
   sliders.forEach((s, i) => {
     const w = parseInt(s.value);
     if (w > 0 && i < indicators.length) {
       let score = indicators[i].score;
-      if (scenarioOn && scenarioInputs[i]) {
-        const forecastVal = parseFloat(scenarioInputs[i].value);
-        if (!isNaN(forecastVal)) {
-          score = isGrowth ? scoreGrowthIndicator(i, forecastVal) : scoreInflationIndicator(i, forecastVal);
-          const scoreEl = scenarioInputs[i].parentElement.querySelector('.live-score');
-          if (scoreEl) {
-            scoreEl.textContent = (score>=0?'+':'') + score;
-            scoreEl.style.color = score>0?'var(--green)':score<0?'var(--red)':'var(--text-muted)';
-          }
-        }
+      if (scenarioOn && scenarioInputs[i] && scenarioInputs[i].dataset.scenarioScore != null) {
+        score = parseInt(scenarioInputs[i].dataset.scenarioScore);
       }
       if (score !== 0) {
         weightedSum += score * w;
@@ -3918,14 +3911,51 @@ function calcWeightedComposite(containerId, indicators, isGrowth) {
   return totalWeight > 0 ? weightedSum / totalWeight : 0;
 }
 
+// Scenario recalculation — updates score in the scorecard table row
+window._recalcScenario = function(tableId, idx, inputEl) {
+  const val = parseFloat(inputEl.value);
+  if (isNaN(val)) return;
+  const isGrowth = tableId.includes('growth') || tableId === 'growthTable';
+  const score = isGrowth ? scoreGrowthIndicator(idx, val) : scoreInflationIndicator(idx, val);
+  const tr = inputEl.closest('tr');
+  const scoreColor = score > 0 ? 'var(--green)' : score < 0 ? 'var(--red)' : 'var(--text-muted)';
+  const arrow = score > 0 ? '▲' : score < 0 ? '▼' : '—';
+  const signalDir = isGrowth ? (score > 0 ? '↑ Growth' : score < 0 ? '↓ Growth' : 'Neutral') : (score > 0 ? '↑ Hotter' : score < 0 ? '↓ Cooler' : 'Neutral');
+  tr.querySelector('.score-signal').textContent = signalDir;
+  tr.querySelector('.score-signal').style.color = scoreColor;
+  tr.querySelector('.score-display').innerHTML = `${arrow} ${Math.abs(score)}`;
+  tr.querySelector('.score-display').style.color = scoreColor;
+  // Store scenario score for weighted composite
+  inputEl.dataset.scenarioScore = score;
+  recalcFw2();
+};
+
 // Scenario toggle logic
 document.getElementById('scenarioToggle').addEventListener('change', function() {
   const on = this.checked;
   const slider = document.getElementById('scenarioSlider');
-  slider.style.left = on ? '20px' : '2px';
+  slider.style.left = on ? '18px' : '2px';
   this.previousElementSibling.style.background = on ? 'var(--accent-blue)' : '#ccc';
-  document.querySelectorAll('.scenario-input').forEach(el => el.style.display = on ? 'block' : 'none');
-  document.querySelectorAll('.live-score').forEach(el => el.style.display = on ? 'inline' : 'inline');
+  document.querySelectorAll('.scenario-input').forEach(el => el.style.display = on ? 'inline-block' : 'none');
+  document.querySelectorAll('.live-val').forEach(el => el.style.display = on ? 'none' : 'inline');
+  if (!on) {
+    // Reset scores to live values
+    ['growth2Table','inflation2Table'].forEach(tid => {
+      const isG = tid.includes('growth');
+      const inds = isG ? growthIndicators : inflationIndicators;
+      document.querySelectorAll(`#${tid} tbody tr`).forEach((tr, i) => {
+        if (i >= inds.length) return;
+        const sc = inds[i].score;
+        const col = sc > 0 ? 'var(--green)' : sc < 0 ? 'var(--red)' : 'var(--text-muted)';
+        const arr = sc > 0 ? '▲' : sc < 0 ? '▼' : '—';
+        const sig = isG ? (sc > 0 ? '↑ Growth' : sc < 0 ? '↓ Growth' : 'Neutral') : (sc > 0 ? '↑ Hotter' : sc < 0 ? '↓ Cooler' : 'Neutral');
+        tr.querySelector('.score-signal').textContent = sig;
+        tr.querySelector('.score-signal').style.color = col;
+        tr.querySelector('.score-display').innerHTML = `${arr} ${Math.abs(sc)}`;
+        tr.querySelector('.score-display').style.color = col;
+      });
+    });
+  }
   recalcFw2();
 });
 
