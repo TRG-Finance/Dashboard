@@ -285,7 +285,7 @@ def fetch_logo_holdings_csv():
             ticker = row.get("StockTicker", "").strip()
             name = row.get("SecurityName", "").strip()
             weight_str = row.get("Weightings", "0").replace("%", "").strip()
-            if not ticker or ticker == "Cash&Other" or any(c.isdigit() for c in ticker):
+            if not ticker or ticker == "Cash&Other" or any(c.isdigit() for c in ticker) or ticker == "ADDYY":
                 continue
             try:
                 weight = float(weight_str)
