@@ -3933,7 +3933,8 @@ document.getElementById('scenarioToggle').addEventListener('change', function() 
   const on = this.checked;
   const slider = document.getElementById('scenarioSlider');
   slider.style.left = on ? '18px' : '2px';
-  this.previousElementSibling.style.background = on ? 'var(--accent-blue)' : '#ccc';
+  const track = slider.parentElement.querySelector('span');
+  if (track) track.style.background = on ? 'var(--accent-blue)' : '#ccc';
   document.querySelectorAll('.scenario-input').forEach(el => el.style.display = on ? 'inline-block' : 'none');
   document.querySelectorAll('.live-val').forEach(el => el.style.display = on ? 'none' : 'inline');
   if (!on) {
