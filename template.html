@@ -1828,8 +1828,8 @@ holdings.forEach(h => {
   let statsHtml = '';
   periods.forEach(p => {
     const ret = calcPortfolioReturn(p.key);
-    const retStr = ret != null ? (ret >= 0 ? '+' : '') + ret.toFixed(1) + '%' : 'N/A';
-    const cls = ret > 0 ? 'up' : ret < 0 ? 'down' : '';
+    const retStr = (ret != null && !isNaN(ret) && isFinite(ret)) ? (ret >= 0 ? '+' : '') + ret.toFixed(1) + '%' : '--';
+    const cls = (ret > 0) ? 'up' : (ret < 0) ? 'down' : '';
     statsHtml += `<div class="ind-card"><div class="ind-card-title">${p.label} Return</div><div class="ind-card-value ${cls}">${retStr}</div></div>`;
   });
   statsEl.innerHTML = statsHtml;
