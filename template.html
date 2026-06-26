@@ -3849,13 +3849,11 @@ function buildWeightControls(containerId, indicators, onChange) {
   const el = document.getElementById(containerId);
   let html = '';
   indicators.forEach((ind, i) => {
-    const rawVal = ind.raw != null && !isNaN(ind.raw) ? ind.raw : '';
     html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
       <input type="range" min="0" max="5" value="1" data-idx="${i}" style="width:50px;height:4px;cursor:pointer;" oninput="this.nextElementSibling.textContent=this.value;window._wtOnChange_${containerId}()">
       <span style="font-size:10px;font-weight:700;color:var(--navy);width:12px;text-align:center;">1</span>
       <span style="font-size:11px;color:var(--text-secondary);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ind.name}</span>
-      <input type="number" class="scenario-input" data-idx="${i}" value="${rawVal}" step="0.1" style="display:none;width:55px;font-size:10px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;text-align:right;font-family:'SF Mono',monospace;" oninput="window._wtOnChange_${containerId}()">
-      <span class="live-score" style="font-size:10px;font-weight:600;color:${ind.score>0?'var(--green)':ind.score<0?'var(--red)':'var(--text-muted)'};">${ind.score>=0?'+':''}${ind.score}</span>
+      <span style="font-size:10px;font-weight:600;color:${ind.score>0?'var(--green)':ind.score<0?'var(--red)':'var(--text-muted)'};">${ind.score>=0?'+':''}${ind.score}</span>
     </div>`;
   });
   el.innerHTML = html;
