@@ -506,9 +506,9 @@ def fetch_yf_data():
             # Fetch multi-period price history for charts
             h["price_histories"] = {}
             period_configs = [
-                ("1mo", "1mo", "1d"),
                 ("6mo", "6mo", "1wk"),
                 ("1y", "1y", "1wk"),
+                ("5y", "5y", "1mo"),
             ]
             for label, period, interval in period_configs:
                 try:
