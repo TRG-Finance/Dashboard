@@ -283,7 +283,7 @@ def fetch_logo_holdings_csv():
             ticker = row.get("StockTicker", "").strip()
             name = row.get("SecurityName", "").strip()
             weight_str = row.get("Weightings", "0").replace("%", "").strip()
-            if not ticker or ticker == "Cash&Other":
+            if not ticker or ticker == "Cash&Other" or any(c.isdigit() for c in ticker):
                 continue
             try:
                 weight = float(weight_str)
@@ -506,13 +506,9 @@ def fetch_yf_data():
             # Fetch multi-period price history for charts
             h["price_histories"] = {}
             period_configs = [
-                ("1wk", "5d", "5m"),
                 ("1mo", "1mo", "1d"),
-                ("6mo", "6mo", "1d"),
+                ("6mo", "6mo", "1wk"),
                 ("1y", "1y", "1wk"),
-                ("5y", "5y", "1wk"),
-                ("10y", "10y", "1mo"),
-                ("20y", "max", "1mo"),
             ]
             for label, period, interval in period_configs:
                 try:
