@@ -1208,12 +1208,12 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
     </div>
   </div>
 
-  <!-- WHAT'S CHANGING — Surprise scorecard -->
-  <div class="section-label">What's Changing</div>
-  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Is the data surprising to the upside or downside vs recent trend? This tells you where the regime is <em>heading</em>, not just where it is. Adjust weights below to emphasize what matters most to you.</div>
+  <!-- Indicator Scorecard -->
+  <div class="section-label">Indicator Scorecard</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Each indicator scored -2 to +2 based on its current level vs key thresholds. Growth scores: positive = stronger growth. Inflation scores: positive = hotter inflation.</div>
   <div class="full-width">
     <div class="card">
-      <div class="card-header"><div class="card-title">Surprise Scorecard</div><span class="card-badge badge-updated">Auto-scored from FRED</span></div>
+      <div class="card-header"><div class="card-title">Growth & Inflation Signal Scoring</div><span class="card-badge badge-updated">Auto-scored from FRED</span></div>
       <div class="card-body" style="padding:10px 16px;">
         <div class="grid-2" style="margin-bottom:0;">
           <div>
@@ -1222,7 +1222,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
               <span id="growth2ScoreLabel" style="font-size:14px;"></span>
             </div>
             <table id="growth2Table">
-              <thead><tr><th>Indicator</th><th class="text-right">Current</th><th class="text-right">6M Avg</th><th class="text-center">Surprise</th><th class="text-center sortable" data-col="4" style="cursor:pointer;">Score ⇅</th></tr></thead>
+              <thead><tr><th>Indicator</th><th class="text-right">Value</th><th class="text-center">Signal</th><th class="text-center sortable" data-col="3" style="cursor:pointer;">Score ⇅</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -1232,7 +1232,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
               <span id="inflation2ScoreLabel" style="font-size:14px;"></span>
             </div>
             <table id="inflation2Table">
-              <thead><tr><th>Indicator</th><th class="text-right">Current</th><th class="text-right">6M Avg</th><th class="text-center">Surprise</th><th class="text-center sortable" data-col="4" style="cursor:pointer;">Score ⇅</th></tr></thead>
+              <thead><tr><th>Indicator</th><th class="text-right">Value</th><th class="text-center">Signal</th><th class="text-center sortable" data-col="3" style="cursor:pointer;">Score ⇅</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -3506,14 +3506,14 @@ function renderSurpriseTable(tableId, indicators) {
   });
 }
 
-renderSurpriseTable('growth2Table', growthSurprises);
-renderSurpriseTable('inflation2Table', inflationSurprises);
+renderScoreTable('growth2Table', growthIndicators);
+renderScoreTable('inflation2Table', inflationIndicators);
 
 // Score labels
-const gs2Sum = growthSurprises.reduce((a,i)=>a+i.score,0);
-const is2Sum = inflationSurprises.reduce((a,i)=>a+i.score,0);
-const gs2Max = growthSurprises.length * 2;
-const is2Max = inflationSurprises.length * 2;
+const gs2Sum = growthIndicators.reduce((a,i)=>a+i.score,0);
+const is2Sum = inflationIndicators.reduce((a,i)=>a+i.score,0);
+const gs2Max = growthIndicators.length * 2;
+const is2Max = inflationIndicators.length * 2;
 document.getElementById('growth2ScoreLabel').innerHTML = `<span style="color:${gs2Sum>=0?'var(--green)':'var(--red)'};font-weight:700;">${gs2Sum>=0?'+':''}${gs2Sum} / ${gs2Max}</span>`;
 document.getElementById('inflation2ScoreLabel').innerHTML = `<span style="color:${is2Sum>0?'var(--red)':'var(--green)'};font-weight:700;">${is2Sum>=0?'+':''}${is2Sum} / ${is2Max}</span>`;
 
@@ -3874,12 +3874,12 @@ recalcFw1();
 
 // Framework 2 weights
 function recalcFw2() {
-  const gw = calcWeightedComposite('fw2GrowthWeights', growthSurprises);
-  const iw = calcWeightedComposite('fw2InflationWeights', inflationSurprises);
+  const gw = calcWeightedComposite('fw2GrowthWeights', growthIndicators);
+  const iw = calcWeightedComposite('fw2InflationWeights', inflationIndicators);
   renderWeightedQuadrant('quadrant2WtSvg', gw, iw, 'regime2WtLabel');
 }
-buildWeightControls('fw2GrowthWeights', growthSurprises, recalcFw2);
-buildWeightControls('fw2InflationWeights', inflationSurprises, recalcFw2);
+buildWeightControls('fw2GrowthWeights', growthIndicators, recalcFw2);
+buildWeightControls('fw2InflationWeights', inflationIndicators, recalcFw2);
 recalcFw2();
 
 // ===== ANALYSIS GENERATOR =====
@@ -3892,18 +3892,18 @@ document.getElementById('runAnalysisBtn').addEventListener('click', function() {
   const gWeighted = [], iWeighted = [];
   gSliders.forEach((s,i) => {
     const w = parseInt(s.value);
-    if (w > 0 && i < growthSurprises.length) {
-      const ind = growthSurprises[i];
+    if (w > 0 && i < growthIndicators.length) {
+      const ind = growthIndicators[i];
       gWSum += ind.score * w; gWTot += 2 * w;
-      gWeighted.push({name:ind.name, score:ind.score, weight:w, impact:ind.score*w, current:ind.current, unit:ind.unit});
+      gWeighted.push({name:ind.name, score:ind.score, weight:w, impact:ind.score*w, current:ind.value, unit:''});
     }
   });
   iSliders.forEach((s,i) => {
     const w = parseInt(s.value);
-    if (w > 0 && i < inflationSurprises.length) {
-      const ind = inflationSurprises[i];
+    if (w > 0 && i < inflationIndicators.length) {
+      const ind = inflationIndicators[i];
       iWSum += ind.score * w; iWTot += 2 * w;
-      iWeighted.push({name:ind.name, score:ind.score, weight:w, impact:ind.score*w, current:ind.current, unit:ind.unit});
+      iWeighted.push({name:ind.name, score:ind.score, weight:w, impact:ind.score*w, current:ind.value, unit:''});
     }
   });
 
