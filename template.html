@@ -3591,7 +3591,7 @@ function renderQuadrant2() {
   `;
 }
 // ===== STATIC QUADRANT — "The Environment" =====
-(function renderStaticQuadrant() {
+(function renderStaticQuadrant() { try {
   const gdp = LIVE_DATA.GDP ? LIVE_DATA.GDP.latest : null;
   const cpi = _lastHist('CPI_HIST');
   if (gdp == null && cpi == null) return;
@@ -3668,10 +3668,12 @@ function renderQuadrant2() {
       </div>
     `;
   }
+  } catch(e) { console.warn('Static quadrant:', e.message); }
 })();
 
 // ===== FACTOR ATTRIBUTION ENGINE =====
 (function buildFactorAttribution() {
+  try {
   if (!holdings || holdings.length === 0) return;
 
   // Calculate factor scores for each holding (0-100 scale)
@@ -3804,6 +3806,7 @@ function renderQuadrant2() {
   concEl.innerHTML = concHtml;
 
   makeTableSortable('factorTable');
+  } catch(e) { console.warn('Factor attribution:', e.message); }
 })();
 
 // ===== CUSTOM WEIGHTED REGIME ENGINE (both frameworks) =====
