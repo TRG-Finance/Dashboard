@@ -3991,7 +3991,7 @@ document.getElementById('runAnalysisBtn').addEventListener('click', function() {
     if (w > 0 && i < growthIndicators.length) {
       const ind = growthIndicators[i];
       gWSum += ind.score * w; gWTot += 2 * w;
-      gWeighted.push({name:ind.name, score:ind.score, weight:w, impact:ind.score*w, current:ind.value, unit:''});
+      gWeighted.push({name:ind.name, score:ind.score, weight:w, impact:ind.score*w, currentStr:ind.value || ''});
     }
   });
   iSliders.forEach((s,i) => {
@@ -3999,7 +3999,7 @@ document.getElementById('runAnalysisBtn').addEventListener('click', function() {
     if (w > 0 && i < inflationIndicators.length) {
       const ind = inflationIndicators[i];
       iWSum += ind.score * w; iWTot += 2 * w;
-      iWeighted.push({name:ind.name, score:ind.score, weight:w, impact:ind.score*w, current:ind.value, unit:''});
+      iWeighted.push({name:ind.name, score:ind.score, weight:w, impact:ind.score*w, currentStr:ind.value || ''});
     }
   });
 
@@ -4054,17 +4054,17 @@ document.getElementById('runAnalysisBtn').addEventListener('click', function() {
     const dir = g.score > 0 ? 'positive' : g.score < 0 ? 'negative' : 'neutral';
     const icon = g.score > 0 ? '▲' : g.score < 0 ? '▼' : '—';
     const color = g.score > 0 ? 'var(--green)' : g.score < 0 ? 'var(--red)' : 'var(--text-muted)';
-    html += `<div style="display:flex;gap:8px;margin-bottom:4px;"><span style="color:${color};font-weight:700;">${icon}</span><span><strong>${g.name}</strong> (weight: ${g.weight}) — scoring ${dir} surprise. ${g.current != null ? 'Current: ' + g.current.toFixed(1) + (g.unit==='%'?'%':'') + '.' : ''}</span></div>`;
+    html += `<div style="display:flex;gap:8px;margin-bottom:4px;"><span style="color:${color};font-weight:700;">${icon}</span><span><strong>${g.name}</strong> (weight: ${g.weight}) — scoring ${dir}. ${g.currentStr ? 'Current: ' + g.currentStr + '.' : ''}</span></div>`;
   });
   html += '</div>';
 
   html += `<div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px;">Key Inflation Drivers (by your weighting)</div>`;
   html += '<div style="margin-bottom:16px;">';
   topInflation.forEach(g => {
-    const dir = g.score > 0 ? 'hotter than trend' : g.score < 0 ? 'cooling vs trend' : 'in-line with trend';
+    const dir = g.score > 0 ? 'hotter than target' : g.score < 0 ? 'cooling below target' : 'near target';
     const icon = g.score > 0 ? '▲' : g.score < 0 ? '▼' : '—';
     const color = g.score > 0 ? 'var(--red)' : g.score < 0 ? 'var(--green)' : 'var(--text-muted)';
-    html += `<div style="display:flex;gap:8px;margin-bottom:4px;"><span style="color:${color};font-weight:700;">${icon}</span><span><strong>${g.name}</strong> (weight: ${g.weight}) — ${dir}. ${g.current != null ? 'Current: ' + g.current.toFixed(1) + (g.unit==='%'?'%':'') + '.' : ''}</span></div>`;
+    html += `<div style="display:flex;gap:8px;margin-bottom:4px;"><span style="color:${color};font-weight:700;">${icon}</span><span><strong>${g.name}</strong> (weight: ${g.weight}) — ${dir}. ${g.currentStr ? 'Current: ' + g.currentStr + '.' : ''}</span></div>`;
   });
   html += '</div>';
 
