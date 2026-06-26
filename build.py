@@ -10,6 +10,8 @@ import datetime
 import csv
 import io
 import requests
+import signal
+import threading
 from fredapi import Fred
 import yfinance as yf
 from jinja2 import Template
@@ -460,9 +462,28 @@ def fetch_yf_data():
 
     # ----- LOGO Holdings (full fundamentals) -----
     holdings = []
+    def fetch_stock_with_timeout(sym, timeout=45):
+        """Fetch stock data with a timeout to prevent hangs on problematic tickers."""
+        result = [None]
+        def _fetch():
+            try:
+                t = yf.Ticker(sym)
+                result[0] = t
+            except:
+                pass
+        thread = threading.Thread(target=_fetch)
+        thread.start()
+        thread.join(timeout)
+        if thread.is_alive():
+            print(f"  WARN: Timeout fetching {sym} after {timeout}s, skipping")
+            return None
+        return result[0]
+
     for sym in LOGO_TICKERS:
         try:
-            t = yf.Ticker(sym)
+            t = fetch_stock_with_timeout(sym)
+            if t is None:
+                raise Exception(f"Timeout for {sym}")
             info = t.info
             h = {
                 "ticker": sym,
