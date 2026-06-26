@@ -462,29 +462,29 @@ def fetch_yf_data():
 
     # ----- LOGO Holdings (full fundamentals) -----
     holdings = []
-    def fetch_stock_with_timeout(sym, timeout=45):
-        """Fetch stock data with a timeout to prevent hangs on problematic tickers."""
+    def fetch_stock_data(sym, timeout=60):
+        """Fetch all stock data with a timeout to prevent hangs."""
         result = [None]
         def _fetch():
             try:
                 t = yf.Ticker(sym)
-                result[0] = t
-            except:
-                pass
-        thread = threading.Thread(target=_fetch)
+                info = t.info
+                result[0] = (t, info)
+            except Exception as e:
+                print(f"    Thread error for {sym}: {e}")
+        thread = threading.Thread(target=_fetch, daemon=True)
         thread.start()
         thread.join(timeout)
-        if thread.is_alive():
-            print(f"  WARN: Timeout fetching {sym} after {timeout}s, skipping")
-            return None
+        if result[0] is None:
+            print(f"  WARN: Timeout/error fetching {sym} after {timeout}s, skipping")
         return result[0]
 
     for sym in LOGO_TICKERS:
         try:
-            t = fetch_stock_with_timeout(sym)
-            if t is None:
+            stock_data = fetch_stock_data(sym)
+            if stock_data is None:
                 raise Exception(f"Timeout for {sym}")
-            info = t.info
+            t, info = stock_data
             h = {
                 "ticker": sym,
                 "name": info.get("shortName", sym),
