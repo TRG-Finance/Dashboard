@@ -7,6 +7,7 @@ Run manually or via GitHub Actions on a daily schedule.
 import os
 import json
 import datetime
+import calendar
 import csv
 import io
 import requests
@@ -582,6 +583,134 @@ def fetch_yf_data():
     return data
 
 
+# ---------------------------------------------------------------------------
+# 3. ECONOMIC RELEASE CALENDAR
+# ---------------------------------------------------------------------------
+# Rule-based recurring release schedule. BLS/Census/Conference Board release
+# days follow well-known monthly conventions (e.g. jobs report = 1st Friday),
+# so "next release" dates can be computed locally without a calendar API and
+# never go stale like a hand-typed date would.
+
+FOMC_DATES_2026 = [
+    datetime.date(2026, 1, 28), datetime.date(2026, 3, 18), datetime.date(2026, 4, 29),
+    datetime.date(2026, 6, 17), datetime.date(2026, 7, 29), datetime.date(2026, 9, 16),
+    datetime.date(2026, 10, 28), datetime.date(2026, 12, 9),
+]
+
+
+def _nth_weekday(year, month, weekday, n):
+    """weekday: Mon=0..Sun=6. n=1 -> first occurrence in month, n=-1 -> last."""
+    cal = calendar.Calendar()
+    days = [d for d in cal.itermonthdates(year, month) if d.month == month and d.weekday() == weekday]
+    return days[n - 1] if n > 0 else days[n]
+
+
+def _business_day_on_or_after(year, month, day):
+    """Approximate release day, nudged off weekends onto the nearest prior weekday."""
+    last_day = calendar.monthrange(year, month)[1]
+    d = datetime.date(year, month, min(day, last_day))
+    while d.weekday() >= 5:
+        d -= datetime.timedelta(days=1)
+    return d
+
+
+def _fmt_month_day(d):
+    return f"{d.strftime('%b')} {d.day}"
+
+
+def _gdp_quarter_label(release_date):
+    return {1: f"Q4 {release_date.year - 1}", 4: f"Q1 {release_date.year}",
+            7: f"Q2 {release_date.year}", 10: f"Q3 {release_date.year}"}.get(release_date.month, "")
+
+
+# key -> (display name, description, release time, rule(year, month) -> date or None)
+RELEASE_RULES = {
+    "gdp": ("GDP Advance", "First look at quarterly GDP growth.", "8:30 AM",
+            lambda y, m: _business_day_on_or_after(y, m, 30) if m in (1, 4, 7, 10) else None),
+    "jobs": ("Employment Situation", "Nonfarm payrolls + unemployment rate.", "8:30 AM",
+             lambda y, m: _nth_weekday(y, m, 4, 1)),
+    "pmi": ("ISM Manufacturing PMI", "Manufacturing sector health gauge.", "10:00 AM",
+            lambda y, m: _business_day_on_or_after(y, m, 1)),
+    "retail": ("Retail Sales", "Consumer spending on goods.", "8:30 AM",
+               lambda y, m: _business_day_on_or_after(y, m, 15)),
+    "housing_starts": ("Housing Starts", "New residential construction.", "8:30 AM",
+                        lambda y, m: _business_day_on_or_after(y, m, 18)),
+    "permits": ("Building Permits", "Leading housing construction indicator.", "8:30 AM",
+                lambda y, m: _business_day_on_or_after(y, m, 18)),
+    "trade": ("Trade Balance", "Exports minus imports.", "8:30 AM",
+              lambda y, m: _business_day_on_or_after(y, m, 5)),
+    "credit": ("Consumer Credit", "Consumer borrowing outstanding.", "3:00 PM",
+               lambda y, m: _business_day_on_or_after(y, m, 7)),
+    "import_prices": ("Import Prices", "Price of imported goods.", "8:30 AM",
+                       lambda y, m: _business_day_on_or_after(y, m, 15)),
+    "lei": ("Leading Economic Index", "Conference Board composite index.", "10:00 AM",
+            lambda y, m: _business_day_on_or_after(y, m, 20)),
+    "cpi": ("CPI Report", "Critical inflation read.", "8:30 AM",
+            lambda y, m: _business_day_on_or_after(y, m, 13)),
+    "sentiment": ("Consumer Sentiment (Prelim)", "Michigan survey inflation expectations.", "10:00 AM",
+                  lambda y, m: _nth_weekday(y, m, 4, 2)),
+    "durables": ("Durable Goods Orders", "Business capex proxy.", "8:30 AM",
+                 lambda y, m: _business_day_on_or_after(y, m, 25)),
+    "indpro": ("Industrial Production", "Factory, mine, and utility output.", "9:15 AM",
+               lambda y, m: _business_day_on_or_after(y, m, 16)),
+    "confidence": ("Consumer Confidence", "Conference Board index.", "10:00 AM",
+                   lambda y, m: _nth_weekday(y, m, 1, -1)),
+    "new_home_sales": ("New Home Sales", "Key housing demand gauge.", "10:00 AM",
+                        lambda y, m: _business_day_on_or_after(y, m, 24)),
+}
+
+
+def _next_monthly_occurrence(today, rule_fn, months_ahead=15):
+    y, m = today.year, today.month
+    for _ in range(months_ahead):
+        d = rule_fn(y, m)
+        if d and d >= today:
+            return d
+        m += 1
+        if m > 12:
+            m, y = 1, y + 1
+    return None
+
+
+def _next_fomc(today):
+    for d in FOMC_DATES_2026:
+        if d >= today:
+            return d
+    return None
+
+
+def compute_release_calendar(today):
+    """Returns next-release labels for the indicator table plus a rolling
+    'this week' / 'upcoming' event list for the Economic Calendar card."""
+    events = {}
+    for key, (name, desc, time, rule_fn) in RELEASE_RULES.items():
+        d = _next_monthly_occurrence(today, rule_fn)
+        if d:
+            label = f"{name} — {_gdp_quarter_label(d)}" if key == "gdp" else name
+            events[key] = {"date": d, "name": label, "desc": desc, "time": time}
+    fomc_date = _next_fomc(today)
+    if fomc_date:
+        events["fomc"] = {"date": fomc_date, "name": "FOMC Rate Decision",
+                           "desc": "Next policy meeting.", "time": "2:00 PM"}
+
+    next_release = {k: _fmt_month_day(v["date"]) for k, v in events.items()}
+    next_release["treasury"] = "Daily"
+
+    week_start = today - datetime.timedelta(days=today.weekday())
+    week_end = week_start + datetime.timedelta(days=4)
+    ordered = sorted(events.values(), key=lambda e: e["date"])
+    for e in ordered:
+        e["day"] = e["date"].day
+        e["month_abbr"] = e["date"].strftime("%b").upper()
+
+    return {
+        "next_release": next_release,
+        "week_range_label": f"{_fmt_month_day(week_start)}–{week_end.day}",
+        "calendar_this_week": [e for e in ordered if week_start <= e["date"] <= week_end],
+        "calendar_upcoming": [e for e in ordered if e["date"] > week_end][:5],
+    }
+
+
 def format_mktcap(val):
     if not val or val == 0:
         return "N/A"
@@ -644,11 +773,18 @@ def build_dashboard():
     sp_dy = yf_data.get("sp500_dividend_yield")
     sp_dy_fmt = f"{sp_dy*100:.2f}%" if sp_dy else "N/A"
 
+    print("  Computing release calendar...")
+    calendar_data = compute_release_calendar(datetime.date.today())
+
     # Build context
     now = datetime.datetime.now()
     ctx = {
         "build_date": now.strftime("%A, %B %d, %Y"),
         "build_time": now.strftime("%I:%M %p ET"),
+        "next_release": calendar_data["next_release"],
+        "week_range_label": calendar_data["week_range_label"],
+        "calendar_this_week": calendar_data["calendar_this_week"],
+        "calendar_upcoming": calendar_data["calendar_upcoming"],
         "fred": fred_data,
         "yf": yf_data,
         "sp500_price": yf_data.get("^GSPC", {}).get("price"),
