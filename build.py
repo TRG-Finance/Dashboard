@@ -506,6 +506,8 @@ def fetch_yf_data():
             h = {
                 "ticker": sym,
                 "name": info.get("shortName", sym),
+                "weight": 0,
+                "rank": 999,
                 "price": safe_round(info.get("currentPrice", info.get("regularMarketPrice", 0)), 2),
                 "mktcap": info.get("marketCap", 0),
                 "pe": safe_round(info.get("trailingPE")),
@@ -566,7 +568,7 @@ def fetch_yf_data():
         except Exception as e:
             print(f"  WARN: Failed to fetch {sym}: {e}")
             holdings.append({
-                "ticker": sym, "name": sym, "price": 0, "mktcap": 0,
+                "ticker": sym, "name": sym, "weight": 0, "rank": 999, "price": 0, "mktcap": 0,
                 "pe": None, "fwdpe": None, "ev_ebitda": None,
                 "earnings_growth": None, "revenue_growth": None,
                 "gross_margin": None, "ebitda_margin": None,
