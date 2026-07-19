@@ -64,6 +64,8 @@ def fetch_fred_data():
         "ICSA": "ICSA",
         "JTSJOL": "JTSJOL",
         "PPIACO": "PPIACO",
+        # Michigan survey 1yr inflation expectations
+        "INFL_EXP_1Y": "MICH",
     }
 
     for key, series_id in series_map.items():
@@ -262,6 +264,18 @@ def fetch_fred_data():
                     {"date": d.strftime("%Y-%m"), "val": round(float(v), 1)}
                     for d, v in monthly.items()
                 ]
+
+            # DGORDER_HIST/INDPRO_HIST above are kept as raw levels for their
+            # modal charts — the indicator table needs MoM% instead, computed
+            # separately here so it doesn't disturb the existing chart data.
+            if label in ("DGORDER_HIST", "INDPRO_HIST"):
+                s_mom = s.pct_change().dropna() * 100
+                if len(s_mom) > 0:
+                    data[label.replace("_HIST", "_MOM")] = {
+                        "latest": round(float(s_mom.iloc[-1]), 1),
+                        "prior": round(float(s_mom.iloc[-2]), 1) if len(s_mom) > 1 else None,
+                        "date": s_mom.index[-1].strftime("%Y-%m-%d"),
+                    }
         except Exception as e:
             print(f"  WARN: Failed to fetch {label} ({sid}): {e}")
             data[label] = []
@@ -711,6 +725,132 @@ def compute_release_calendar(today):
     }
 
 
+# ---------------------------------------------------------------------------
+# 4. INDICATOR TABLE (Latest / Prior / Period)
+# ---------------------------------------------------------------------------
+# 13 of the 15 rows have a free live data source and get computed here.
+# ISM Manufacturing PMI and the Conference Board LEI are proprietary indices
+# with no free API, so those two rows stay manually curated in the template.
+
+def _parse_date(s):
+    parts = s.split("-")
+    if len(parts) == 2:
+        return datetime.date(int(parts[0]), int(parts[1]), 1)
+    return datetime.date(int(parts[0]), int(parts[1]), int(parts[2]))
+
+
+def _month_year_label(d):
+    return d.strftime("%b %Y")
+
+
+def _quarter_label(d):
+    return f"Q{(d.month - 1) // 3 + 1} {d.year}"
+
+
+def _fmt_signed_pct(val, decimals=1):
+    return f"{val:+.{decimals}f}%" if val is not None else "N/A"
+
+
+def _fmt_plain_pct(val, decimals=2):
+    return f"{val:.{decimals}f}%" if val is not None else "N/A"
+
+
+def _fmt_signed_dollar_b(val, decimals=1):
+    if val is None:
+        return "N/A"
+    return f"{'-' if val < 0 else '+'}${abs(val):.{decimals}f}B"
+
+
+def _fmt_millions(val_thousands, decimals=3):
+    return f"{val_thousands / 1000:.{decimals}f}M" if val_thousands is not None else "N/A"
+
+
+def compute_indicator_table(fred_data):
+    table = {}
+
+    gdp = fred_data.get("GDP", {})
+    if gdp.get("latest") is not None:
+        d = _parse_date(gdp["date"])
+        table["gdp"] = {"latest": _fmt_signed_pct(gdp["latest"]), "prior": _fmt_signed_pct(gdp["prior"]),
+                        "period": _quarter_label(d)}
+
+    payems = fred_data.get("PAYEMS_HIST", [])
+    if len(payems) >= 3:
+        diff_latest = payems[-1]["val"] - payems[-2]["val"]
+        diff_prior = payems[-2]["val"] - payems[-3]["val"]
+        d = _parse_date(payems[-1]["date"])
+        table["jobs"] = {"latest": f"{diff_latest:+.0f}K", "prior": f"{diff_prior:+.0f}K",
+                          "period": _month_year_label(d)}
+
+    retail = fred_data.get("RSAFS_HIST", [])
+    if len(retail) >= 2:
+        d = _parse_date(retail[-1]["date"])
+        table["retail"] = {"latest": _fmt_signed_pct(retail[-1]["val"]), "prior": _fmt_signed_pct(retail[-2]["val"]),
+                            "period": _month_year_label(d)}
+
+    houst = fred_data.get("HOUST_HIST", [])
+    if len(houst) >= 2:
+        d = _parse_date(houst[-1]["date"])
+        table["housing_starts"] = {"latest": _fmt_millions(houst[-1]["val"]), "prior": _fmt_millions(houst[-2]["val"]),
+                                    "period": _month_year_label(d)}
+
+    permit = fred_data.get("PERMIT_HIST", [])
+    if len(permit) >= 2:
+        d = _parse_date(permit[-1]["date"])
+        table["permits"] = {"latest": _fmt_millions(permit[-1]["val"]), "prior": _fmt_millions(permit[-2]["val"]),
+                             "period": _month_year_label(d)}
+
+    trade = fred_data.get("BOPGSTB_HIST", [])
+    if len(trade) >= 2:
+        d = _parse_date(trade[-1]["date"])
+        table["trade"] = {"latest": _fmt_signed_dollar_b(trade[-1]["val"]), "prior": _fmt_signed_dollar_b(trade[-2]["val"]),
+                           "period": _month_year_label(d)}
+
+    credit = fred_data.get("TOTALSL_HIST", [])
+    if len(credit) >= 2:
+        d = _parse_date(credit[-1]["date"])
+        table["credit"] = {"latest": _fmt_signed_dollar_b(credit[-1]["val"]), "prior": _fmt_signed_dollar_b(credit[-2]["val"]),
+                            "period": _month_year_label(d)}
+
+    imp = fred_data.get("IMPORT_PRICE_HIST", [])
+    if len(imp) >= 2:
+        d = _parse_date(imp[-1]["date"])
+        table["import_prices"] = {"latest": _fmt_signed_pct(imp[-1]["val"]), "prior": _fmt_signed_pct(imp[-2]["val"]),
+                                   "period": _month_year_label(d)}
+
+    wage = fred_data.get("WAGE_HIST", [])
+    if len(wage) >= 2:
+        d = _parse_date(wage[-1]["date"])
+        table["wage"] = {"latest": _fmt_signed_pct(wage[-1]["val"]), "prior": _fmt_signed_pct(wage[-2]["val"]),
+                          "period": _month_year_label(d)}
+
+    ust10y = fred_data.get("UST_10Y", {})
+    if ust10y.get("latest") is not None:
+        d = _parse_date(ust10y["date"])
+        table["treasury10y"] = {"latest": _fmt_plain_pct(ust10y["latest"]), "prior": _fmt_plain_pct(ust10y["prior"]),
+                                 "period": _fmt_month_day(d)}
+
+    infl_exp = fred_data.get("INFL_EXP_1Y", {})
+    if infl_exp.get("latest") is not None:
+        d = _parse_date(infl_exp["date"])
+        table["sentiment"] = {"latest": _fmt_plain_pct(infl_exp["latest"], 1), "prior": _fmt_plain_pct(infl_exp["prior"], 1),
+                               "period": _month_year_label(d)}
+
+    dgorder_mom = fred_data.get("DGORDER_MOM", {})
+    if dgorder_mom.get("latest") is not None:
+        d = _parse_date(dgorder_mom["date"])
+        table["durables"] = {"latest": _fmt_signed_pct(dgorder_mom["latest"]), "prior": _fmt_signed_pct(dgorder_mom["prior"]),
+                              "period": _month_year_label(d)}
+
+    indpro_mom = fred_data.get("INDPRO_MOM", {})
+    if indpro_mom.get("latest") is not None:
+        d = _parse_date(indpro_mom["date"])
+        table["indpro"] = {"latest": _fmt_signed_pct(indpro_mom["latest"]), "prior": _fmt_signed_pct(indpro_mom["prior"]),
+                            "period": _month_year_label(d)}
+
+    return table
+
+
 def format_mktcap(val):
     if not val or val == 0:
         return "N/A"
@@ -775,12 +915,14 @@ def build_dashboard():
 
     print("  Computing release calendar...")
     calendar_data = compute_release_calendar(datetime.date.today())
+    indicator_table = compute_indicator_table(fred_data)
 
     # Build context
     now = datetime.datetime.now()
     ctx = {
         "build_date": now.strftime("%A, %B %d, %Y"),
         "build_time": now.strftime("%I:%M %p ET"),
+        "indicator_table": indicator_table,
         "next_release": calendar_data["next_release"],
         "week_range_label": calendar_data["week_range_label"],
         "calendar_this_week": calendar_data["calendar_this_week"],
