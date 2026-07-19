@@ -188,6 +188,7 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
   <button class="tab-btn" onclick="switchTab('indicators')">Economic Indicators</button>
   <button class="tab-btn" onclick="switchTab('framework2')">Macro Framework</button>
   <button class="tab-btn" onclick="switchTab('forces')">Structural Forces</button>
+  <button class="tab-btn" onclick="switchTab('screener')">Stock Screener</button>
 </div>
 
 <!-- ============================================================ -->
@@ -893,6 +894,48 @@ th.sort-asc,th.sort-desc{color:var(--accent-blue);}
           <div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="color:var(--green);font-weight:600;">Winners:</span><span>Costco, TJX (value), Luxury, Services</span></div>
           <div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="color:var(--red);font-weight:600;">Losers:</span><span>Mid-tier retail, Discretionary, Housing</span></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: STOCK SCREENER                                          -->
+<!-- ============================================================ -->
+<div id="tab-screener" class="tab-content">
+<div class="container">
+
+  <div class="section-label">Russell 3000 Stock Screener</div>
+  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;margin-top:-8px;">Sorted by sector by default. Updates on its own schedule, separate from the rest of the dashboard — <span id="screenerAsOf">loading…</span></div>
+
+  <div class="full-width">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Screen</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="screenerSearch" type="text" placeholder="Search ticker or company..." style="font-size:12px;padding:6px 10px;border:1px solid #dde3ea;border-radius:6px;width:200px;">
+          <select id="screenerSectorFilter" style="font-size:12px;padding:6px 10px;border:1px solid #dde3ea;border-radius:6px;">
+            <option value="">All Sectors</option>
+          </select>
+          <span id="screenerCount" class="card-badge badge-updated" style="white-space:nowrap;"></span>
+        </div>
+      </div>
+      <div class="card-body" style="padding:8px 16px 16px;max-height:640px;overflow-y:auto;">
+        <table id="screenerTable">
+          <thead>
+            <tr>
+              <th class="sortable" data-col="0" style="cursor:pointer;">Sector ⇅</th>
+              <th class="sortable" data-col="1" style="cursor:pointer;">Ticker ⇅</th>
+              <th>Company</th>
+              <th class="text-right sortable" data-col="3" style="cursor:pointer;">Price ⇅</th>
+              <th class="text-right sortable" data-col="4" style="cursor:pointer;">YTD % ⇅</th>
+              <th class="text-right sortable" data-col="5" style="cursor:pointer;">vs 50-Day MA ⇅</th>
+            </tr>
+          </thead>
+          <tbody><tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:20px;">Loading screener data…</td></tr></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -3349,6 +3392,72 @@ makeTableSortable('growthTable');
 makeTableSortable('inflationTable');
 makeTableSortable('growth2Table');
 makeTableSortable('inflation2Table');
+
+// ===== STOCK SCREENER (Russell 3000, fetched client-side on its own schedule) =====
+(function() {
+  const tbody = document.querySelector('#screenerTable tbody');
+  const sectorSelect = document.getElementById('screenerSectorFilter');
+  const searchInput = document.getElementById('screenerSearch');
+  const countEl = document.getElementById('screenerCount');
+  const asOfEl = document.getElementById('screenerAsOf');
+  let allStocks = [];
+
+  function pctCell(val) {
+    if (val === null || val === undefined) return '<td class="text-right font-mono">N/A</td>';
+    const cls = val >= 0 ? 'up' : 'down';
+    return `<td class="text-right font-mono ${cls}" style="font-weight:600">${val >= 0 ? '+' : ''}${val.toFixed(1)}%</td>`;
+  }
+
+  function renderRows(stocks) {
+    if (stocks.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:20px;">No matches.</td></tr>';
+      return;
+    }
+    const html = stocks.map(s => `<tr data-sector="${s.sector}" data-search="${s.ticker.toLowerCase()} ${s.name.toLowerCase()}">
+      <td>${s.sector}</td>
+      <td style="font-weight:600">${s.ticker}</td>
+      <td>${s.name}</td>
+      <td class="text-right font-mono">$${s.price.toFixed(2)}</td>
+      ${pctCell(s.ytd_pct)}
+      ${pctCell(s.vs_50dma_pct)}
+    </tr>`).join('');
+    tbody.innerHTML = html;
+  }
+
+  function applyFilters() {
+    const sector = sectorSelect.value;
+    const q = searchInput.value.trim().toLowerCase();
+    const filtered = allStocks.filter(s =>
+      (!sector || s.sector === sector) &&
+      (!q || (s.ticker.toLowerCase() + ' ' + s.name.toLowerCase()).includes(q))
+    );
+    renderRows(filtered);
+    countEl.textContent = `${filtered.length.toLocaleString()} stocks`;
+  }
+
+  fetch('screener_data.json')
+    .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
+    .then(data => {
+      allStocks = data.stocks || [];
+      const sectors = [...new Set(allStocks.map(s => s.sector))].sort();
+      sectors.forEach(sec => {
+        const opt = document.createElement('option');
+        opt.value = sec; opt.textContent = sec;
+        sectorSelect.appendChild(opt);
+      });
+      renderRows(allStocks);
+      countEl.textContent = `${allStocks.length.toLocaleString()} stocks`;
+      const generated = data.generated_at ? new Date(data.generated_at) : null;
+      asOfEl.textContent = generated ? `last updated ${generated.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}` : 'unknown as-of date';
+      makeTableSortable('screenerTable');
+      sectorSelect.addEventListener('change', applyFilters);
+      searchInput.addEventListener('input', applyFilters);
+    })
+    .catch(() => {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:20px;">Screener data not available yet — it updates on its own daily schedule.</td></tr>';
+      asOfEl.textContent = 'not yet generated';
+    });
+})();
 
 // ===== FRAMEWORK 2: SURPRISE-BASED REGIME MODEL =====
 

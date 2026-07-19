@@ -1,0 +1,37 @@
+name: Stock Screener Update
+
+on:
+  schedule:
+    # Run at 7:15 AM ET (11:15 UTC) on weekdays — after the main dashboard
+    # build, and on its own schedule since ~2,600 tickers is slower and more
+    # exposed to Yahoo/iShares rate limits than the main daily build.
+    - cron: '15 11 * * 1-5'
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build screener data
+        run: python build_screener.py
+
+      - name: Commit and push updated screener data
+        run: |
+          git config user.name "Dashboard Bot"
+          git config user.email "bot@accuvest.com"
+          git add screener_data.json
+          git diff --staged --quiet || git commit -m "Stock screener update $(date +'%Y-%m-%d')"
+          git push

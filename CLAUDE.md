@@ -5,22 +5,34 @@
 - **Templating**: Jinja2 — `template.html` is the source, `build.py` renders it into `index.html`
 - **Data**: FRED API (macro/rates/spreads) + Yahoo Finance via `yfinance` (stocks/indices/commodities/sectors)
 - **Hosting**: GitHub Pages (static HTML served from `main` branch root)
-- **CI/CD**: GitHub Actions — `daily-update.yml` runs weekdays at 6:30am ET, fetches live data, regenerates `index.html`, commits and pushes
+- **CI/CD**: GitHub Actions — `daily-update.yml` runs weekdays at 6:30am ET, fetches live data, regenerates `index.html`, commits and pushes. `screener-update.yml` runs separately at 7:15am ET to refresh the stock screener data (see below)
 
 ## File Structure
 ```
 ├── CLAUDE.md              # This file
-├── build.py               # Python data fetcher + Jinja2 renderer
+├── build.py               # Python data fetcher + Jinja2 renderer (main dashboard)
+├── build_screener.py      # Python fetcher for the Russell 3000 stock screener tab
 ├── template.html          # Jinja2 template (the source of truth for the dashboard)
 ├── index.html             # Generated output (committed by build bot, DO NOT edit directly)
-├── requirements.txt       # Python deps: requests, yfinance, fredapi, jinja2
+├── screener_data.json     # Generated output (committed by build bot, DO NOT edit directly) — fetched client-side by the Stock Screener tab
+├── russell3000_holdings.csv  # Fallback snapshot of Russell 3000 ticker/sector/weight, used if the live iShares feed is blocked
+├── requirements.txt       # Python deps: requests, yfinance, fredapi, jinja2, pandas
 ├── .env.example           # Shows required env vars
 ├── .gitignore
 ├── index_static_backup.html  # Pre-automation snapshot (gitignored)
 └── .github/
     └── workflows/
-        └── daily-update.yml  # GitHub Actions daily build
+        ├── daily-update.yml     # GitHub Actions daily build (main dashboard)
+        └── screener-update.yml  # GitHub Actions daily build (stock screener, runs separately)
 ```
+
+## Stock Screener Tab
+
+A Russell 3000 screener, sorted by sector by default, with a sector filter and ticker/company search. Deliberately built as a **separate pipeline** from the main dashboard:
+
+- **Constituents**: `build_screener.py` fetches iShares' IWV (Russell 3000 ETF) holdings feed for ticker/name/sector/weight, falling back to the bundled `russell3000_holdings.csv` snapshot if that feed is blocked (it sits behind basic bot protection that has returned 403s for plain server-side requests before).
+- **Price/momentum**: batch-fetched via `yf.download()` in chunks (not per-ticker `.info()` calls, which don't scale to ~2,600 names) — computes latest price, YTD % change, and % vs. 50-day moving average. No valuation data (P/E etc.) is fetched for the full universe — Yahoo's per-ticker `.info()` endpoint is the rate-limit-prone one, and doing that for 2,600 names daily was judged too risky.
+- **Its own GitHub Action** (`screener-update.yml`) and **its own output file** (`screener_data.json`), fetched client-side by the dashboard's JS (`fetch('screener_data.json')`) rather than baked into `index.html` by Jinja. This means a bad day for the screener (Yahoo/iShares rate limits) can't break the main dashboard build, and vice versa.
 
 ## Key Architectural Decisions
 
