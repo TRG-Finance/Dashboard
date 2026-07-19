@@ -765,88 +765,112 @@ def _fmt_millions(val_thousands, decimals=3):
     return f"{val_thousands / 1000:.{decimals}f}M" if val_thousands is not None else "N/A"
 
 
+def _trend(latest, prior, polarity=1):
+    """polarity: +1 = higher is favorable, -1 = higher is unfavorable, 0 = no read."""
+    if latest is None or prior is None:
+        return "—", "neutral"
+    if latest > prior:
+        return "Rising", ("neutral" if polarity == 0 else ("up" if polarity > 0 else "down"))
+    if latest < prior:
+        return "Falling", ("neutral" if polarity == 0 else ("down" if polarity > 0 else "up"))
+    return "Flat", "neutral"
+
+
 def compute_indicator_table(fred_data):
     table = {}
 
     gdp = fred_data.get("GDP", {})
     if gdp.get("latest") is not None:
         d = _parse_date(gdp["date"])
+        trend, trend_cls = _trend(gdp["latest"], gdp["prior"], 1)
         table["gdp"] = {"latest": _fmt_signed_pct(gdp["latest"]), "prior": _fmt_signed_pct(gdp["prior"]),
-                        "period": _quarter_label(d)}
+                        "period": _quarter_label(d), "trend": trend, "trend_class": trend_cls}
 
     payems = fred_data.get("PAYEMS_HIST", [])
     if len(payems) >= 3:
         diff_latest = payems[-1]["val"] - payems[-2]["val"]
         diff_prior = payems[-2]["val"] - payems[-3]["val"]
         d = _parse_date(payems[-1]["date"])
+        trend, trend_cls = _trend(diff_latest, diff_prior, 1)
         table["jobs"] = {"latest": f"{diff_latest:+.0f}K", "prior": f"{diff_prior:+.0f}K",
-                          "period": _month_year_label(d)}
+                          "period": _month_year_label(d), "trend": trend, "trend_class": trend_cls}
 
     retail = fred_data.get("RSAFS_HIST", [])
     if len(retail) >= 2:
         d = _parse_date(retail[-1]["date"])
+        trend, trend_cls = _trend(retail[-1]["val"], retail[-2]["val"], 1)
         table["retail"] = {"latest": _fmt_signed_pct(retail[-1]["val"]), "prior": _fmt_signed_pct(retail[-2]["val"]),
-                            "period": _month_year_label(d)}
+                            "period": _month_year_label(d), "trend": trend, "trend_class": trend_cls}
 
     houst = fred_data.get("HOUST_HIST", [])
     if len(houst) >= 2:
         d = _parse_date(houst[-1]["date"])
+        trend, trend_cls = _trend(houst[-1]["val"], houst[-2]["val"], 1)
         table["housing_starts"] = {"latest": _fmt_millions(houst[-1]["val"]), "prior": _fmt_millions(houst[-2]["val"]),
-                                    "period": _month_year_label(d)}
+                                    "period": _month_year_label(d), "trend": trend, "trend_class": trend_cls}
 
     permit = fred_data.get("PERMIT_HIST", [])
     if len(permit) >= 2:
         d = _parse_date(permit[-1]["date"])
+        trend, trend_cls = _trend(permit[-1]["val"], permit[-2]["val"], 1)
         table["permits"] = {"latest": _fmt_millions(permit[-1]["val"]), "prior": _fmt_millions(permit[-2]["val"]),
-                             "period": _month_year_label(d)}
+                             "period": _month_year_label(d), "trend": trend, "trend_class": trend_cls}
 
     trade = fred_data.get("BOPGSTB_HIST", [])
     if len(trade) >= 2:
         d = _parse_date(trade[-1]["date"])
+        trend, trend_cls = _trend(trade[-1]["val"], trade[-2]["val"], 1)
         table["trade"] = {"latest": _fmt_signed_dollar_b(trade[-1]["val"]), "prior": _fmt_signed_dollar_b(trade[-2]["val"]),
-                           "period": _month_year_label(d)}
+                           "period": _month_year_label(d), "trend": trend, "trend_class": trend_cls}
 
     credit = fred_data.get("TOTALSL_HIST", [])
     if len(credit) >= 2:
         d = _parse_date(credit[-1]["date"])
+        trend, trend_cls = _trend(credit[-1]["val"], credit[-2]["val"], 0)
         table["credit"] = {"latest": _fmt_signed_dollar_b(credit[-1]["val"]), "prior": _fmt_signed_dollar_b(credit[-2]["val"]),
-                            "period": _month_year_label(d)}
+                            "period": _month_year_label(d), "trend": trend, "trend_class": trend_cls}
 
     imp = fred_data.get("IMPORT_PRICE_HIST", [])
     if len(imp) >= 2:
         d = _parse_date(imp[-1]["date"])
+        trend, trend_cls = _trend(imp[-1]["val"], imp[-2]["val"], -1)
         table["import_prices"] = {"latest": _fmt_signed_pct(imp[-1]["val"]), "prior": _fmt_signed_pct(imp[-2]["val"]),
-                                   "period": _month_year_label(d)}
+                                   "period": _month_year_label(d), "trend": trend, "trend_class": trend_cls}
 
     wage = fred_data.get("WAGE_HIST", [])
     if len(wage) >= 2:
         d = _parse_date(wage[-1]["date"])
+        trend, trend_cls = _trend(wage[-1]["val"], wage[-2]["val"], 1)
         table["wage"] = {"latest": _fmt_signed_pct(wage[-1]["val"]), "prior": _fmt_signed_pct(wage[-2]["val"]),
-                          "period": _month_year_label(d)}
+                          "period": _month_year_label(d), "trend": trend, "trend_class": trend_cls}
 
     ust10y = fred_data.get("UST_10Y", {})
     if ust10y.get("latest") is not None:
         d = _parse_date(ust10y["date"])
+        trend, trend_cls = _trend(ust10y["latest"], ust10y["prior"], 0)
         table["treasury10y"] = {"latest": _fmt_plain_pct(ust10y["latest"]), "prior": _fmt_plain_pct(ust10y["prior"]),
-                                 "period": _fmt_month_day(d)}
+                                 "period": _fmt_month_day(d), "trend": trend, "trend_class": trend_cls}
 
     infl_exp = fred_data.get("INFL_EXP_1Y", {})
     if infl_exp.get("latest") is not None:
         d = _parse_date(infl_exp["date"])
+        trend, trend_cls = _trend(infl_exp["latest"], infl_exp["prior"], -1)
         table["sentiment"] = {"latest": _fmt_plain_pct(infl_exp["latest"], 1), "prior": _fmt_plain_pct(infl_exp["prior"], 1),
-                               "period": _month_year_label(d)}
+                               "period": _month_year_label(d), "trend": trend, "trend_class": trend_cls}
 
     dgorder_mom = fred_data.get("DGORDER_MOM", {})
     if dgorder_mom.get("latest") is not None:
         d = _parse_date(dgorder_mom["date"])
+        trend, trend_cls = _trend(dgorder_mom["latest"], dgorder_mom["prior"], 1)
         table["durables"] = {"latest": _fmt_signed_pct(dgorder_mom["latest"]), "prior": _fmt_signed_pct(dgorder_mom["prior"]),
-                              "period": _month_year_label(d)}
+                              "period": _month_year_label(d), "trend": trend, "trend_class": trend_cls}
 
     indpro_mom = fred_data.get("INDPRO_MOM", {})
     if indpro_mom.get("latest") is not None:
         d = _parse_date(indpro_mom["date"])
+        trend, trend_cls = _trend(indpro_mom["latest"], indpro_mom["prior"], 1)
         table["indpro"] = {"latest": _fmt_signed_pct(indpro_mom["latest"]), "prior": _fmt_signed_pct(indpro_mom["prior"]),
-                            "period": _month_year_label(d)}
+                            "period": _month_year_label(d), "trend": trend, "trend_class": trend_cls}
 
     return table
 
